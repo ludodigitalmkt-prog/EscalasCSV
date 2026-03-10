@@ -24,12 +24,12 @@
                 extend: { 
                     colors: { primary: '#1E40AF', secondary: '#8b5cf6', accent: '#10b981' },
                     animation: { 
-                        'fade-in': 'fadeIn 0.3s ease-out',
-                        'pop-in': 'popIn 0.2s forwards',
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'pop-in': 'popIn 0.3s forwards',
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                     },
                     keyframes: { 
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
                         popIn: { '0%': { opacity: '0', transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } }
                     }
                 } 
@@ -48,33 +48,51 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; transition: background 1s ease-in-out; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 6px; background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
         .hide-scroll::-webkit-scrollbar { display: none; }
         
+        /* CLAYMORPHISM & GLASSMORPHISM PREMIUM */
         .clay-card {
-            background: rgba(255, 255, 255, 0.6); border-radius: 1.5rem; backdrop-filter: blur(20px);
-            box-shadow: 8px 8px 16px rgba(0,0,0,0.05), -8px -8px 16px rgba(255,255,255,0.8);
-            border: 1px solid rgba(255,255,255,0.5); transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.65); border-radius: 1.5rem; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.05), -10px -10px 20px rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.6); transition: all 0.3s ease;
         }
         .dark .clay-card {
-            background: rgba(15, 23, 42, 0.6); box-shadow: 8px 8px 16px rgba(0,0,0,0.4), -8px -8px 16px rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05); color: #f1f5f9;
+            background: rgba(30, 41, 59, 0.65); box-shadow: 10px 10px 20px rgba(0,0,0,0.4), -10px -10px 20px rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1); color: #f8fafc;
         }
-        .clay-card:hover { transform: translateY(-4px); box-shadow: 12px 12px 20px rgba(0,0,0,0.1), -12px -12px 20px rgba(255,255,255,0.9); }
-        .dark .clay-card:hover { box-shadow: 12px 12px 20px rgba(0,0,0,0.5); }
+        .clay-card:hover { transform: translateY(-4px); box-shadow: 15px 15px 25px rgba(0,0,0,0.08), -15px -15px 25px rgba(255,255,255,0.9); }
+        .dark .clay-card:hover { box-shadow: 15px 15px 25px rgba(0,0,0,0.5); }
         
-        .theme-morning { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #0f172a; }
-        .theme-afternoon { background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%); color: #0f172a; }
-        .theme-night { background: linear-gradient(135deg, #020617 0%, #1e1b4b 50%, #0f172a 100%); color: #f8fafc; }
-        .stars { position: absolute; inset: 0; background-image: radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)); background-size: 200px 200px; opacity: 0.3; animation: pulse-slow 4s infinite alternate; pointer-events: none; z-index: 0;}
+        /* A NEBULOSA MÁGICA ANIMADA */
+        .nebula-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; background-color: var(--bg-base); transition: background-color 2s ease; }
+        .nebula-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.7; animation: floatBlob 25s infinite alternate ease-in-out; will-change: transform; }
+        .blob1 { top: -10%; left: -10%; width: 55vw; height: 55vw; background: var(--color1); animation-delay: 0s; }
+        .blob2 { bottom: -20%; right: -10%; width: 65vw; height: 65vw; background: var(--color2); animation-delay: -5s; }
+        .blob3 { top: 30%; left: 30%; width: 45vw; height: 45vw; background: var(--color3); animation-delay: -10s; }
+        
+        @keyframes floatBlob {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(8%, 12%) scale(1.15); }
+            66% { transform: translate(-12%, 8%) scale(0.85); }
+            100% { transform: translate(0, -12%) scale(1); }
+        }
+
+        /* VARIÁVEIS DE TEMA E CORES DA NEBULOSA */
+        .theme-morning { --bg-base: #e0f2fe; --color1: #bae6fd; --color2: #fdf4ff; --color3: #e0e7ff; color: #0f172a; }
+        .theme-afternoon { --bg-base: #ffedd5; --color1: #fed7aa; --color2: #fbcfe8; --color3: #fde047; color: #0f172a; }
+        .theme-night { --bg-base: #020617; --color1: #312e81; --color2: #4c1d95; --color3: #1e1b4b; color: #f8fafc; }
+        
+        .stars { position: fixed; inset: 0; background-image: radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)); background-size: 200px 200px; opacity: 0.4; animation: pulse-slow 4s infinite alternate; pointer-events: none; z-index: 0; }
         .timeline-line::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: rgba(0,0,0,0.1); z-index: 0; }
         .dark .timeline-line::before { background: rgba(255,255,255,0.1); }
     </style>
 
     <script>
-        const VERSAO_ATUAL = "24.0.0"; 
+        const VERSAO_ATUAL = "25.0.0"; 
         if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) {
             localStorage.clear(); sessionStorage.clear();
             localStorage.setItem('escalas_versao', VERSAO_ATUAL);
@@ -88,7 +106,6 @@
     <script type="text/babel" data-presets="react">
         const { useState, useEffect, Component } = React;
 
-        // A SUA CHAVE CORRETA JÁ ESTÁ AQUI
         const firebaseConfig = {
             apiKey: "AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c",
             authDomain: "escalas-sao-vicente.firebaseapp.com",
@@ -163,10 +180,9 @@
             if (h >= 12 && h < 18) { period = 'Boa tarde'; icon = 'ph-cloud-sun text-orange-500'; msgs = ["Mantenha o foco!", "O cuidado continua."]; } 
             else if (h >= 18 || h < 6) { period = 'Boa noite'; icon = 'ph-moon-stars text-blue-300'; msgs = ["A noite também salva vidas.", "Bom descanso."]; }
             const userName = user && user.nome ? user.nome.split(' ')[0] : 'Equipe';
-            const isDark = themeClass.includes('night');
 
             return (
-                <div className={`clay-card p-6 md:p-8 mb-8 flex justify-between items-center relative z-10 ${isDark?'dark':''}`}>
+                <div className="clay-card p-6 md:p-8 mb-8 flex justify-between items-center relative z-10">
                     <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-4xl shadow-inner bg-black/5 dark:bg-white/10"><i className={`ph-fill ${icon} animate-pulse-slow`}></i></div>
                         <div>
@@ -193,7 +209,7 @@
             const salvar = async () => {
                 setLoading(true);
                 await onSaveConfig('CONFIGURACOES', { ID: 'parametros', setores, habilidades: habs, postos });
-                onRefresh(); setLoading(false); alert("Salvo!");
+                onRefresh(); setLoading(false); alert("Configurações atualizadas!");
             };
 
             const addItem = (tipo) => {
@@ -208,7 +224,7 @@
             };
 
             return (
-                <div className="animate-fade-in space-y-6 max-w-7xl mx-auto">
+                <div className="animate-fade-in space-y-6 max-w-7xl mx-auto relative z-10">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                         <div className="text-center md:text-left"><h2 className="text-3xl font-black">Ajustes da Clínica</h2></div>
                         <button onClick={salvar} disabled={loading} className="w-full md:w-auto bg-primary text-white font-black px-8 py-3.5 rounded-xl shadow-lg hover:scale-105 transition">{loading ? 'Salvando...' : 'Salvar Servidor'}</button>
@@ -216,18 +232,18 @@
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="clay-card p-6">
                             <h3 className="font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-buildings text-primary text-xl"></i> Departamentos</h3>
-                            <div className="flex gap-2 mb-4"><input type="text" value={newSetor} onChange={e=>setNewSetor(e.target.value)} placeholder="Ex: ENFERMAGEM" className="flex-1 p-3 rounded-lg text-sm font-bold border outline-none bg-black/5 dark:bg-white/5" /><button onClick={()=>addItem('setor')} className="bg-primary text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button></div>
-                            <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">{setores.map((s, i) => (<div key={i} className="flex justify-between items-center bg-black/5 dark:bg-white/10 p-3 rounded-lg text-xs font-black"><span>{s}</span><button onClick={()=>removeItem('setor', i)} className="text-red-500"><i className="ph-bold ph-trash"></i></button></div>))}</div>
+                            <div className="flex gap-2 mb-4"><input type="text" value={newSetor} onChange={e=>setNewSetor(e.target.value)} placeholder="Ex: ENFERMAGEM" className="flex-1 p-3 rounded-lg text-sm font-bold border border-black/10 dark:border-white/10 outline-none bg-black/5 dark:bg-white/5" /><button onClick={()=>addItem('setor')} className="bg-primary text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button></div>
+                            <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">{setores.map((s, i) => (<div key={i} className="flex justify-between items-center bg-white/50 dark:bg-black/20 p-3 rounded-lg text-xs font-black border border-black/5 dark:border-white/5"><span>{s}</span><button onClick={()=>removeItem('setor', i)} className="text-red-500"><i className="ph-bold ph-trash"></i></button></div>))}</div>
                         </div>
                         <div className="clay-card p-6">
                             <h3 className="font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-door text-secondary text-xl"></i> Mapas de Salas</h3>
-                            <div className="space-y-2 mb-4"><input type="text" value={newPostoNome} onChange={e=>setNewPostoNome(e.target.value)} placeholder="Ex: Consultório 01" className="w-full p-3 rounded-lg text-sm font-bold border outline-none bg-black/5 dark:bg-white/5" /><div className="flex gap-2"><select value={newPostoSetor} onChange={e=>setNewPostoSetor(e.target.value)} className="flex-1 p-3 rounded-lg text-xs font-bold border outline-none bg-black/5 dark:bg-white/5"><option value="">Setor...</option>{setores.map((s,i)=><option key={i} value={s}>{s}</option>)}</select><button onClick={()=>addItem('posto')} className="bg-secondary text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button></div></div>
-                            <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">{postos.map((p, i) => (<div key={i} className="flex justify-between items-center bg-black/5 dark:bg-white/10 p-3 rounded-lg text-xs"><div><p className="font-black">{p.nome}</p><p className="text-[9px] opacity-60 uppercase">{p.setor}</p></div><button onClick={()=>removeItem('posto', i)} className="text-red-500"><i className="ph-bold ph-trash"></i></button></div>))}</div>
+                            <div className="space-y-2 mb-4"><input type="text" value={newPostoNome} onChange={e=>setNewPostoNome(e.target.value)} placeholder="Ex: Consultório 01" className="w-full p-3 rounded-lg text-sm font-bold border border-black/10 dark:border-white/10 outline-none bg-black/5 dark:bg-white/5" /><div className="flex gap-2"><select value={newPostoSetor} onChange={e=>setNewPostoSetor(e.target.value)} className="flex-1 p-3 rounded-lg text-xs font-bold border border-black/10 dark:border-white/10 outline-none bg-black/5 dark:bg-white/5"><option value="">Setor...</option>{setores.map((s,i)=><option key={i} value={s}>{s}</option>)}</select><button onClick={()=>addItem('posto')} className="bg-secondary text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button></div></div>
+                            <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">{postos.map((p, i) => (<div key={i} className="flex justify-between items-center bg-white/50 dark:bg-black/20 p-3 rounded-lg text-xs border border-black/5 dark:border-white/5"><div><p className="font-black">{p.nome}</p><p className="text-[9px] opacity-60 uppercase">{p.setor}</p></div><button onClick={()=>removeItem('posto', i)} className="text-red-500"><i className="ph-bold ph-trash"></i></button></div>))}</div>
                         </div>
                         <div className="clay-card p-6">
                             <h3 className="font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-accent text-xl"></i> Competências</h3>
-                            <div className="flex gap-2 mb-4"><input type="text" value={newHab} onChange={e=>setNewHab(e.target.value)} placeholder="Ex: Coleta" className="flex-1 p-3 rounded-lg text-sm font-bold border outline-none bg-black/5 dark:bg-white/5" /><button onClick={()=>addItem('hab')} className="bg-accent text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button></div>
-                            <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">{habs.map((h, i) => (<div key={i} className="bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-2">{h} <button onClick={()=>removeItem('hab', i)} className="text-red-500"><i className="ph-bold ph-x"></i></button></div>))}</div>
+                            <div className="flex gap-2 mb-4"><input type="text" value={newHab} onChange={e=>setNewHab(e.target.value)} placeholder="Ex: Coleta" className="flex-1 p-3 rounded-lg text-sm font-bold border border-black/10 dark:border-white/10 outline-none bg-black/5 dark:bg-white/5" /><button onClick={()=>addItem('hab')} className="bg-accent text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button></div>
+                            <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">{habs.map((h, i) => (<div key={i} className="bg-white/50 dark:bg-black/20 border border-black/5 dark:border-white/5 px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-2">{h} <button onClick={()=>removeItem('hab', i)} className="text-red-500"><i className="ph-bold ph-x"></i></button></div>))}</div>
                         </div>
                     </div>
                 </div>
@@ -249,33 +265,33 @@
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {filtrados.map((prof, i) => (
-                            <div key={i} onClick={()=>openModal(prof)} className="clay-card p-6 flex flex-col items-center text-center relative group overflow-hidden">
-                                <div className="absolute top-0 inset-x-0 h-16 opacity-20" style={{backgroundColor: prof.Cor || '#0ea5e9'}}></div>
-                                {prof.FotoURL ? <img src={formatImageUrl(prof.FotoURL)} className="w-16 h-16 rounded-2xl object-cover shadow-md z-10 mb-3 border-2 border-white" /> : <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-md z-10 mb-3 border-2 border-white" style={{backgroundColor: prof.Cor || '#0ea5e9'}}>{safeString(prof.Nome).charAt(0).toUpperCase()}</div>}
+                            <div key={i} onClick={()=>openModal(prof)} className="clay-card p-6 flex flex-col items-center text-center relative group overflow-hidden cursor-pointer">
+                                <div className="absolute top-0 inset-x-0 h-16 opacity-30" style={{backgroundColor: prof.Cor || '#0ea5e9'}}></div>
+                                {prof.FotoURL ? <img src={formatImageUrl(prof.FotoURL)} className="w-16 h-16 rounded-2xl object-cover shadow-md z-10 mb-3 border-2 border-white/50" /> : <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-md z-10 mb-3 border-2 border-white/50" style={{backgroundColor: prof.Cor || '#0ea5e9'}}>{safeString(prof.Nome).charAt(0).toUpperCase()}</div>}
                                 <h3 className="font-black text-lg leading-tight z-10 truncate w-full px-2">{safeString(prof.Nome)}</h3>
                                 <p className="text-[10px] font-black mt-1 uppercase tracking-widest opacity-60 z-10 truncate">{safeString(prof.Cargo)}</p>
                                 <span className="text-[8px] font-black uppercase bg-black/5 dark:bg-white/10 px-2 py-1 rounded mt-2 border border-black/10 dark:border-white/10">{prof.Setor || 'Sem Setor'}</span>
-                                <div className="absolute top-4 right-4 opacity-100 lg:opacity-0 group-hover:opacity-100 flex gap-2 z-20"><button onClick={async(e)=>{e.stopPropagation(); if(confirm('Excluir?')){await onDelete('PROFISSIONAIS', prof.ID); onRefresh();}}} className="w-8 h-8 bg-white dark:bg-slate-700 shadow-md rounded-full text-red-500 flex items-center justify-center"><i className="ph-bold ph-trash"></i></button></div>
+                                <div className="absolute top-4 right-4 opacity-100 lg:opacity-0 group-hover:opacity-100 flex gap-2 z-20"><button onClick={async(e)=>{e.stopPropagation(); if(confirm('Excluir?')){await onDelete('PROFISSIONAIS', prof.ID); onRefresh();}}} className="w-8 h-8 bg-red-100 dark:bg-red-900/50 shadow-md rounded-full text-red-500 flex items-center justify-center hover:scale-110"><i className="ph-bold ph-trash"></i></button></div>
                             </div>
                         ))}
                     </div>
                     {isModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in" onClick={()=>setIsModalOpen(false)}>
                             <div className="clay-card w-full max-w-4xl p-0 overflow-hidden flex flex-col max-h-[90vh]" onClick={e=>e.stopPropagation()}>
-                                <div className="p-6 border-b border-black/10 dark:border-white/10 flex justify-between items-center bg-black/5 dark:bg-white/5"><h3 className="text-xl font-black">Cadastro</h3><button onClick={()=>setIsModalOpen(false)} className="w-8 h-8 rounded-full hover:bg-red-500 hover:text-white flex items-center justify-center"><i className="ph-bold ph-x"></i></button></div>
-                                <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-6">
+                                <div className="p-6 border-b border-black/10 dark:border-white/10 flex justify-between items-center bg-black/5 dark:bg-white/5"><h3 className="text-xl font-black">Cadastro</h3><button onClick={()=>setIsModalOpen(false)} className="w-8 h-8 rounded-full hover:bg-red-500 hover:text-white flex items-center justify-center transition"><i className="ph-bold ph-x"></i></button></div>
+                                <form onSubmit={handleSave} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="md:col-span-2"><label className="text-[10px] font-black uppercase opacity-50">Nome Completo</label><input type="text" value={safeString(formData.Nome)} onChange={e=>setFormData({...formData, Nome: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5" required /></div>
-                                        <div className="md:col-span-2"><label className="text-[10px] font-black uppercase opacity-50">Foto (Link)</label><input type="text" value={safeString(formData.FotoURL)} onChange={e=>setFormData({...formData, FotoURL: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5" /></div>
-                                        <div><label className="text-[10px] font-black uppercase opacity-50">Cargo</label><input type="text" value={safeString(formData.Cargo)} onChange={e=>setFormData({...formData, Cargo: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5" required /></div>
-                                        <div><label className="text-[10px] font-black uppercase opacity-50">Setor</label><select value={safeString(formData.Setor)} onChange={e=>setFormData({...formData, Setor: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5"><option value="">Selecione...</option>{(sysConfig.setores||[]).map(s=><option key={s} value={s}>{s}</option>)}</select></div>
+                                        <div className="md:col-span-2"><label className="text-[10px] font-black uppercase opacity-50">Nome Completo</label><input type="text" value={safeString(formData.Nome)} onChange={e=>setFormData({...formData, Nome: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:border-primary" required /></div>
+                                        <div className="md:col-span-2"><label className="text-[10px] font-black uppercase opacity-50">Foto (Link)</label><input type="text" value={safeString(formData.FotoURL)} onChange={e=>setFormData({...formData, FotoURL: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:border-primary" /></div>
+                                        <div><label className="text-[10px] font-black uppercase opacity-50">Cargo</label><input type="text" value={safeString(formData.Cargo)} onChange={e=>setFormData({...formData, Cargo: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:border-primary" required /></div>
+                                        <div><label className="text-[10px] font-black uppercase opacity-50">Setor</label><select value={safeString(formData.Setor)} onChange={e=>setFormData({...formData, Setor: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:border-primary"><option value="">Selecione...</option>{(sysConfig.setores||[]).map(s=><option key={s} value={s}>{s}</option>)}</select></div>
                                         <div><label className="text-[10px] font-black uppercase opacity-50">Cor</label><input type="color" value={safeString(formData.Cor || '#0ea5e9')} onChange={e=>setFormData({...formData, Cor: e.target.value})} className="w-full h-12 p-1 mt-1 rounded-xl cursor-pointer border border-black/10 dark:border-white/10" /></div>
                                     </div>
                                     <div>
                                         <label className="text-[10px] font-black uppercase tracking-widest opacity-50 block mb-2">Habilidades</label>
-                                        <div className="flex flex-wrap gap-2">{(sysConfig.habilidades||[]).map(h => { const ativo = (formData.Habilidades||[]).includes(h); return <button type="button" key={h} onClick={()=>toggleHab(h)} className={`px-4 py-2 rounded-lg text-[10px] font-bold border ${ativo ? 'bg-primary border-primary text-white' : 'bg-black/5 dark:bg-white/5 border-transparent opacity-60'}`}>{h}</button>; })}</div>
+                                        <div className="flex flex-wrap gap-2">{(sysConfig.habilidades||[]).map(h => { const ativo = (formData.Habilidades||[]).includes(h); return <button type="button" key={h} onClick={()=>toggleHab(h)} className={`px-4 py-2 rounded-lg text-[10px] font-bold border transition ${ativo ? 'bg-primary border-primary text-white' : 'bg-black/5 dark:bg-white/5 border-transparent opacity-60'}`}>{h}</button>; })}</div>
                                     </div>
-                                    <div className="pt-4 flex justify-end gap-3"><button type="button" onClick={()=>setIsModalOpen(false)} className="px-6 py-3 font-bold opacity-70">Cancelar</button><button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black shadow-lg">Salvar Ficha</button></div>
+                                    <div className="pt-4 flex justify-end gap-3"><button type="button" onClick={()=>setIsModalOpen(false)} className="px-6 py-3 font-bold opacity-70">Cancelar</button><button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black shadow-lg hover:scale-105 transition">Salvar Ficha</button></div>
                                 </form>
                             </div>
                         </div>
@@ -324,7 +340,7 @@
                                         const sala = postoObj.nome;
                                         const ocupantes = escalasHoje.filter(e => e.Sala === sala);
                                         const isLivre = ocupantes.length === 0;
-                                        const cardTheme = ['border-blue-400 bg-blue-50 dark:bg-blue-900/20', 'border-accent bg-accent/10 dark:bg-accent/20', 'border-purple-400 bg-purple-50 dark:bg-purple-900/20', 'border-amber-400 bg-amber-50 dark:bg-amber-900/20'][i % 4];
+                                        const cardTheme = ['border-blue-400 bg-blue-100/50 dark:bg-blue-900/30', 'border-accent bg-accent/20 dark:bg-accent/30', 'border-purple-400 bg-purple-100/50 dark:bg-purple-900/30', 'border-amber-400 bg-amber-100/50 dark:bg-amber-900/30'][i % 4];
 
                                         return (
                                             <div key={i} className={`clay-card border-2 flex flex-col p-1 min-h-[150px] relative ${cardTheme} ${isLivre ? 'opacity-70 border-dashed' : 'border-solid'}`}>
@@ -332,9 +348,9 @@
                                                 <div className="flex-1 p-2 space-y-2">
                                                     {isLivre ? <div className="flex flex-col items-center justify-center h-full text-accent py-4"><i className="ph-fill ph-check-circle text-2xl mb-1"></i><span className="text-[9px] font-black uppercase">Posto Livre</span></div> : 
                                                     ocupantes.map((occ, j) => (
-                                                        <div key={j} className="p-2 rounded-xl relative transition group bg-black/5 dark:bg-white/5">
+                                                        <div key={j} className="p-2 rounded-xl relative transition group bg-white/50 dark:bg-black/20 border border-black/5 dark:border-white/5 backdrop-blur-md">
                                                             <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black text-white" style={{backgroundColor: occ.Cor || '#000'}}>{occ.Nome_Profissional.charAt(0)}</div><div className="truncate flex-1"><p className="text-[11px] font-black truncate">{occ.Nome_Profissional}</p><p className="text-[8px] font-bold opacity-60 truncate">{occ.Cargo}</p></div></div>
-                                                            <div className="flex justify-between items-center border-t border-black/10 dark:border-white/10 pt-2"><span className="text-[8px] font-black text-green-600 bg-green-100 px-1.5 py-0.5 rounded">Operando</span>{isAdmin && <button onClick={async()=>{await api.deleteRecord('ESCALAS', occ.ID); onRefresh();}} className="text-[8px] text-red-500 font-black">Remover</button>}</div>
+                                                            <div className="flex justify-between items-center border-t border-black/10 dark:border-white/10 pt-2"><span className="text-[8px] font-black text-green-600 bg-green-100 dark:bg-green-900/50 px-1.5 py-0.5 rounded">Operando</span>{isAdmin && <button onClick={async()=>{await api.deleteRecord('ESCALAS', occ.ID); onRefresh();}} className="text-[8px] text-red-500 font-black">Remover</button>}</div>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -368,7 +384,6 @@
             const [selectedProf, setSelectedProf] = useState(isAdmin ? '' : user.nome);
             const [mesAtual, setMesAtual] = useState(new Date());
 
-            const profData = profissionais.find(p => p.Nome === selectedProf);
             const diasNoMes = new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 0).getDate();
             const dias = Array.from({length: diasNoMes}, (_, i) => {
                 const data = new Date(mesAtual.getFullYear(), mesAtual.getMonth(), i + 1);
