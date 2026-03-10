@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1E40AF">
-    <title>Escalas SV</title>
+    <title>Escalas SV Pro</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="logo.png">
@@ -13,12 +13,7 @@
 
     <script>
         window.addEventListener('error', function(event) {
-            document.body.innerHTML = '<div style="background:#fee2e2;color:#991b1b;padding:40px;font-family:sans-serif;height:100vh;text-align:center;">' +
-                '<h1 style="font-size:2rem;font-weight:900;margin-bottom:10px;">Sistema Protegido</h1>' +
-                '<p>O navegador encontrou um erro. <b>Tire um print desta tela e envie para o suporte:</b></p>' +
-                '<div style="background:white;padding:20px;border-radius:10px;text-align:left;max-width:600px;margin:20px auto;border:2px solid #f87171;">' +
-                '<strong>ERRO:</strong> ' + event.message + '<br/><br/><strong>LINHA:</strong> ' + event.lineno + '</div>' +
-                '<button onclick="window.location.reload()" style="padding:15px 30px;background:#991b1b;color:white;border-radius:10px;font-weight:bold;cursor:pointer;border:none;">Tentar Novamente</button></div>';
+            document.body.innerHTML = '<div style="background:#fee2e2;color:#991b1b;padding:40px;font-family:sans-serif;height:100vh;text-align:center;"><h1 style="font-size:2rem;font-weight:900;margin-bottom:10px;">Sistema Protegido</h1><p>O navegador encontrou um erro. <b>Tire um print:</b></p><div style="background:white;padding:20px;border-radius:10px;text-align:left;max-width:600px;margin:20px auto;border:2px solid #f87171;"><strong>ERRO:</strong> ' + event.message + '<br/><br/><strong>LINHA:</strong> ' + event.lineno + '</div><button onclick="window.location.reload()" style="padding:15px 30px;background:#991b1b;color:white;border-radius:10px;font-weight:bold;cursor:pointer;border:none;">Tentar Novamente</button></div>';
         });
     </script>
 
@@ -31,13 +26,11 @@
                     animation: { 
                         'fade-in': 'fadeIn 0.3s ease-out',
                         'pop-in': 'popIn 0.2s forwards',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'bounce-slight': 'bounceSlight 2s infinite ease-in-out'
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                     },
                     keyframes: { 
                         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        popIn: { '0%': { opacity: '0', transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
-                        bounceSlight: { '0%, 100%': { transform: 'translateY(-10%)' }, '50%': { transform: 'translateY(0)' } }
+                        popIn: { '0%': { opacity: '0', transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } }
                     }
                 } 
             }
@@ -56,21 +49,32 @@
 
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; transition: background 1s ease-in-out; }
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        ::-webkit-scrollbar { width: 6px; background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .hide-scroll::-webkit-scrollbar { display: none; }
-        .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
-        .glass-panel-dark { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); color: white; }
-        .card-hover { transition: all 0.3s ease; cursor: pointer; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.2); }
         
-        .theme-morning { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #0f172a; }
-        .theme-afternoon { background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%); color: #0f172a; }
-        .theme-night { background: linear-gradient(135deg, #020617 0%, #1e1b4b 50%, #0f172a 100%); color: #f8fafc; }
-        .stars { position: absolute; inset: 0; background-image: radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)); background-size: 200px 200px; opacity: 0.3; animation: pulse-slow 4s infinite alternate; pointer-events: none; }
+        /* O Estilo Claymorphism do Mockup */
+        .clay-card {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 8px 8px 16px #e2e8f0, -8px -8px 16px #ffffff;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .dark .clay-card {
+            background: #1e293b;
+            box-shadow: 8px 8px 16px #0f172a, -8px -8px 16px #334155;
+        }
+        .clay-card:hover { transform: translateY(-3px); box-shadow: 12px 12px 20px #e2e8f0, -12px -12px 20px #ffffff; }
+        .dark .clay-card:hover { box-shadow: 12px 12px 20px #0f172a, -12px -12px 20px #334155; }
+        
+        .theme-morning { background: #F8FAFC; color: #0f172a; }
+        .theme-afternoon { background: #fffbeb; color: #0f172a; }
+        .theme-night { background: #0f172a; color: #f8fafc; }
     </style>
 
     <script>
-        const VERSAO_ATUAL = "19.0.0"; 
+        const VERSAO_ATUAL = "20.0.0"; 
         if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) {
             localStorage.clear(); sessionStorage.clear();
             localStorage.setItem('escalas_versao', VERSAO_ATUAL);
@@ -84,9 +88,9 @@
     <script type="text/babel" data-presets="react">
         const { useState, useEffect, Component } = React;
 
-        // === COLOQUE A SUA CHAVE AQUI ===
+        // === COLOQUE A SUA CHAVE DO FIREBASE AQUI ===
         const firebaseConfig = {
-            apiKey: "AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c", // <--- COLE SUA CHAVE AQUI
+            apiKey: "AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c",
             authDomain: "escalas-sao-vicente.firebaseapp.com",
             projectId: "escalas-sao-vicente",
             storageBucket: "escalas-sao-vicente.firebasestorage.app",
@@ -110,23 +114,16 @@
                 } catch (e) { return []; } 
             },
             saveRecord: async (colName, data, isEdit) => { 
-                if(!db) return { success: false }; 
                 try { 
                     let docData = { ...data }; 
                     let id = docData.ID; 
                     delete docData.ID; 
-                    Object.keys(docData).forEach(k => docData[k] === undefined && delete docData[k]); 
-                    
-                    if (isEdit && id) {
-                        await db.collection(colName).doc(id).update(docData); 
-                    } else {
-                        await db.collection(colName).add(docData); 
-                    }
+                    if (isEdit && id) await db.collection(colName).doc(id).update(docData); 
+                    else await db.collection(colName).add(docData); 
                     return { success: true }; 
                 } catch (e) { return { success: false }; } 
             },
             deleteRecord: async (colName, id) => { 
-                if(!db) return { success: false }; 
                 try { 
                     await db.collection(colName).doc(id).delete(); 
                     return { success: true }; 
@@ -134,25 +131,23 @@
             }
         };
 
-        // Função segura para pegar texto
         const safeString = (val) => val === null || val === undefined ? '' : String(val);
 
         // ==========================================
-        // COMPONENTES VISUAIS
+        // COMPONENTES VISUAIS BASE
         // ==========================================
-
         class ErrorBoundary extends Component {
             constructor(props) { super(props); this.state = { hasError: false, errStr: '' }; }
             static getDerivedStateFromError(error) { return { hasError: true }; }
-            componentDidCatch(error, errorInfo) { this.setState({ errStr: String(error) }); }
+            componentDidCatch(error) { this.setState({ errStr: String(error) }); }
             render() {
                 if (this.state.hasError) {
                     return (
                         <div className="p-10 text-center flex flex-col items-center justify-center min-h-screen">
                             <i className="ph-fill ph-warning-circle text-6xl text-red-500 mb-4"></i>
-                            <h2 className="text-2xl font-black mb-2">Erro de Visualização React</h2>
-                            <p className="text-[10px] text-red-500 bg-red-50 p-4 font-mono mb-4 border border-red-200">{this.state.errStr}</p>
-                            <button onClick={()=>window.location.reload()} className="bg-primary text-white px-8 py-3 rounded-xl font-bold shadow-lg">Recarregar App</button>
+                            <h2 className="text-2xl font-black mb-2">Erro de App React</h2>
+                            <p className="text-[10px] text-red-500 bg-red-50 p-4 font-mono mb-4 border border-red-200 max-w-xl">{this.state.errStr}</p>
+                            <button onClick={()=>window.location.reload()} className="bg-primary text-white px-8 py-3 rounded-xl font-bold shadow-lg">Recarregar</button>
                         </div>
                     );
                 }
@@ -160,271 +155,236 @@
             }
         }
 
-        const TopHeader = ({ user }) => {
-            const [time, setTime] = useState(new Date());
-            useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(timer); }, []);
-            
-            const h = time.getHours();
-            let period = 'Bom dia'; let icon = 'ph-sun'; 
-            let msgs = ["A saúde em primeiro lugar.", "Faça a diferença hoje!", "Um excelente turno!"];
-            
-            if (h >= 12 && h < 18) { period = 'Boa tarde'; icon = 'ph-cloud-sun'; msgs = ["Mantenha o foco!", "O cuidado continua."]; } 
-            else if (h >= 18 || h < 6) { period = 'Boa noite'; icon = 'ph-moon-stars'; msgs = ["A noite também salva vidas.", "Bom descanso aos que saem."]; }
-            
-            const randomMsg = msgs[time.getDate() % msgs.length]; 
-            const userName = user && user.nome ? user.nome.split(' ')[0] : 'Equipe';
+        // ==========================================
+        // MODULO 1: CONFIGURAÇÕES E PARÂMETROS
+        // ==========================================
+        const ConfiguracoesView = ({ sysConfig, onSaveConfig, onRefresh, themeClass }) => {
+            const isDark = themeClass.includes('night');
+            const [salasTexto, setSalasTexto] = useState((sysConfig.salas || []).join('\n'));
+            const [habsTexto, setHabsTexto] = useState((sysConfig.habilidades || []).join('\n'));
+            const [ausenTexto, setAusenTexto] = useState((sysConfig.ausencias || []).join('\n'));
+            const [loading, setLoading] = useState(false);
+
+            const salvar = async () => {
+                setLoading(true);
+                const buildArray = (txt) => txt.split('\n').map(s=>s.trim()).filter(Boolean);
+                await onSaveConfig('SISTEMA', {
+                    ID: 'parametros',
+                    salas: buildArray(salasTexto),
+                    habilidades: buildArray(habsTexto),
+                    ausencias: buildArray(ausenTexto)
+                }, true); // force update
+                onRefresh();
+                setLoading(false);
+                alert("Salvo com sucesso!");
+            };
 
             return (
-                <div className={`p-6 rounded-[2rem] shadow-sm mb-8 flex justify-between items-center ${h >= 18 || h < 6 ? 'glass-panel-dark' : 'glass-panel'}`}>
-                    <div className="flex items-center gap-4">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl ${h >= 18 || h < 6 ? 'bg-white/10' : 'bg-white/50 shadow-inner'}`}>
-                            <i className={`ph-fill ${icon} animate-pulse-slow`}></i>
+                <div className="animate-fade-in space-y-6 max-w-5xl mx-auto">
+                    <div>
+                        <h2 className="text-3xl font-black">Ajustes do Sistema</h2>
+                        <p className="opacity-70 font-bold text-sm">Cadastre as regras de negócio da clínica aqui.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="clay-card p-6 flex flex-col">
+                            <h3 className="font-black mb-2 flex items-center gap-2"><i className="ph-fill ph-door text-primary"></i> Salas / Postos</h3>
+                            <p className="text-[10px] opacity-60 mb-4">Um posto por linha. Estes aparecerão no Mapa.</p>
+                            <textarea value={salasTexto} onChange={e=>setSalasTexto(e.target.value)} className={`flex-1 p-4 rounded-xl text-sm outline-none font-bold ${isDark?'bg-slate-900':'bg-slate-50'}`} rows="8" placeholder="Ex: Recepção&#10;Triagem&#10;Consultório 01" />
                         </div>
-                        <div>
-                            <h2 className="text-3xl font-black leading-none">{time.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</h2>
-                            <p className="text-[10px] font-bold uppercase tracking-widest opacity-70 mt-1">{period}, {userName}</p>
+                        <div className="clay-card p-6 flex flex-col">
+                            <h3 className="font-black mb-2 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-blue-500"></i> Habilidades</h3>
+                            <p className="text-[10px] opacity-60 mb-4">Para filtrar substitutos inteligentes.</p>
+                            <textarea value={habsTexto} onChange={e=>setHabsTexto(e.target.value)} className={`flex-1 p-4 rounded-xl text-sm outline-none font-bold ${isDark?'bg-slate-900':'bg-slate-50'}`} rows="8" placeholder="Ex: Pediatria&#10;Coleta de Sangue&#10;Raio-X" />
+                        </div>
+                        <div className="clay-card p-6 flex flex-col">
+                            <h3 className="font-black mb-2 flex items-center gap-2"><i className="ph-fill ph-warning text-red-500"></i> Motivos de Ausência</h3>
+                            <p className="text-[10px] opacity-60 mb-4">Justificativas padronizadas.</p>
+                            <textarea value={ausenTexto} onChange={e=>setAusenTexto(e.target.value)} className={`flex-1 p-4 rounded-xl text-sm outline-none font-bold ${isDark?'bg-slate-900':'bg-slate-50'}`} rows="8" placeholder="Ex: Férias&#10;Treinamento&#10;Trabalho Externo" />
                         </div>
                     </div>
-                    <div className="hidden md:block text-right">
-                        <p className="text-sm font-bold opacity-90">{randomMsg}</p>
-                        <p className="text-[10px] uppercase tracking-widest opacity-50">Portal de Escalas SV</p>
-                    </div>
+                    
+                    <button onClick={salvar} disabled={loading} className="w-full bg-slate-800 dark:bg-primary text-white font-black py-4 rounded-xl shadow-lg hover:scale-[1.02] transition">
+                        {loading ? 'Salvando...' : 'Salvar Configurações Globais'}
+                    </button>
                 </div>
             );
         };
 
         // ==========================================
-        // MÓDULO: GESTÃO DE EQUIPE (AVANÇADO)
+        // MODULO 2: GESTÃO DE EQUIPE
         // ==========================================
-        const EquipeView = ({ data, onSave, onDelete, onRefresh, themeClass }) => {
-            const [activeSector, setActiveSector] = useState(null);
+        const EquipeView = ({ data, sysConfig, onSave, onDelete, onRefresh, themeClass }) => {
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [formData, setFormData] = useState({});
-            const [newSectorName, setNewSectorName] = useState('');
-            const [loading, setLoading] = useState(false);
+            const [search, setSearch] = useState('');
+            const isDark = themeClass.includes('night');
 
-            const defaultSectors = ['SUPERVISÃO', 'ADM E RECEPÇÃO', 'ENFERMAGEM', 'MÉDICOS PLANTÃO'];
-            const allSectors = Array.from(new Set([...defaultSectors, ...data.map(p => p.Setor).filter(Boolean)])).sort();
-            const diasSemana = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+            // Habilidades do Sistema
+            const habsSistema = sysConfig.habilidades || [];
 
             const openModal = (item = null) => {
-                if (item) {
-                    setFormData({...item, DiasTrabalho: item.DiasTrabalho || {}});
-                } else {
-                    setFormData({ 
-                        ID: '', Nome: '', Cargo: 'Médico', Setor: activeSector || allSectors[0], 
-                        Especialidade: '', Habilidades: '', TempoIntervalo: '15', 
-                        DiasTrabalho: {}, Cor: '#1E40AF', Obs: '' 
-                    });
-                }
+                if (item) setFormData({...item, Habilidades: item.Habilidades || [], DatasEspecificas: item.DatasEspecificas || []});
+                else setFormData({ ID: '', Nome: '', Cargo: '', Setor: '', Habilidades: [], TempoIntervalo: '15', Cor: '#1E40AF', DatasEspecificas: [] });
                 setIsModalOpen(true);
             };
 
-            const toggleDia = (dia) => {
-                const dias = { ...formData.DiasTrabalho };
-                if (dias[dia]) { delete dias[dia]; } 
-                else { dias[dia] = { inicio: '08:00', fim: '18:00' }; }
-                setFormData({...formData, DiasTrabalho: dias});
+            const toggleHab = (hab) => {
+                const arr = formData.Habilidades || [];
+                if(arr.includes(hab)) setFormData({...formData, Habilidades: arr.filter(h=>h!==hab)});
+                else setFormData({...formData, Habilidades: [...arr, hab]});
             };
 
-            const updateDiaHora = (dia, campo, valor) => {
-                const dias = { ...formData.DiasTrabalho };
-                if(dias[dia]) { dias[dia][campo] = valor; setFormData({...formData, DiasTrabalho: dias}); }
+            const addData = (e) => {
+                const novaData = e.target.value; // YYYY-MM-DD
+                if(!novaData) return;
+                const formatada = novaData.split('-').reverse().join('/');
+                const datas = formData.DatasEspecificas || [];
+                if(!datas.includes(formatada)) setFormData({...formData, DatasEspecificas: [...datas, formatada]});
+            };
+
+            const removeData = (d) => {
+                setFormData({...formData, DatasEspecificas: formData.DatasEspecificas.filter(x => x !== d)});
             };
 
             const handleSave = async (e) => {
                 e.preventDefault();
-                setLoading(true);
                 await onSave('PROFISSIONAIS', formData, !!formData.ID);
-                setIsModalOpen(false);
-                onRefresh();
-                setLoading(false);
+                setIsModalOpen(false); onRefresh();
             };
 
-            const isDark = (themeClass || '').includes('night');
-            const panelClass = isDark ? 'glass-panel-dark' : 'glass-panel';
-
-            if (activeSector) {
-                const profsSetor = data.filter(p => p.Setor === activeSector).sort((a,b) => safeString(a.Nome).localeCompare(safeString(b.Nome)));
-                return (
-                    <div className="animate-fade-in space-y-6">
-                        <div className="flex justify-between items-center">
-                            <button onClick={()=>setActiveSector(null)} className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 ${panelClass}`}><i className="ph-bold ph-arrow-left"></i> Voltar</button>
-                            <button onClick={()=>openModal()} className="bg-primary text-white px-6 py-2 rounded-xl font-bold shadow-lg flex items-center gap-2"><i className="ph-bold ph-plus"></i> Novo Profissional</button>
-                        </div>
-                        <h2 className="text-2xl font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-users"></i> Setor: {activeSector}</h2>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {profsSetor.map((prof, i) => {
-                                const habs = safeString(prof.Habilidades).split(',').filter(Boolean);
-                                return (
-                                    <div key={i} className={`${panelClass} p-6 rounded-[2rem] relative group card-hover overflow-hidden`}>
-                                        <div className="absolute top-0 inset-x-0 h-20 opacity-20" style={{backgroundColor: prof.Cor || '#000'}}></div>
-                                        <div className="relative z-10 flex flex-col items-center text-center mt-2 w-full">
-                                            <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-black text-white border-4 border-white shadow-md mb-3" style={{backgroundColor: prof.Cor || '#000'}}>
-                                                {safeString(prof.Nome || 'P').charAt(0).toUpperCase()}
-                                            </div>
-                                            <h3 className="font-black text-lg leading-tight">{safeString(prof.Nome)}</h3>
-                                            <p className="text-[10px] font-black mb-4 mt-1 uppercase tracking-widest px-3 py-1 rounded-full" style={{color: prof.Cor || '#000', backgroundColor: `${prof.Cor}20`}}>{safeString(prof.Cargo)}</p>
-                                            
-                                            <div className="w-full bg-black/5 dark:bg-white/5 rounded-xl p-4 text-left space-y-2 mb-4 border border-black/5 dark:border-white/5">
-                                                <p className="text-[10px] font-bold opacity-70 flex justify-between uppercase"><span>Intervalo</span><span className="opacity-100">{prof.TempoIntervalo || '15'} min</span></p>
-                                                {habs.length > 0 && (
-                                                    <div className="pt-2 border-t border-black/10 dark:border-white/10">
-                                                        <span className="text-[9px] uppercase font-black opacity-50 block mb-1">Competências:</span>
-                                                        <div className="flex flex-wrap gap-1">{habs.map((h, j)=><span key={j} className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[9px] font-bold">{h.trim()}</span>)}</div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="absolute top-4 right-4 opacity-100 lg:opacity-0 group-hover:opacity-100 flex gap-2 z-20">
-                                            <button onClick={()=>openModal(prof)} className="w-10 h-10 bg-white dark:bg-slate-700 shadow-md rounded-full text-blue-600 flex items-center justify-center hover:scale-110 transition"><i className="ph-bold ph-pencil-simple text-lg"></i></button>
-                                            <button onClick={async()=>{if(confirm('Excluir?')){await onDelete('PROFISSIONAIS', prof.ID); onRefresh();}}} className="w-10 h-10 bg-white dark:bg-slate-700 shadow-md rounded-full text-red-600 flex items-center justify-center hover:scale-110 transition"><i className="ph-bold ph-trash text-lg"></i></button>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                            {profsSetor.length === 0 && <p className="col-span-full opacity-50 font-bold text-center p-10 border-2 border-dashed rounded-3xl">Ninguém cadastrado aqui.</p>}
-                        </div>
-
-                        {/* MODAL DE CADASTRO AVANÇADO */}
-                        {isModalOpen && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={()=>setIsModalOpen(false)}>
-                                <div className={`${isDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'} w-full max-w-3xl rounded-[2rem] p-6 md:p-8 shadow-2xl overflow-y-auto max-h-[90vh]`} onClick={e=>e.stopPropagation()}>
-                                    <h3 className="text-2xl font-black mb-6 border-b border-black/10 dark:border-white/10 pb-4">{formData.ID ? 'Editar' : 'Novo'} Profissional</h3>
-                                    <form id="form-equipe" onSubmit={handleSave} className="space-y-6">
-                                        
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="md:col-span-2">
-                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Nome Completo</label>
-                                                <input type="text" value={safeString(formData.Nome)} onChange={e=>setFormData({...formData, Nome: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} required />
-                                            </div>
-                                            <div>
-                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Setor</label>
-                                                <select value={safeString(formData.Setor)} onChange={e=>setFormData({...formData, Setor: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`}>
-                                                    {allSectors.map(s => <option key={s} value={s}>{s}</option>)}
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Cargo</label>
-                                                <input type="text" value={safeString(formData.Cargo)} onChange={e=>setFormData({...formData, Cargo: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} required />
-                                            </div>
-                                            <div className="md:col-span-2">
-                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-primary"></i> Competências / Habilidades (Separe por vírgula)</label>
-                                                <input type="text" value={safeString(formData.Habilidades)} onChange={e=>setFormData({...formData, Habilidades: e.target.value})} placeholder="Ex: Triagem, Raio-X, Pediatria" className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} />
-                                            </div>
-                                            <div>
-                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Tempo de Intervalo</label>
-                                                <select value={safeString(formData.TempoIntervalo || '15')} onChange={e=>setFormData({...formData, TempoIntervalo: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`}>
-                                                    <option value="15">15 Minutos</option>
-                                                    <option value="30">30 Minutos</option>
-                                                    <option value="60">1 Hora</option>
-                                                    <option value="120">2 Horas</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Cor de Destaque</label>
-                                                <input type="color" value={safeString(formData.Cor || '#1E40AF')} onChange={e=>setFormData({...formData, Cor: e.target.value})} className={`w-full h-[54px] p-1 rounded-xl cursor-pointer border ${isDark?'border-slate-700':'border-slate-200'}`} />
-                                            </div>
-                                        </div>
-
-                                        {/* Gestão de Horários por Dia */}
-                                        <div className={`p-4 rounded-2xl border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`}>
-                                            <label className="text-[10px] font-black uppercase tracking-widest opacity-50 block mb-4"><i className="ph-fill ph-calendar"></i> Horários de Trabalho (Padrão)</label>
-                                            <div className="space-y-3">
-                                                {diasSemana.map(d => {
-                                                    const ativo = formData.DiasTrabalho && formData.DiasTrabalho[d];
-                                                    return (
-                                                        <div key={d} className="flex flex-col md:flex-row md:items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm">
-                                                            <button type="button" onClick={()=>toggleDia(d)} className={`w-16 py-2 rounded-lg font-black text-sm transition ${ativo ? 'bg-primary text-white shadow-md' : isDark?'bg-slate-700 text-slate-400':'bg-slate-100 text-slate-500'}`}>{d}</button>
-                                                            {ativo && (
-                                                                <div className="flex items-center gap-2 flex-1 animate-fade-in">
-                                                                    <span className="text-xs font-bold opacity-50">Das</span>
-                                                                    <input type="time" value={formData.DiasTrabalho[d].inicio} onChange={(e)=>updateDiaHora(d, 'inicio', e.target.value)} className="p-2 rounded-lg font-bold border dark:border-slate-600 dark:bg-slate-700 outline-none text-sm" />
-                                                                    <span className="text-xs font-bold opacity-50">às</span>
-                                                                    <input type="time" value={formData.DiasTrabalho[d].fim} onChange={(e)=>updateDiaHora(d, 'fim', e.target.value)} className="p-2 rounded-lg font-bold border dark:border-slate-600 dark:bg-slate-700 outline-none text-sm" />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        </div>
-
-                                        <div className="pt-6 flex justify-end gap-3">
-                                            <button type="button" onClick={()=>setIsModalOpen(false)} className="px-6 py-4 font-bold opacity-70 hover:opacity-100">Cancelar</button>
-                                            <button type="submit" disabled={loading} className="bg-primary text-white px-8 py-4 rounded-xl font-black shadow-lg flex items-center gap-2">
-                                                {loading ? <i className="ph animate-spin ph-spinner"></i> : <i className="ph-bold ph-check"></i>} Salvar Cadastro
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                );
-            }
+            const filtrados = data.filter(p => safeString(p.Nome).toLowerCase().includes(search.toLowerCase()) || safeString(p.Cargo).toLowerCase().includes(search.toLowerCase()));
 
             return (
                 <div className="animate-fade-in space-y-6">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                         <div>
-                            <h2 className="text-3xl font-black">Setores da Clínica</h2>
-                            <p className="opacity-70 font-bold text-sm">Selecione um setor para gerenciar a equipe.</p>
+                            <h2 className="text-3xl font-black">Time São Vicente</h2>
+                            <p className="opacity-70 font-bold text-sm">Gerencie os profissionais e suas competências.</p>
                         </div>
                         <div className="flex gap-2 w-full md:w-auto">
-                            <input type="text" placeholder="Nome do novo setor..." value={newSectorName} onChange={e=>setNewSectorName(e.target.value)} className={`px-4 py-3 rounded-xl font-bold outline-none w-full md:w-64 ${panelClass}`} />
-                            <button onClick={()=>{if(newSectorName){ setActiveSector(newSectorName.toUpperCase()); setNewSectorName('');}}} className="bg-slate-800 text-white px-6 rounded-xl font-black shadow-lg hover:scale-105 transition"><i className="ph-bold ph-plus"></i> Add</button>
+                            <input type="text" placeholder="Buscar..." value={search} onChange={e=>setSearch(e.target.value)} className={`px-4 py-3 rounded-xl font-bold outline-none w-full md:w-64 border ${isDark?'bg-slate-800 border-slate-700':'bg-white border-slate-200'}`} />
+                            <button onClick={()=>openModal()} className="bg-primary text-white px-6 rounded-xl font-black shadow-lg hover:scale-105 transition flex items-center gap-2"><i className="ph-bold ph-user-plus"></i> Novo</button>
                         </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {allSectors.map((setor, i) => {
-                            const count = data.filter(p => p.Setor === setor).length;
-                            return (
-                                <div key={i} onClick={()=>setActiveSector(setor)} className={`${panelClass} p-8 rounded-[2rem] card-hover flex flex-col justify-center items-center text-center h-48`}>
-                                    <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-4"><i className="ph-fill ph-buildings"></i></div>
-                                    <h3 className="font-black text-xl leading-tight mb-1">{setor}</h3>
-                                    <p className="text-xs font-bold opacity-50 uppercase tracking-widest">{count} Profissionais</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                        {filtrados.map((prof, i) => (
+                            <div key={i} onClick={()=>openModal(prof)} className="clay-card p-6 flex flex-col items-center text-center relative overflow-hidden group">
+                                <div className="absolute top-0 inset-x-0 h-16 opacity-20" style={{backgroundColor: prof.Cor || '#000'}}></div>
+                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-md z-10 mb-3" style={{backgroundColor: prof.Cor || '#1E40AF'}}>
+                                    {safeString(prof.Nome).charAt(0)}
                                 </div>
-                            )
-                        })}
+                                <h3 className="font-black text-lg leading-tight z-10">{safeString(prof.Nome)}</h3>
+                                <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 z-10">{safeString(prof.Cargo)}</p>
+                                
+                                <div className="mt-4 w-full flex flex-wrap justify-center gap-1">
+                                    {(prof.Habilidades||[]).slice(0,3).map((h,j)=><span key={j} className="text-[8px] font-black uppercase bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">{h}</span>)}
+                                    {(prof.Habilidades||[]).length > 3 && <span className="text-[8px] font-black uppercase bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">+{prof.Habilidades.length - 3}</span>}
+                                </div>
+                            </div>
+                        ))}
                     </div>
+
+                    {isModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={()=>setIsModalOpen(false)}>
+                            <div className={`${isDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'} w-full max-w-3xl rounded-[2rem] p-6 md:p-8 shadow-2xl overflow-y-auto max-h-[90vh]`} onClick={e=>e.stopPropagation()}>
+                                <h3 className="text-2xl font-black mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">{formData.ID ? 'Editar' : 'Novo'} Profissional</h3>
+                                <form onSubmit={handleSave} className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="md:col-span-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Nome Completo</label>
+                                            <input type="text" value={formData.Nome} onChange={e=>setFormData({...formData, Nome: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} required />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Cargo / Profissão</label>
+                                            <input type="text" value={formData.Cargo} onChange={e=>setFormData({...formData, Cargo: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} required />
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <div className="flex-1">
+                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Tempo de Intervalo</label>
+                                                <select value={formData.TempoIntervalo} onChange={e=>setFormData({...formData, TempoIntervalo: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`}>
+                                                    <option value="15">15 Min</option>
+                                                    <option value="30">30 Min</option>
+                                                    <option value="60">1 Hora</option>
+                                                    <option value="120">2 Horas</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Cor</label>
+                                                <input type="color" value={formData.Cor} onChange={e=>setFormData({...formData, Cor: e.target.value})} className={`w-16 h-[54px] p-1 rounded-xl cursor-pointer border ${isDark?'border-slate-700':'border-slate-200'}`} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* SELEÇÃO DE DATAS DE TRABALHO MULTIPLAS */}
+                                    <div className={`p-5 rounded-2xl border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`}>
+                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 block mb-2"><i className="ph-fill ph-calendar"></i> Datas Alocadas (Agenda Mensal)</label>
+                                        <div className="flex gap-2 mb-4">
+                                            <input type="date" onChange={addData} className="p-3 rounded-xl border outline-none font-bold text-sm bg-white dark:bg-slate-800 dark:border-slate-600" />
+                                            <span className="text-[10px] opacity-50 flex items-center">* Selecione uma data para adicionar à escala do profissional.</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {(formData.DatasEspecificas||[]).map(d => (
+                                                <span key={d} className="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2">
+                                                    {d} <button type="button" onClick={()=>removeData(d)} className="hover:text-red-300"><i className="ph-bold ph-x"></i></button>
+                                                </span>
+                                            ))}
+                                            {(formData.DatasEspecificas||[]).length === 0 && <p className="text-xs opacity-50 italic">Nenhuma data específica.</p>}
+                                        </div>
+                                    </div>
+
+                                    {/* HABILIDADES (Vem das configurações) */}
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 block mb-2"><i className="ph-fill ph-magic-wand text-primary"></i> Habilidades & Competências</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {habsSistema.map(h => {
+                                                const ativo = (formData.Habilidades||[]).includes(h);
+                                                return <button type="button" key={h} onClick={()=>toggleHab(h)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition border ${ativo ? 'bg-blue-100 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-300' : 'bg-transparent border-slate-300 text-slate-500'}`}>{h}</button>;
+                                            })}
+                                            {habsSistema.length === 0 && <p className="text-xs opacity-50 italic">Nenhuma habilidade cadastrada em Ajustes.</p>}
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4 flex justify-end gap-3">
+                                        {formData.ID && <button type="button" onClick={()=>{if(confirm('Excluir?')) { onDelete('PROFISSIONAIS', formData.ID); setIsModalOpen(false); onRefresh(); }}} className="px-6 py-4 text-red-500 font-bold mr-auto">Excluir</button>}
+                                        <button type="button" onClick={()=>setIsModalOpen(false)} className="px-6 py-4 font-bold opacity-70 hover:opacity-100">Cancelar</button>
+                                        <button type="submit" className="bg-primary text-white px-8 py-4 rounded-xl font-black shadow-lg">Salvar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
 
         // ==========================================
-        // 3. MÓDULO: PAINEL DE HOJE (CASA DE VIDRO E SALAS)
+        // MODULO 3: MAPA DE POSTOS (HOME / HOJE)
         // ==========================================
         const PainelHojeView = ({ profissionais, escalas, config, user, onSave, onRefresh, themeClass }) => {
-            const isDark = (themeClass || '').includes('night');
-            const panelClass = isDark ? 'glass-panel-dark' : 'glass-panel';
+            const isDark = themeClass.includes('night');
             const isAdmin = user.nivel === 'Admin' || user.nivel === 'Supervisor';
             
             const [now, setNow] = useState(Date.now());
-            const [modalAlocar, setModalAlocar] = useState(null); // { sala: 'Nome' }
-            const [modalSubstituto, setModalSubstituto] = useState(null); // { escala: obj }
+            const [modalAction, setModalAction] = useState(null); // { tipo: 'alocar'|'ausencia'|'apoio', sala: '', escala: {} }
             
-            // Relógio interno atualiza a cada 10 segundos
             useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(timer); }, []);
 
-            const supervisorAtual = config?.supervisorAtual || 'Nenhum Supervisor Assumiu';
+            const supervisorAtual = config?.supervisorAtual || 'Aguardando';
+            const salasSistema = config?.salas || ['Recepção', 'Consultório 1', 'Triagem'];
+            const motivosAusencia = config?.ausencias || ['Faltou', 'Atestado'];
+
+            const todayStr = new Date().toLocaleDateString('pt-BR');
+            // Mocking a few scales if empty just for testing the UI. In production, relies on what is saved.
+            const escalasHoje = escalas.filter(e => e.Data === todayStr);
 
             const assumirPlantao = async () => {
                 await api.saveRecord('CONFIGURACOES', { ID: 'plantao', supervisorAtual: user.nome }, true);
                 onRefresh();
             };
 
-            // Mapas de Salas (Pode vir do DB no futuro, por hora fixo para teste)
-            const salas = ['Recepção Principal', 'Triagem 01', 'Consultório Médico 01', 'Consultório Médico 02', 'Raio-X / Exames'];
-            
-            const todayStr = new Date().toLocaleDateString('pt-BR');
-            const escalasHoje = escalas.filter(e => safeString(e.Data) === todayStr);
-
-            // Lógica de Intervalo
-            const handleStatus = async (escala, novoStatus) => {
+            const handleStatusSimples = async (escala, novoStatus) => {
                 let update = { ...escala, Status: novoStatus };
                 if (novoStatus === 'INTERVALO') {
                     const prof = profissionais.find(p => p.Nome === escala.Nome_Profissional);
@@ -437,193 +397,200 @@
                 onRefresh();
             };
 
-            // Remove a pessoa da sala (Fim de turno ou erro)
-            const handleRemover = async (id) => {
-                if(confirm('Remover este profissional do posto agora?')) {
-                    await api.deleteRecord('ESCALAS', id);
-                    onRefresh();
-                }
-            };
-
-            // Função que renderiza o cronômetro do intervalo
             const renderTimer = (escala) => {
                 if (!escala.IntervaloInicio) return null;
                 const passadoMin = Math.floor((now - escala.IntervaloInicio) / 60000);
                 const totalMin = escala.IntervaloMinutos || 15;
                 const restante = totalMin - passadoMin;
 
-                // Margem de 5 min de atraso tolerado (fica amarelo antes de ficar vermelho)
-                if (restante < -5) return <span className="bg-red-500 text-white px-3 py-1 rounded-md text-[10px] font-black uppercase animate-pulse shadow-[0_0_10px_red]">Atrasado ({Math.abs(restante)}m)</span>;
-                if (restante < 0) return <span className="bg-orange-500 text-white px-3 py-1 rounded-md text-[10px] font-black uppercase">Fim do Tempo</span>;
-                return <span className="bg-blue-500 text-white px-3 py-1 rounded-md text-[10px] font-black uppercase flex items-center gap-1"><i className="ph-bold ph-timer"></i> {restante}m Restantes</span>;
+                if (restante < -5) return <span className="bg-red-500 text-white px-2 py-1 rounded text-[9px] font-black uppercase animate-pulse shadow-[0_0_10px_red]">Atraso {Math.abs(restante)}m</span>;
+                if (restante < 0) return <span className="bg-orange-500 text-white px-2 py-1 rounded text-[9px] font-black uppercase">Esgotado</span>;
+                return <span className="bg-blue-500 text-white px-2 py-1 rounded text-[9px] font-black uppercase flex items-center gap-1"><i className="ph-bold ph-timer"></i> {restante}m</span>;
             };
 
-            // Alocar novo profissional na sala direto do painel de hoje
-            const handleAlocarSalvar = async (e) => {
-                e.preventDefault();
-                const profId = e.target.profissional.value;
-                const prof = profissionais.find(p => p.ID === profId);
-                if(!prof) return;
-                
-                await api.saveRecord('ESCALAS', { 
-                    ID: '', Data: todayStr, Sala: modalAlocar.sala, 
-                    Nome_Profissional: prof.Nome, Cargo: prof.Cargo,
-                    Horario: e.target.horario.value, Status: 'NO POSTO',
-                    Habilidades: prof.Habilidades || ''
-                }, false);
-                setModalAlocar(null); onRefresh();
-            };
-
-            // Lógica de Substituição Inteligente (IA simples)
-            const encontrarSubstitutos = (escalaQueFaltou) => {
-                const habsNecessarias = safeString(escalaQueFaltou.Habilidades).toLowerCase().split(',').map(s=>s.trim()).filter(Boolean);
-                
-                // Pega todos os profissionais que NÃO estão na escala de hoje
-                const nomesTrabalhandoHoje = escalasHoje.map(e => e.Nome_Profissional);
-                let livres = profissionais.filter(p => !nomesTrabalhandoHoje.includes(p.Nome));
-
-                // Se a pessoa que faltou tinha habilidades específicas, filtra os livres que tem essa habilidade
+            // Filtragem de Habilidades (Substituição)
+            const encontrarSubstitutos = (escala) => {
+                const habsNecessarias = escala.Habilidades || [];
+                const ocupados = escalasHoje.map(e => e.Nome_Profissional);
+                let livres = profissionais.filter(p => !ocupados.includes(p.Nome));
                 if (habsNecessarias.length > 0) {
-                    livres = livres.filter(p => {
-                        const habsProf = safeString(p.Habilidades).toLowerCase();
-                        return habsNecessarias.some(h => habsProf.includes(h));
-                    });
+                    livres = livres.filter(p => habsNecessarias.some(h => (p.Habilidades||[]).includes(h)));
                 }
                 return livres;
             };
 
+            // Submeter Modais
+            const handleAcaoModal = async (e) => {
+                e.preventDefault();
+                if (modalAction.tipo === 'alocar') {
+                    const prof = profissionais.find(p => p.ID === e.target.profissional.value);
+                    if(!prof) return;
+                    await api.saveRecord('ESCALAS', { 
+                        ID: '', Data: todayStr, Sala: modalAction.sala, 
+                        Nome_Profissional: prof.Nome, Cargo: prof.Cargo,
+                        Horario: e.target.horario.value, Status: 'NO POSTO',
+                        Habilidades: prof.Habilidades || [], Cor: prof.Cor
+                    }, false);
+                } else if (modalAction.tipo === 'ausencia') {
+                    await api.saveRecord('ESCALAS', { ...modalAction.escala, Status: 'AUSENTE', MotivoAusencia: e.target.motivo.value }, true);
+                } else if (modalAction.tipo === 'apoio') {
+                    await api.saveRecord('ESCALAS', { ...modalAction.escala, EmApoio: true, SalaApoio: e.target.novaSala.value, Status: 'APOIO' }, true);
+                }
+                setModalAction(null); onRefresh();
+            };
+
             return (
-                <div className="animate-fade-in space-y-6">
-                    {/* A CASA DE VIDRO */}
-                    <div className={`${panelClass} p-6 md:p-8 rounded-[2rem] border-l-4 border-l-primary flex flex-col md:flex-row justify-between items-center gap-4 shadow-lg`}>
-                        <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 bg-primary/20 text-primary rounded-2xl flex items-center justify-center text-3xl"><i className="ph-fill ph-office-chair"></i></div>
-                            <div>
-                                <h3 className="font-black text-xl mb-1 dark:text-white">Casa de Vidro (Supervisão)</h3>
-                                <p className="text-xs font-bold opacity-70 uppercase tracking-widest">No Comando: <span className="text-primary font-black ml-1">{supervisorAtual}</span></p>
+                <div className="animate-fade-in space-y-8 max-w-[1600px] mx-auto">
+                    {/* Linha do Tempo & Casa de Vidro */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="clay-card p-6 flex items-center gap-4 lg:col-span-2 relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-800 text-white border-0">
+                            <i className="ph-fill ph-office-chair absolute -right-4 -bottom-4 text-8xl opacity-10"></i>
+                            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl shrink-0"><i className="ph-fill ph-shield-star"></i></div>
+                            <div className="flex-1">
+                                <p className="text-[10px] uppercase tracking-widest font-bold opacity-70">Casa de Vidro</p>
+                                <h3 className="font-black text-2xl leading-none tracking-tight">Supervisão: {supervisorAtual}</h3>
                             </div>
+                            {isAdmin && <button onClick={assumirPlantao} className="bg-white text-indigo-900 px-4 py-2 rounded-xl font-black text-xs shadow-lg hover:scale-105 transition shrink-0">Assumir</button>}
                         </div>
-                        {isAdmin && <button onClick={assumirPlantao} className="w-full md:w-auto bg-slate-800 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-xl font-black shadow-md hover:scale-105 transition"><i className="ph-bold ph-hand-pointing"></i> Assumir Plantão</button>}
-                    </div>
-
-                    <div className="flex justify-between items-end mb-4 px-2">
-                        <div>
-                            <h2 className="text-2xl font-black">Mapa de Postos</h2>
-                            <p className="text-xs font-bold opacity-60">Status em tempo real do dia {todayStr}</p>
+                        <div className="clay-card p-6 flex flex-col justify-center text-center">
+                            <h4 className="font-black text-slate-800 dark:text-white flex items-center justify-center gap-2 mb-1"><i className="ph-bold ph-trend-up text-green-500"></i> Plantão {todayStr}</h4>
+                            <p className="text-xs font-bold text-slate-500">{escalasHoje.length} profissionais alocados hoje.</p>
                         </div>
                     </div>
 
-                    {/* MAPA DE SALAS */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {salas.map((sala, i) => {
-                            const ocupantes = escalasHoje.filter(e => safeString(e.Sala) === sala);
+                    {/* MAPA DE SALAS (UI Baseada no Mockup do Figma) */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                        {salasSistema.map((sala, i) => {
+                            // Encontra quem tá nessa sala original OU quem tá de apoio nela
+                            const ocupantes = escalasHoje.filter(e => (e.Sala === sala && !e.EmApoio) || (e.EmApoio && e.SalaApoio === sala));
+                            const isLivre = ocupantes.length === 0;
+
+                            // Lógica de Cores dos Cards (Baseado no Mockup: Recepca = azul, Sala Exames = verde, etc)
+                            const colorMap = ['border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800', 'border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800', 'border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800', 'border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800', 'border-purple-200 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-800'];
+                            const cardTheme = colorMap[i % colorMap.length];
+
                             return (
-                                <div key={i} className={`${panelClass} p-6 rounded-[2rem] flex flex-col h-full relative`}>
-                                    <div className="flex justify-between items-start border-b border-black/10 dark:border-white/10 pb-4 mb-4">
-                                        <h4 className="font-black text-sm uppercase tracking-widest opacity-80 flex items-center gap-2"><i className="ph-fill ph-door text-xl text-primary"></i> {sala}</h4>
-                                        {isAdmin && <button onClick={()=>setModalAlocar({sala})} className="w-8 h-8 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center hover:scale-110 transition"><i className="ph-bold ph-plus"></i></button>}
+                                <div key={i} className={`clay-card border-2 flex flex-col p-1 min-h-[140px] relative ${isLivre ? 'opacity-70 hover:opacity-100' : ''}`}>
+                                    <div className={`p-3 rounded-t-xl font-black text-[10px] text-center uppercase tracking-widest truncate ${cardTheme}`}>{sala}</div>
+                                    
+                                    <div className="flex-1 p-2 space-y-2 overflow-y-auto custom-scrollbar">
+                                        {isLivre ? (
+                                            <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500">
+                                                <i className="ph-fill ph-check-circle text-2xl mb-1 text-green-400"></i>
+                                                <span className="text-[9px] font-black uppercase">Posto Livre</span>
+                                            </div>
+                                        ) : (
+                                            ocupantes.map((occ, j) => {
+                                                const isIntervalo = occ.Status === 'INTERVALO';
+                                                const isAusente = occ.Status === 'AUSENTE';
+                                                const isApoio = occ.EmApoio && occ.SalaApoio === sala;
+                                                
+                                                return (
+                                                    <div key={j} className={`p-2 rounded-xl border relative shadow-sm ${isAusente ? 'bg-red-50 border-red-200 opacity-60' : isIntervalo ? 'bg-orange-50 border-orange-200' : isDark?'bg-slate-800 border-slate-700':'bg-white border-slate-100'}`}>
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{backgroundColor: occ.Cor || '#000'}}>{occ.Nome_Profissional.charAt(0)}</div>
+                                                            <div className="truncate">
+                                                                <p className={`text-[10px] font-black truncate leading-tight ${isAusente?'line-through':''}`}>{occ.Nome_Profissional.split(' ')[0]} {occ.Nome_Profissional.split(' ')[1]||''}</p>
+                                                                <p className="text-[8px] font-bold opacity-60 truncate">{occ.Cargo} {isApoio ? '(Apoio)' : ''}</p>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {/* Status Tag */}
+                                                        <div className="flex justify-between items-center mt-1">
+                                                            {isIntervalo ? renderTimer(occ) : isAusente ? <span className="text-[8px] font-black text-red-600 bg-red-100 px-1.5 py-0.5 rounded truncate">{occ.MotivoAusencia||'Ausente'}</span> : <span className="text-[8px] font-black text-green-600 bg-green-100 px-1.5 py-0.5 rounded">Operando</span>}
+                                                            
+                                                            {/* Mini Menu Ações */}
+                                                            {isAdmin && !isAusente && (
+                                                                <div className="flex gap-1">
+                                                                    {!isIntervalo && <button onClick={()=>handleStatusSimples(occ, 'INTERVALO')} className="w-5 h-5 bg-orange-100 text-orange-600 rounded flex justify-center items-center hover:bg-orange-200"><i className="ph-bold ph-coffee text-[10px]"></i></button>}
+                                                                    {isIntervalo && <button onClick={()=>handleStatusSimples(occ, 'NO POSTO')} className="w-5 h-5 bg-blue-100 text-blue-600 rounded flex justify-center items-center hover:bg-blue-200"><i className="ph-bold ph-arrow-u-down-left text-[10px]"></i></button>}
+                                                                    <button onClick={()=>setModalAction({tipo:'ausencia', escala: occ})} className="w-5 h-5 bg-red-100 text-red-600 rounded flex justify-center items-center hover:bg-red-200"><i className="ph-bold ph-warning text-[10px]"></i></button>
+                                                                    {!isApoio && <button onClick={()=>setModalAction({tipo:'apoio', escala: occ})} className="w-5 h-5 bg-indigo-100 text-indigo-600 rounded flex justify-center items-center hover:bg-indigo-200"><i className="ph-bold ph-arrows-left-right text-[10px]"></i></button>}
+                                                                    {isApoio && <button onClick={async()=>{await api.saveRecord('ESCALAS',{...occ, EmApoio: false, SalaApoio: null, Status:'NO POSTO'},true); onRefresh();}} className="text-[8px] bg-slate-200 px-1 font-bold rounded">Voltar</button>}
+                                                                </div>
+                                                            )}
+                                                            {isAdmin && isAusente && (
+                                                                <button onClick={()=>setModalAction({tipo:'substituto', escala: occ})} className="text-[8px] font-black bg-blue-500 text-white px-1.5 py-0.5 rounded flex items-center gap-1 shadow"><i className="ph-bold ph-magic-wand"></i> Cobrir</button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })
+                                        )}
                                     </div>
                                     
-                                    <div className="space-y-3 flex-1 flex flex-col">
-                                        {ocupantes.map((occ, j) => {
-                                            const isIntervalo = occ.Status === 'INTERVALO';
-                                            const isAusente = occ.Status === 'AUSENTE';
-                                            
-                                            let cardBg = isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm';
-                                            if (isIntervalo) cardBg = 'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800';
-                                            if (isAusente) cardBg = 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70';
-
-                                            return (
-                                                <div key={j} className={`p-4 rounded-2xl border transition relative group ${cardBg}`}>
-                                                    {isIntervalo && <div className="absolute -top-3 -right-3 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm animate-bounce-slight shadow-lg z-10">🥪</div>}
-                                                    
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <div>
-                                                            <h5 className={`font-black ${isAusente?'line-through text-red-800 dark:text-red-400':''}`}>{occ.Nome_Profissional}</h5>
-                                                            <p className="text-[9px] font-bold opacity-60 uppercase tracking-widest">{occ.Cargo} • {occ.Horario}</p>
-                                                        </div>
-                                                        {isAdmin && <button onClick={()=>handleRemover(occ.ID)} className="opacity-0 group-hover:opacity-100 text-red-500 hover:scale-110 transition"><i className="ph-fill ph-x-circle text-lg"></i></button>}
-                                                    </div>
-                                                    
-                                                    <div className="mt-4 flex flex-wrap gap-2 justify-between items-center">
-                                                        {isIntervalo ? renderTimer(occ) : isAusente ? <span className="text-[10px] font-black uppercase text-red-600 bg-red-100 px-2 py-1 rounded">Faltou/Saiu</span> : <span className="text-[10px] font-black uppercase text-green-600 bg-green-100 px-2 py-1 rounded">No Posto</span>}
-                                                        
-                                                        {/* AÇÕES */}
-                                                        {isAusente ? (
-                                                            isAdmin && <button onClick={()=>setModalSubstituto({escala: occ})} className="text-[10px] font-black bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow-md hover:bg-blue-700 transition flex items-center gap-1"><i className="ph-fill ph-magic-wand"></i> Substituir</button>
-                                                        ) : isIntervalo ? (
-                                                            <button onClick={()=>handleStatus(occ, 'NO POSTO')} className="text-[10px] font-black bg-slate-800 text-white px-3 py-1.5 rounded-lg shadow-md hover:bg-slate-900 transition flex items-center gap-1">Voltou</button>
-                                                        ) : (
-                                                            <div className="flex gap-1">
-                                                                <button onClick={()=>handleStatus(occ, 'INTERVALO')} className="w-8 h-8 bg-orange-100 text-orange-600 rounded-lg flex justify-center items-center hover:bg-orange-200 transition" title="Pausa/Lanche"><i className="ph-fill ph-coffee"></i></button>
-                                                                <button onClick={()=>handleStatus(occ, 'AUSENTE')} className="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex justify-center items-center hover:bg-red-200 transition" title="Marcar Ausência"><i className="ph-fill ph-warning"></i></button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                        {ocupantes.length === 0 && <div className="m-auto text-center opacity-40"><i className="ph-fill ph-ghost text-4xl mb-2"></i><p className="text-xs font-bold uppercase tracking-widest">Sala Vazia</p></div>}
-                                    </div>
+                                    {isAdmin && (
+                                        <button onClick={()=>setModalAction({tipo: 'alocar', sala})} className="absolute -bottom-3 -right-3 w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition z-20 border-2 border-white"><i className="ph-bold ph-plus"></i></button>
+                                    )}
                                 </div>
                             )
                         })}
                     </div>
 
-                    {/* MODAL ALOCAR MANUALMENTE */}
-                    {modalAlocar && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={()=>setModalAlocar(null)}>
-                            <div className={`${isDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'} w-full max-w-md rounded-[2rem] p-8 shadow-2xl`} onClick={e=>e.stopPropagation()}>
-                                <h3 className="text-2xl font-black mb-6">Alocar na {modalAlocar.sala}</h3>
-                                <form onSubmit={handleAlocarSalvar} className="space-y-4">
-                                    <div>
-                                        <label className="text-[10px] font-black uppercase opacity-50">Profissional Disponível</label>
-                                        <select name="profissional" className={`w-full p-4 rounded-xl font-bold outline-none border mt-1 ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} required>
-                                            <option value="">Selecione...</option>
+                    {/* MODAIS DE AÇÃO */}
+                    {modalAction && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setModalAction(null)}>
+                            <div className={`${isDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'} w-full max-w-md rounded-[2rem] p-8 shadow-2xl animate-pop-in border border-white/20`} onClick={e=>e.stopPropagation()}>
+                                
+                                {modalAction.tipo === 'alocar' && (
+                                    <form onSubmit={handleAcaoModal} className="space-y-4">
+                                        <h3 className="text-xl font-black mb-4">Alocar em: {modalAction.sala}</h3>
+                                        <div><label className="text-[10px] font-black uppercase opacity-50">Profissional</label>
+                                        <select name="profissional" className="w-full p-4 rounded-xl border mt-1 font-bold outline-none text-slate-800" required>
+                                            <option value="">Selecione quem fará o plantão...</option>
                                             {profissionais.map(p => <option key={p.ID} value={p.ID}>{p.Nome} ({p.Cargo})</option>)}
-                                        </select>
-                                    </div>
+                                        </select></div>
+                                        <div><label className="text-[10px] font-black uppercase opacity-50">Horário</label>
+                                        <input type="text" name="horario" defaultValue="08:00 às 18:00" className="w-full p-4 rounded-xl border mt-1 font-bold outline-none text-slate-800" required /></div>
+                                        <button type="submit" className="w-full py-4 bg-primary text-white font-black rounded-xl mt-2">Confirmar Alocação</button>
+                                    </form>
+                                )}
+
+                                {modalAction.tipo === 'ausencia' && (
+                                    <form onSubmit={handleAcaoModal} className="space-y-4">
+                                        <h3 className="text-xl font-black mb-4 text-red-500">Marcar Ausência</h3>
+                                        <p className="text-sm font-bold opacity-70 mb-4">{modalAction.escala.Nome_Profissional}</p>
+                                        <div><label className="text-[10px] font-black uppercase opacity-50">Motivo</label>
+                                        <select name="motivo" className="w-full p-4 rounded-xl border mt-1 font-bold outline-none text-slate-800" required>
+                                            {motivosAusencia.map(m => <option key={m} value={m}>{m}</option>)}
+                                        </select></div>
+                                        <button type="submit" className="w-full py-4 bg-red-500 text-white font-black rounded-xl mt-2">Confirmar Ausência</button>
+                                    </form>
+                                )}
+
+                                {modalAction.tipo === 'apoio' && (
+                                    <form onSubmit={handleAcaoModal} className="space-y-4">
+                                        <h3 className="text-xl font-black mb-4 text-indigo-500">Transferência Rápida (Apoio)</h3>
+                                        <p className="text-xs font-bold opacity-70 mb-4">Enviar {modalAction.escala.Nome_Profissional} temporariamente para outra sala.</p>
+                                        <div><label className="text-[10px] font-black uppercase opacity-50">Sala de Destino</label>
+                                        <select name="novaSala" className="w-full p-4 rounded-xl border mt-1 font-bold outline-none text-slate-800" required>
+                                            {salasSistema.filter(s=>s!==modalAction.escala.Sala).map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select></div>
+                                        <button type="submit" className="w-full py-4 bg-indigo-600 text-white font-black rounded-xl mt-2">Enviar para Apoio</button>
+                                    </form>
+                                )}
+
+                                {modalAction.tipo === 'substituto' && (
                                     <div>
-                                        <label className="text-[10px] font-black uppercase opacity-50">Horário do Turno</label>
-                                        <input type="text" name="horario" placeholder="Ex: 08:00 às 18:00" defaultValue="08:00 às 18:00" className={`w-full p-4 rounded-xl font-bold outline-none border mt-1 ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} required />
+                                        <h3 className="text-xl font-black mb-2 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-blue-500"></i> Sugestão de Cobertura</h3>
+                                        <p className="text-[10px] font-black uppercase opacity-50 mb-4">Competências necessárias: {(modalAction.escala.Habilidades||[]).join(', ')||'Nenhuma'}</p>
+                                        <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                                            {encontrarSubstitutos(modalAction.escala).map(sub => (
+                                                <div key={sub.ID} className="p-3 border rounded-xl flex justify-between items-center text-slate-800 bg-white">
+                                                    <div><p className="font-black text-sm">{sub.Nome}</p><p className="text-[8px] font-bold opacity-50 uppercase">{sub.Cargo}</p></div>
+                                                    <button onClick={async()=>{ await api.saveRecord('ESCALAS', {...modalAction.escala, ID: '', Nome_Profissional: sub.Nome, Status: 'NO POSTO', Cor: sub.Cor}, false); setModalAction(null); onRefresh(); }} className="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Acionar</button>
+                                                </div>
+                                            ))}
+                                            {encontrarSubstitutos(modalAction.escala).length === 0 && <p className="text-xs text-center font-bold opacity-50 py-4">Nenhum profissional livre com estas competências.</p>}
+                                        </div>
                                     </div>
-                                    <div className="pt-4 flex justify-end gap-3">
-                                        <button type="button" onClick={()=>setModalAlocar(null)} className="px-6 py-3 font-bold opacity-70">Cancelar</button>
-                                        <button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black shadow-lg">Confirmar</button>
-                                    </div>
-                                </form>
+                                )}
+                                
+                                <button type="button" onClick={()=>setModalAction(null)} className="w-full py-3 mt-4 text-sm font-bold opacity-50 hover:opacity-100">Cancelar</button>
                             </div>
                         </div>
                     )}
 
-                    {/* MODAL SUBSTITUTO INTELIGENTE */}
-                    {modalSubstituto && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={()=>setModalSubstituto(null)}>
-                            <div className={`${isDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'} w-full max-w-lg rounded-[2rem] p-8 shadow-2xl`} onClick={e=>e.stopPropagation()}>
-                                <h3 className="text-2xl font-black mb-2 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-blue-500"></i> Sugestão de Substituição</h3>
-                                <p className="text-xs font-bold opacity-60 mb-6">Buscando cobertura para: {modalSubstituto.escala.Nome_Profissional}</p>
-                                
-                                <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar pr-2">
-                                    {encontrarSubstitutos(modalSubstituto.escala).map((sub, i) => (
-                                        <div key={i} className={`p-4 rounded-xl border flex justify-between items-center ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`}>
-                                            <div>
-                                                <p className="font-black text-sm">{sub.Nome}</p>
-                                                <p className="text-[9px] font-black uppercase opacity-50 mt-1">{sub.Cargo}</p>
-                                            </div>
-                                            <button onClick={async()=>{
-                                                await api.saveRecord('ESCALAS', { ...modalSubstituto.escala, ID: '', Nome_Profissional: sub.Nome, Status: 'NO POSTO' }, false);
-                                                setModalSubstituto(null); onRefresh();
-                                            }} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-md hover:bg-blue-700 transition">Acionar</button>
-                                        </div>
-                                    ))}
-                                    {encontrarSubstitutos(modalSubstituto.escala).length === 0 && (
-                                        <p className="text-center p-6 border-2 border-dashed rounded-xl font-bold opacity-50">Nenhum profissional livre com essas competências foi encontrado.</p>
-                                    )}
-                                </div>
-                                <button onClick={()=>setModalSubstituto(null)} className="w-full py-4 mt-6 font-bold opacity-70 border rounded-xl hover:bg-black/5">Fechar</button>
-                            </div>
-                        </div>
-                    )}
                 </div>
             );
         };
@@ -637,7 +604,6 @@
             const [activeTab, setActiveTab] = useState('HOJE');
             const [dataCentral, setDataCentral] = useState({ PROFISSIONAIS: [], ESCALAS: [], CONFIGURACOES: {} });
 
-            // Theming
             const [themeClass, setThemeClass] = useState('theme-morning');
             useEffect(() => {
                 const updateTheme = () => {
@@ -657,9 +623,11 @@
                 try {
                     const profs = await api.fetch('PROFISSIONAIS');
                     const esc = await api.fetch('ESCALAS');
-                    const configSnap = await db.collection('CONFIGURACOES').doc('plantao').get();
-                    const config = configSnap.exists ? configSnap.data() : {};
-                    setDataCentral(prev => ({ ...prev, PROFISSIONAIS: profs || [], ESCALAS: esc || [], CONFIGURACOES: config }));
+                    const cnf = await api.fetch('CONFIGURACOES');
+                    const sysConfig = cnf.find(c => c.ID === 'parametros') || {};
+                    const plantaoConfig = cnf.find(c => c.ID === 'plantao') || {};
+                    
+                    setDataCentral({ PROFISSIONAIS: profs || [], ESCALAS: esc || [], CONFIGURACOES: {...sysConfig, ...plantaoConfig} });
                 } catch(e) { console.error("Erro banco", e); }
             };
 
@@ -681,36 +649,23 @@
                 return () => unsub();
             }, []);
 
-            const handleLogin = async (e) => {
-                e.preventDefault();
-                setLoading(true);
-                try { await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); } 
-                catch(err) { alert('Erro no Login: ' + err.message); setLoading(false); }
-            };
-
-            if (loading) return <div className={`min-h-screen flex items-center justify-center ${themeClass}`}><div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div></div>;
+            if (loading) return <div className={`min-h-screen flex items-center justify-center ${themeClass}`}><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
 
             if (!user) {
                 return (
                     <div className={`min-h-screen flex items-center justify-center p-4 relative ${themeClass}`}>
                         {themeClass.includes('night') && <div className="stars"></div>}
-                        <div className={`w-full max-w-md rounded-[2rem] shadow-2xl p-8 md:p-10 animate-fade-in relative z-10 ${themeClass.includes('night') ? 'glass-panel-dark' : 'glass-panel bg-white'}`}>
+                        <div className={`w-full max-w-md rounded-[2rem] shadow-2xl p-8 md:p-10 animate-fade-in relative z-10 clay-card ${themeClass.includes('night')?'dark':''}`}>
                             <div className="w-20 h-20 bg-primary/10 text-primary rounded-3xl flex justify-center items-center mx-auto mb-6 shadow-inner">
                                 <i className="ph-fill ph-calendar-check text-5xl"></i>
                             </div>
-                            <h1 className="text-3xl font-black text-center mb-2">Escalas SV</h1>
+                            <h1 className="text-3xl font-black text-center mb-2">Escalas SV Pro</h1>
                             <p className="text-center font-bold mb-8 opacity-60">Gestão Inteligente de Plantões</p>
                             
-                            <form onSubmit={handleLogin} className="space-y-4">
-                                <div className="relative">
-                                    <i className="ph-fill ph-user absolute left-5 top-4.5 opacity-50 text-lg"></i>
-                                    <input name="email" type="email" placeholder="E-mail" className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required />
-                                </div>
-                                <div className="relative">
-                                    <i className="ph-fill ph-lock-key absolute left-5 top-4.5 opacity-50 text-lg"></i>
-                                    <input name="password" type="password" placeholder="Senha" className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required />
-                                </div>
-                                <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-2xl shadow-lg hover:-translate-y-1 transition text-lg mt-4">Entrar no Sistema</button>
+                            <form onSubmit={async(e)=>{e.preventDefault(); setLoading(true); try{await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value);}catch(err){alert('Erro de login!');setLoading(false);} }} className="space-y-4">
+                                <input name="email" type="email" placeholder="E-mail" className="w-full p-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required />
+                                <input name="password" type="password" placeholder="Senha" className="w-full p-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required />
+                                <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-2xl shadow-lg hover:-translate-y-1 transition text-lg mt-4">Acessar Plantão</button>
                             </form>
                         </div>
                     </div>
@@ -728,25 +683,23 @@
                     <aside className={`hidden md:flex w-72 flex-col h-screen fixed z-30 shadow-2xl border-r ${isDark ? 'bg-slate-900/80 border-slate-700/50 backdrop-blur-xl' : 'bg-white/80 border-white/50 backdrop-blur-xl'}`}>
                         <div className="p-8 border-b border-inherit flex items-center gap-4">
                             <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center shadow-md"><i className="ph-fill ph-heartbeat text-2xl animate-pulse"></i></div>
-                            <div>
-                                <h2 className="font-black text-xl leading-none">Escalas SV</h2>
-                                <p className="text-[10px] uppercase tracking-widest opacity-60 font-bold">Portal Médico</p>
-                            </div>
+                            <div><h2 className="font-black text-xl leading-none">Escalas SV</h2><p className="text-[10px] uppercase tracking-widest opacity-60 font-bold">Portal Médico</p></div>
                         </div>
                         <nav className="flex-1 px-4 py-6 space-y-2">
                             <button onClick={()=>setActiveTab('HOJE')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'HOJE' ? 'bg-primary text-white shadow-lg' : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-kanban text-xl"></i> Mapa do Plantão</button>
                             <button onClick={()=>setActiveTab('CALENDARIO')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'CALENDARIO' ? 'bg-primary text-white shadow-lg' : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-calendar-blank text-xl"></i> Calendário Geral</button>
                             {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'EQUIPE' ? (isDark?'bg-white text-slate-900':'bg-slate-800 text-white shadow-lg') : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-users text-xl"></i> Gestão de Equipe</button>}
+                            {isAdmin && <button onClick={()=>setActiveTab('CONFIG')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'CONFIG' ? 'bg-amber-500 text-white shadow-lg' : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-gear text-xl"></i> Ajustes</button>}
                         </nav>
                         <button onClick={()=>auth.signOut()} className="p-6 text-red-500 font-bold flex items-center gap-3 hover:bg-red-500/10 transition border-t border-inherit"><i className="ph-bold ph-sign-out text-xl"></i> Sair do App</button>
                     </aside>
 
                     {/* BOTTOM NAV MOBILE */}
                     <nav className={`md:hidden fixed bottom-0 inset-x-0 border-t z-50 flex justify-around p-3 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl ${isDark?'bg-slate-900/90 border-slate-800':'bg-white/90 border-slate-200'}`}>
-                        <button onClick={()=>setActiveTab('HOJE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'HOJE' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'HOJE' ? 'ph-fill' : 'ph'} ph-kanban text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Hoje</span></button>
-                        <button onClick={()=>setActiveTab('CALENDARIO')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'CALENDARIO' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'CALENDARIO' ? 'ph-fill' : 'ph'} ph-calendar-blank text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Mensal</span></button>
-                        {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'EQUIPE' ? (isDark?'text-white':'text-slate-800') : 'opacity-40'}`}><i className={`${activeTab === 'EQUIPE' ? 'ph-fill' : 'ph'} ph-users text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Equipe</span></button>}
-                        <button onClick={()=>auth.signOut()} className="flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 text-red-500 opacity-60 hover:opacity-100"><i className="ph ph-sign-out text-2xl"></i><span className="text-[9px] font-black uppercase tracking-wider">Sair</span></button>
+                        <button onClick={()=>setActiveTab('HOJE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-16 ${activeTab === 'HOJE' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'HOJE' ? 'ph-fill' : 'ph'} ph-kanban text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Hoje</span></button>
+                        <button onClick={()=>setActiveTab('CALENDARIO')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-16 ${activeTab === 'CALENDARIO' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'CALENDARIO' ? 'ph-fill' : 'ph'} ph-calendar-blank text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Mensal</span></button>
+                        {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-16 ${activeTab === 'EQUIPE' ? (isDark?'text-white':'text-slate-800') : 'opacity-40'}`}><i className={`${activeTab === 'EQUIPE' ? 'ph-fill' : 'ph'} ph-users text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Equipe</span></button>}
+                        {isAdmin && <button onClick={()=>setActiveTab('CONFIG')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-16 ${activeTab === 'CONFIG' ? 'text-amber-500' : 'opacity-40'}`}><i className={`${activeTab === 'CONFIG' ? 'ph-fill' : 'ph'} ph-gear text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Ajustes</span></button>}
                     </nav>
 
                     {/* CONTEÚDO */}
@@ -758,18 +711,19 @@
                             </div>
                         </div>
 
-                        {/* O TopHeader só não aparece na tela de equipe para não roubar espaço do formulário */}
-                        {activeTab !== 'EQUIPE' && <TopHeader user={user} />}
+                        {activeTab !== 'EQUIPE' && activeTab !== 'CONFIG' && <TopHeader user={user} />}
 
                         {activeTab === 'HOJE' && <PainelHojeView profissionais={dataCentral.PROFISSIONAIS} escalas={dataCentral.ESCALAS} config={dataCentral.CONFIGURACOES} user={user} onSave={api.saveRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
                         
-                        {activeTab === 'EQUIPE' && isAdmin && <EquipeView data={dataCentral.PROFISSIONAIS} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
+                        {activeTab === 'EQUIPE' && isAdmin && <EquipeView data={dataCentral.PROFISSIONAIS} sysConfig={dataCentral.CONFIGURACOES} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
+                        
+                        {activeTab === 'CONFIG' && isAdmin && <ConfiguracoesView sysConfig={dataCentral.CONFIGURACOES} onSaveConfig={api.saveRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
 
                         {activeTab === 'CALENDARIO' && (
                             <div className="animate-fade-in">
                                 <h2 className="text-3xl font-black mb-6">Calendário Geral</h2>
                                 <div className={`p-10 text-center rounded-[2rem] border ${isDark?'glass-panel-dark border-white/10':'glass-panel border-black/10'}`}>
-                                    <p className="font-bold opacity-70">Agora que você já pode criar a equipe e alocá-los nas salas, o próximo passo é construir a visualização do mês inteiro!</p>
+                                    <p className="font-bold opacity-70">O módulo de calendário está sendo preparado para o próximo passo!</p>
                                 </div>
                             </div>
                         )}
