@@ -11,6 +11,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+    <script>
+        window.addEventListener('error', function(event) {
+            document.body.innerHTML = '<div style="background:#fee2e2;color:#991b1b;padding:40px;font-family:sans-serif;height:100vh;text-align:center;">' +
+                '<h1 style="font-size:2rem;font-weight:900;margin-bottom:10px;">Sistema Protegido</h1>' +
+                '<p>O navegador tentou mostrar uma tela branca, mas nós o pegamos. <b>Tire um print desta tela e envie para análise:</b></p>' +
+                '<div style="background:white;padding:20px;border-radius:10px;text-align:left;max-width:600px;margin:20px auto;border:2px solid #f87171;">' +
+                '<strong>ERRO:</strong> ' + event.message + '<br/><br/><strong>LINHA:</strong> ' + event.lineno + '</div>' +
+                '<button onclick="window.location.reload()" style="padding:15px 30px;background:#991b1b;color:white;border-radius:10px;font-weight:bold;cursor:pointer;border:none;">Tentar Novamente</button></div>';
+        });
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -50,22 +61,30 @@
         .card-hover { transition: all 0.3s ease; cursor: pointer; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.2); }
         
-        /* Temas de Fundo Baseados no Tempo */
         .theme-morning { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #0f172a; }
         .theme-afternoon { background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%); color: #0f172a; }
         .theme-night { background: linear-gradient(135deg, #020617 0%, #1e1b4b 50%, #0f172a 100%); color: #f8fafc; }
         .stars { position: absolute; inset: 0; background-image: radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)); background-size: 200px 200px; opacity: 0.3; animation: pulse-slow 4s infinite alternate; pointer-events: none; }
     </style>
+
+    <script>
+        const VERSAO_ATUAL = "18.0.0"; 
+        if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) {
+            localStorage.clear(); sessionStorage.clear();
+            localStorage.setItem('escalas_versao', VERSAO_ATUAL);
+            window.location.reload();
+        }
+    </script>
 </head>
-<body>
+<body class="text-gray-800">
     <div id="root"></div>
 
     <script type="text/babel" data-presets="react">
         const { useState, useEffect, Component } = React;
 
-        // === COLOQUE SUAS CHAVES DO FIREBASE AQUI ===
+        // === COLOQUE SUAS CHAVES AQUI ===
         const firebaseConfig = {
-            apiKey: "AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c",
+            apiKey: "COLOQUE_A_SUA_CHAVE_AQUI", // <-- Cole sua chave nova aqui
             authDomain: "escalas-sao-vicente.firebaseapp.com",
             projectId: "escalas-sao-vicente",
             storageBucket: "escalas-sao-vicente.firebasestorage.app",
@@ -78,8 +97,28 @@
         const auth = firebase.auth();
 
         // ==========================================
-        // 1. RELÓGIO E TEMA INTELIGENTE
+        // COMPONENTES VISUAIS
         // ==========================================
+
+        class ErrorBoundary extends Component {
+            constructor(props) { super(props); this.state = { hasError: false, errStr: '' }; }
+            static getDerivedStateFromError(error) { return { hasError: true }; }
+            componentDidCatch(error, errorInfo) { this.setState({ errStr: String(error) }); }
+            render() {
+                if (this.state.hasError) {
+                    return (
+                        <div className="p-10 text-center flex flex-col items-center justify-center min-h-screen">
+                            <i className="ph-fill ph-warning-circle text-6xl text-red-500 mb-4"></i>
+                            <h2 className="text-2xl font-black mb-2">Erro de Visualização React</h2>
+                            <p className="text-[10px] text-red-500 bg-red-50 p-4 font-mono mb-4 border border-red-200">{this.state.errStr}</p>
+                            <button onClick={()=>window.location.reload()} className="bg-primary text-white px-8 py-3 rounded-xl font-bold shadow-lg">Recarregar App</button>
+                        </div>
+                    );
+                }
+                return this.props.children; 
+            }
+        }
+
         const TopHeader = ({ user }) => {
             const [time, setTime] = useState(new Date());
             useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(timer); }, []);
@@ -91,7 +130,8 @@
             if (h >= 12 && h < 18) { period = 'Boa tarde'; icon = 'ph-cloud-sun'; msgs = ["Mantenha o foco e a energia!", "Quase lá, excelente trabalho.", "O cuidado continua."]; } 
             else if (h >= 18 || h < 6) { period = 'Boa noite'; icon = 'ph-moon-stars'; msgs = ["Um plantão tranquilo a todos.", "A noite também salva vidas.", "Bom descanso aos que saem, força aos que entram."]; }
             
-            const randomMsg = msgs[time.getDate() % msgs.length]; // Mensagem do dia
+            const randomMsg = msgs[time.getDate() % msgs.length]; 
+            const userName = user && user.nome ? user.nome.split(' ')[0] : 'Equipe';
 
             return (
                 <div className={`p-6 rounded-[2rem] shadow-sm mb-8 flex justify-between items-center ${h >= 18 || h < 6 ? 'glass-panel-dark' : 'glass-panel'}`}>
@@ -101,7 +141,7 @@
                         </div>
                         <div>
                             <h2 className="text-3xl font-black leading-none">{time.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</h2>
-                            <p className="text-[10px] font-bold uppercase tracking-widest opacity-70 mt-1">{period}, {user?.nome?.split(' ')[0]}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest opacity-70 mt-1">{period}, {userName}</p>
                         </div>
                     </div>
                     <div className="hidden md:block text-right">
@@ -112,90 +152,125 @@
             );
         };
 
-        // ==========================================
-        // 2. MÓDULO: GESTÃO DE EQUIPE (COM SETORES)
-        // ==========================================
         const EquipeView = ({ data, onSave, onDelete, onRefresh, themeClass }) => {
             const [activeSector, setActiveSector] = useState(null);
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [formData, setFormData] = useState({});
             const [newSectorName, setNewSectorName] = useState('');
+            const [loading, setLoading] = useState(false);
 
-            // Extrai setores únicos do banco + setores padrão
-            const defaultSectors = ['SUPERVISÃO', 'ADM + RECEPÇÃO', 'ENFERMAGEM', 'MÉDICOS PLANTÃO'];
+            const defaultSectors = ['SUPERVISÃO', 'ADM E RECEPÇÃO', 'ENFERMAGEM', 'MÉDICOS PLANTÃO'];
             const allSectors = Array.from(new Set([...defaultSectors, ...data.map(p => p.Setor).filter(Boolean)])).sort();
 
             const openModal = (item = null) => {
                 if (item) setFormData(item);
-                else setFormData({ ID: '', Nome: '', Cargo: '', Setor: activeSector || allSectors[0], Especialidade: '', CargaHoraria: '', TempoIntervalo: '15', DiasTrabalho: [], Cor: '#1E40AF', Obs: '' });
+                else setFormData({ ID: '', Nome: '', Cargo: 'Médico', Setor: activeSector || allSectors[0], Especialidade: '', CargaHoraria: '', TempoIntervalo: '15', DiasTrabalho: [], Cor: '#1E40AF', Obs: '' });
                 setIsModalOpen(true);
             };
 
             const toggleDia = (dia) => {
-                const dias = formData.DiasTrabalho || [];
+                const dias = Array.isArray(formData.DiasTrabalho) ? formData.DiasTrabalho : [];
                 if (dias.includes(dia)) setFormData({...formData, DiasTrabalho: dias.filter(d => d !== dia)});
                 else setFormData({...formData, DiasTrabalho: [...dias, dia]});
             };
 
-            const isDark = themeClass.includes('night');
+            const handleSave = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                let docData = { ...formData };
+                let id = docData.ID; delete docData.ID;
+                
+                try {
+                    if (id) await db.collection('PROFISSIONAIS').doc(id).update(docData);
+                    else await db.collection('PROFISSIONAIS').add(docData);
+                    setIsModalOpen(false);
+                    onRefresh();
+                } catch(err) { alert('Erro ao salvar!'); }
+                setLoading(false);
+            };
+
+            const handleDelete = async (id) => {
+                if (confirm('Deseja excluir permanentemente?')) {
+                    try {
+                        await db.collection('PROFISSIONAIS').doc(id).delete();
+                        onRefresh();
+                    } catch(err) { alert('Erro ao excluir!'); }
+                }
+            };
+
+            const isDark = (themeClass || '').includes('night');
             const panelClass = isDark ? 'glass-panel-dark' : 'glass-panel';
 
             if (activeSector) {
-                const profsSetor = data.filter(p => p.Setor === activeSector).sort((a,b) => a.Nome.localeCompare(b.Nome));
+                const profsSetor = data.filter(p => p.Setor === activeSector).sort((a,b) => (a.Nome || '').localeCompare(b.Nome || ''));
                 return (
                     <div className="animate-fade-in space-y-6">
                         <div className="flex justify-between items-center">
-                            <button onClick={()=>setActiveSector(null)} className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 ${panelClass}`}><i className="ph-bold ph-arrow-left"></i> Voltar aos Setores</button>
+                            <button onClick={()=>setActiveSector(null)} className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 ${panelClass}`}><i className="ph-bold ph-arrow-left"></i> Voltar</button>
                             <button onClick={()=>openModal()} className="bg-primary text-white px-6 py-2 rounded-xl font-bold shadow-lg flex items-center gap-2"><i className="ph-bold ph-plus"></i> Novo Profissional</button>
                         </div>
                         <h2 className="text-2xl font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-users"></i> Setor: {activeSector}</h2>
                         
                         <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {profsSetor.map((prof, i) => (
-                                <div key={i} className={`${panelClass} p-6 rounded-[2rem] relative group card-hover`}>
-                                    <div className="flex items-center gap-4 mb-4">
-                                        <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black text-white shadow-md" style={{backgroundColor: prof.Cor || '#000'}}>{prof.Nome.charAt(0)}</div>
-                                        <div>
-                                            <h3 className="font-black leading-tight">{prof.Nome}</h3>
-                                            <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">{prof.Cargo}</p>
+                            {profsSetor.map((prof, i) => {
+                                const dias = Array.isArray(prof.DiasTrabalho) ? prof.DiasTrabalho : [];
+                                return (
+                                    <div key={i} className={`${panelClass} p-6 rounded-[2rem] relative group card-hover overflow-hidden`}>
+                                        <div className="absolute top-0 inset-x-0 h-20 opacity-20" style={{backgroundColor: prof.Cor || '#000'}}></div>
+                                        <div className="relative z-10 flex flex-col items-center text-center mt-2 w-full">
+                                            <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-black text-white border-4 border-white shadow-md mb-3" style={{backgroundColor: prof.Cor || '#000'}}>
+                                                {(prof.Nome || 'P').charAt(0).toUpperCase()}
+                                            </div>
+                                            <h3 className="font-black text-lg leading-tight">{prof.Nome || 'Sem Nome'}</h3>
+                                            <p className="text-[10px] font-black mb-4 mt-1 uppercase tracking-widest px-3 py-1 rounded-full" style={{color: prof.Cor || '#000', backgroundColor: `${prof.Cor}20`}}>{prof.Cargo || 'Profissional'}</p>
+                                            
+                                            <div className="w-full bg-black/5 dark:bg-white/5 rounded-xl p-4 text-left space-y-2 mb-4 border border-black/5 dark:border-white/5">
+                                                <p className="text-[10px] font-bold opacity-70 flex justify-between uppercase">
+                                                    <span>Especialidade</span>
+                                                    <span className="opacity-100">{prof.Especialidade || 'Geral'}</span>
+                                                </p>
+                                                <p className="text-[10px] font-bold opacity-70 flex justify-between uppercase pt-2 border-t border-black/5 dark:border-white/5">
+                                                    <span>Intervalo</span>
+                                                    <span className="opacity-100">{prof.TempoIntervalo || '15'} min</span>
+                                                </p>
+                                            </div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest opacity-50">Dias Padrão: {dias.join(', ') || 'Nenhum'}</p>
+                                        </div>
+
+                                        <div className="absolute top-4 right-4 opacity-100 lg:opacity-0 group-hover:opacity-100 flex gap-2 z-20">
+                                            <button onClick={()=>openModal(prof)} className="w-10 h-10 bg-white dark:bg-slate-700 shadow-md rounded-full text-blue-600 flex items-center justify-center hover:scale-110 transition"><i className="ph-bold ph-pencil-simple text-lg"></i></button>
+                                            <button onClick={()=>handleDelete(prof.ID)} className="w-10 h-10 bg-white dark:bg-slate-700 shadow-md rounded-full text-red-600 flex items-center justify-center hover:scale-110 transition"><i className="ph-bold ph-trash text-lg"></i></button>
                                         </div>
                                     </div>
-                                    <div className="space-y-2 text-xs opacity-80 border-t border-white/20 pt-4">
-                                        <p><strong>Intervalo:</strong> {prof.TempoIntervalo} min</p>
-                                        <p><strong>Dias:</strong> {(prof.DiasTrabalho||[]).join(', ') || 'Não definido'}</p>
-                                    </div>
-                                    <div className="absolute top-4 right-4 opacity-100 lg:opacity-0 group-hover:opacity-100 flex gap-2">
-                                        <button onClick={()=>openModal(prof)} className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center"><i className="ph-bold ph-pencil-simple"></i></button>
-                                    </div>
-                                </div>
-                            ))}
-                            {profsSetor.length === 0 && <p className="col-span-full opacity-50 font-bold">Nenhum profissional cadastrado neste setor.</p>}
+                                )
+                            })}
+                            {profsSetor.length === 0 && <p className="col-span-full opacity-50 font-bold text-center p-10 border-2 border-dashed rounded-3xl">Ninguém cadastrado aqui.</p>}
                         </div>
 
                         {/* MODAL DE CADASTRO */}
                         {isModalOpen && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={()=>setIsModalOpen(false)}>
                                 <div className={`${isDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'} w-full max-w-2xl rounded-[2rem] p-8 shadow-2xl overflow-y-auto max-h-[90vh]`} onClick={e=>e.stopPropagation()}>
-                                    <h3 className="text-2xl font-black mb-6 border-b border-white/10 pb-4">{formData.ID ? 'Editar' : 'Novo'} Colaborador</h3>
-                                    <form onSubmit={async (e)=>{e.preventDefault(); await onSave('PROFISSIONAIS', formData, !!formData.ID); setIsModalOpen(false); onRefresh();}} className="space-y-4">
+                                    <h3 className="text-2xl font-black mb-6 border-b border-black/10 dark:border-white/10 pb-4">{formData.ID ? 'Editar' : 'Novo'} Profissional</h3>
+                                    <form id="form-equipe" onSubmit={handleSave} className="space-y-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="col-span-2">
-                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Nome</label>
-                                                <input type="text" value={formData.Nome} onChange={e=>setFormData({...formData, Nome: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} required />
+                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Nome Completo</label>
+                                                <input type="text" value={formData.Nome || ''} onChange={e=>setFormData({...formData, Nome: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} required />
                                             </div>
                                             <div>
                                                 <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Cargo</label>
-                                                <input type="text" value={formData.Cargo} onChange={e=>setFormData({...formData, Cargo: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} required />
+                                                <input type="text" value={formData.Cargo || ''} onChange={e=>setFormData({...formData, Cargo: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} required />
                                             </div>
                                             <div>
                                                 <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Setor</label>
-                                                <select value={formData.Setor} onChange={e=>setFormData({...formData, Setor: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`}>
+                                                <select value={formData.Setor || ''} onChange={e=>setFormData({...formData, Setor: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`}>
                                                     {allSectors.map(s => <option key={s} value={s}>{s}</option>)}
                                                 </select>
                                             </div>
                                             <div>
                                                 <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Tempo de Intervalo</label>
-                                                <select value={formData.TempoIntervalo} onChange={e=>setFormData({...formData, TempoIntervalo: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`}>
+                                                <select value={formData.TempoIntervalo || '15'} onChange={e=>setFormData({...formData, TempoIntervalo: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`}>
                                                     <option value="15">15 Minutos</option>
                                                     <option value="30">30 Minutos</option>
                                                     <option value="60">1 Hora</option>
@@ -204,21 +279,25 @@
                                             </div>
                                             <div>
                                                 <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Cor no Calendário</label>
-                                                <input type="color" value={formData.Cor} onChange={e=>setFormData({...formData, Cor: e.target.value})} className="w-full h-[54px] p-1 rounded-xl cursor-pointer" />
+                                                <input type="color" value={formData.Cor || '#1E40AF'} onChange={e=>setFormData({...formData, Cor: e.target.value})} className={`w-full h-[54px] p-1 rounded-xl cursor-pointer border ${isDark?'border-slate-700':'border-slate-200'}`} />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-[10px] font-black uppercase tracking-widest opacity-50 block mb-2">Dias de Trabalho Padrão</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest opacity-50 block mb-2 mt-4">Dias de Trabalho Padrão</label>
                                             <div className="flex flex-wrap gap-2">
-                                                {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(d => (
-                                                    <button type="button" key={d} onClick={()=>toggleDia(d)} className={`px-4 py-2 rounded-lg font-bold text-sm transition ${formData.DiasTrabalho?.includes(d) ? 'bg-primary text-white' : isDark?'bg-slate-900 text-slate-400':'bg-slate-100 text-slate-500'}`}>{d}</button>
-                                                ))}
+                                                {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(d => {
+                                                    const ativo = (Array.isArray(formData.DiasTrabalho) ? formData.DiasTrabalho : []).includes(d);
+                                                    return (
+                                                        <button type="button" key={d} onClick={()=>toggleDia(d)} className={`px-4 py-2 rounded-lg font-bold text-sm transition ${ativo ? 'bg-primary text-white shadow-md' : isDark?'bg-slate-900 text-slate-400':'bg-slate-100 text-slate-500'}`}>{d}</button>
+                                                    )
+                                                })}
                                             </div>
                                         </div>
                                         <div className="pt-6 flex justify-end gap-3">
-                                            {formData.ID && <button type="button" onClick={async()=>{if(confirm('Excluir?')){await onDelete('PROFISSIONAIS', formData.ID); setIsModalOpen(false); onRefresh();}}} className="px-6 py-4 text-red-500 font-bold hover:bg-red-500/10 rounded-xl mr-auto">Excluir</button>}
                                             <button type="button" onClick={()=>setIsModalOpen(false)} className="px-6 py-4 font-bold opacity-70 hover:opacity-100">Cancelar</button>
-                                            <button type="submit" className="bg-primary text-white px-8 py-4 rounded-xl font-black shadow-lg">Salvar Colaborador</button>
+                                            <button type="submit" disabled={loading} className="bg-primary text-white px-8 py-4 rounded-xl font-black shadow-lg flex items-center gap-2">
+                                                {loading ? <i className="ph animate-spin ph-spinner"></i> : <i className="ph-bold ph-check"></i>} Salvar
+                                            </button>
                                         </div>
                                     </form>
                                 </div>
@@ -228,13 +307,12 @@
                 );
             }
 
-            // TELA DE SETORES
             return (
                 <div className="animate-fade-in space-y-6">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                         <div>
                             <h2 className="text-3xl font-black">Setores da Clínica</h2>
-                            <p className="opacity-70 font-bold text-sm">Selecione um setor para gerenciar os profissionais.</p>
+                            <p className="opacity-70 font-bold text-sm">Selecione um setor para gerenciar a equipe.</p>
                         </div>
                         <div className="flex gap-2 w-full md:w-auto">
                             <input type="text" placeholder="Nome do novo setor..." value={newSectorName} onChange={e=>setNewSectorName(e.target.value)} className={`px-4 py-3 rounded-xl font-bold outline-none w-full md:w-64 ${panelClass}`} />
@@ -258,54 +336,10 @@
             );
         };
 
-        // ==========================================
-        // 3. MÓDULO: PAINEL DE HOJE (SALAS E INTERVALOS)
-        // ==========================================
-        const PainelHojeView = ({ profissionais, escalas, onSave, onRefresh, themeClass }) => {
-            const isDark = themeClass.includes('night');
+        const PainelHojeView = ({ themeClass }) => {
+            const isDark = (themeClass || '').includes('night');
             const panelClass = isDark ? 'glass-panel-dark' : 'glass-panel';
-            const [now, setNow] = useState(Date.now());
             
-            // Relógio interno para os intervalos
-            useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(timer); }, []);
-
-            // Simulando salas criadas (No futuro pode vir do DB)
-            const salas = ['Recepção Principal', 'Triagem 01', 'Consultório 01 (Médico)', 'Sala de Exames', 'Raio-X'];
-
-            // Pega as escalas de HOJE e agrupa por sala
-            const todayStr = new Date().toLocaleDateString('pt-BR');
-            const escalasHoje = escalas.filter(e => e.Data === todayStr);
-
-            const handleIntervalo = async (escala, acao) => {
-                // acao: 'INICIAR' ou 'VOLTAR'
-                if (acao === 'INICIAR') {
-                    // Pega tempo de intervalo do profissional
-                    const prof = profissionais.find(p => p.Nome === escala.Nome_Profissional);
-                    const tempoMin = prof ? parseInt(prof.TempoIntervalo) || 15 : 15;
-                    await onSave('ESCALAS', { ...escala, Status: 'INTERVALO', IntervaloInicio: Date.now(), IntervaloMinutos: tempoMin }, true);
-                } else {
-                    await onSave('ESCALAS', { ...escala, Status: 'ATIVO', IntervaloInicio: null }, true);
-                }
-                onRefresh();
-            };
-
-            // Função para calcular tempo restante
-            const renderTimer = (escala) => {
-                if (!escala.IntervaloInicio) return null;
-                const passadoMs = now - escala.IntervaloInicio;
-                const passadoMin = Math.floor(passadoMs / 60000);
-                const totalMin = escala.IntervaloMinutos || 15;
-                const restante = totalMin - passadoMin;
-
-                if (restante < -5) {
-                    return <span className="bg-red-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase animate-pulse">Atrasado ({Math.abs(restante)}m)</span>;
-                } else if (restante <= 0) {
-                    return <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase">Fim do Tempo</span>;
-                } else {
-                    return <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase flex items-center gap-1"><i className="ph-bold ph-timer"></i> {restante}m restantes</span>;
-                }
-            };
-
             return (
                 <div className="animate-fade-in space-y-8">
                     <div className="flex flex-col md:flex-row justify-between items-center mb-8">
@@ -314,40 +348,10 @@
                             <p className="opacity-70 font-bold text-sm">Mapa de salas e status em tempo real.</p>
                         </div>
                     </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {salas.map((sala, i) => {
-                            const ocupantes = escalasHoje.filter(e => e.Sala === sala);
-                            return (
-                                <div key={i} className={`${panelClass} p-6 rounded-[2rem] flex flex-col`}>
-                                    <h4 className="font-black text-sm uppercase tracking-widest opacity-50 mb-4 flex items-center gap-2 border-b border-black/10 dark:border-white/10 pb-3"><i className="ph-fill ph-door text-xl"></i> {sala}</h4>
-                                    
-                                    <div className="space-y-3 flex-1">
-                                        {ocupantes.map((occ, j) => {
-                                            const isIntervalo = occ.Status === 'INTERVALO';
-                                            return (
-                                                <div key={j} className={`p-4 rounded-xl border ${isIntervalo ? 'border-orange-500 bg-orange-500/10' : isDark?'border-white/10 bg-white/5':'border-slate-200 bg-white'} relative transition`}>
-                                                    <h5 className="font-black">{occ.Nome_Profissional}</h5>
-                                                    <p className="text-[10px] font-bold opacity-70 uppercase tracking-widest">{occ.Horario}</p>
-                                                    
-                                                    <div className="mt-3 flex justify-between items-center">
-                                                        {isIntervalo ? renderTimer(occ) : <span className="text-[9px] font-black uppercase tracking-widest bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-1 rounded">No Posto</span>}
-                                                        
-                                                        {/* Botão de Ação */}
-                                                        {isIntervalo ? (
-                                                            <button onClick={()=>handleIntervalo(occ, 'VOLTAR')} className="text-xs font-bold bg-slate-800 text-white px-3 py-1.5 rounded-lg shadow-md hover:bg-slate-900 transition">Voltou</button>
-                                                        ) : (
-                                                            <button onClick={()=>handleIntervalo(occ, 'INICIAR')} className="text-xs font-bold bg-orange-100 text-orange-700 px-3 py-1.5 rounded-lg hover:bg-orange-200 transition flex items-center gap-1"><i className="ph-fill ph-coffee"></i> Pausa</button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                        {ocupantes.length === 0 && <p className="text-center text-xs font-bold opacity-40 py-6 border-2 border-dashed border-current rounded-xl">Sala Vazia</p>}
-                                    </div>
-                                </div>
-                            )
-                        })}
+                    <div className={`${panelClass} border border-slate-200 rounded-[2rem] p-10 text-center shadow-sm`}>
+                        <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4"><i className="ph-fill ph-wrench text-3xl animate-pulse"></i></div>
+                        <h3 className="font-black text-xl">Módulo em Construção</h3>
+                        <p className="font-medium mt-2 max-w-sm mx-auto opacity-70">O mapa de salas interativo será liberado no próximo passo após testarmos o cadastro de equipe!</p>
                     </div>
                 </div>
             );
@@ -362,7 +366,7 @@
             const [activeTab, setActiveTab] = useState('HOJE');
             const [dataCentral, setDataCentral] = useState({ PROFISSIONAIS: [], ESCALAS: [] });
 
-            // Hook para mudar o tema com base na hora
+            // Theming
             const [themeClass, setThemeClass] = useState('theme-morning');
             useEffect(() => {
                 const updateTheme = () => {
@@ -372,21 +376,17 @@
                     else setThemeClass('theme-night');
                 };
                 updateTheme();
-                const i = setInterval(updateTheme, 60000); // Checa a cada 1 min
+                const i = setInterval(updateTheme, 60000); 
                 return () => clearInterval(i);
             }, []);
 
-            // Adiciona classe de tema no Body
-            useEffect(() => {
-                document.body.className = `${themeClass} font-sans min-h-screen relative overflow-x-hidden`;
-            }, [themeClass]);
+            useEffect(() => { document.body.className = `${themeClass} font-sans min-h-screen relative overflow-x-hidden`; }, [themeClass]);
 
             const fetchBanco = async () => {
                 try {
                     const profs = await api.fetch('PROFISSIONAIS');
-                    const esc = await api.fetch('ESCALAS');
-                    setDataCentral({ PROFISSIONAIS: profs, ESCALAS: esc });
-                } catch(e) { console.error(e); }
+                    setDataCentral(prev => ({ ...prev, PROFISSIONAIS: profs || [] }));
+                } catch(e) { console.error("Erro ao buscar", e); }
             };
 
             useEffect(() => {
@@ -410,11 +410,16 @@
             const handleLogin = async (e) => {
                 e.preventDefault();
                 setLoading(true);
-                try { await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); } 
-                catch(err) { alert('Erro: ' + err.message); setLoading(false); }
+                try { 
+                    await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); 
+                } 
+                catch(err) { 
+                    alert('Erro no Login: ' + err.message); 
+                    setLoading(false); 
+                }
             };
 
-            if (loading) return <div className={`min-h-screen flex items-center justify-center ${themeClass}`}><div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div></div>;
+            if (loading) return <div className={`min-h-screen flex items-center justify-center ${themeClass}`}><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
 
             if (!user) {
                 return (
@@ -436,7 +441,7 @@
                                     <i className="ph-fill ph-lock-key absolute left-5 top-4.5 opacity-50 text-lg"></i>
                                     <input name="password" type="password" placeholder="Senha" className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required />
                                 </div>
-                                <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-2xl shadow-lg hover:-translate-y-1 transition text-lg mt-4">Entrar no Sistema</button>
+                                <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-2xl shadow-lg hover:-translate-y-1 transition text-lg mt-4">Entrar no App</button>
                             </form>
                         </div>
                     </div>
@@ -451,7 +456,7 @@
                     {isDark && <div className="stars"></div>}
                     
                     {/* SIDEBAR PC */}
-                    <aside className={`hidden md:flex w-72 flex-col h-screen fixed z-30 shadow-2xl border-r ${isDark ? 'bg-slate-900/80 border-slate-700/50 backdrop-blur-xl' : 'bg-white/80 border-slate-200 backdrop-blur-xl'}`}>
+                    <aside className={`hidden md:flex w-72 flex-col h-screen fixed z-30 shadow-2xl border-r ${isDark ? 'bg-slate-900/80 border-slate-700/50 backdrop-blur-xl' : 'bg-white/80 border-white/50 backdrop-blur-xl'}`}>
                         <div className="p-8 border-b border-inherit flex items-center gap-4">
                             <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center shadow-md"><i className="ph-fill ph-heartbeat text-2xl animate-pulse"></i></div>
                             <div>
@@ -462,13 +467,13 @@
                         <nav className="flex-1 px-4 py-6 space-y-2">
                             <button onClick={()=>setActiveTab('HOJE')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'HOJE' ? 'bg-primary text-white shadow-lg' : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-kanban text-xl"></i> Mapa do Plantão</button>
                             <button onClick={()=>setActiveTab('CALENDARIO')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'CALENDARIO' ? 'bg-primary text-white shadow-lg' : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-calendar-blank text-xl"></i> Calendário</button>
-                            {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'EQUIPE' ? (isDark?'bg-white text-slate-900':'bg-slate-800 text-white') : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-users text-xl"></i> Gestão de Equipe</button>}
+                            {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'EQUIPE' ? (isDark?'bg-white text-slate-900':'bg-slate-800 text-white shadow-lg') : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-users text-xl"></i> Gestão de Equipe</button>}
                         </nav>
                         <button onClick={()=>auth.signOut()} className="p-6 text-red-500 font-bold flex items-center gap-3 hover:bg-red-500/10 transition border-t border-inherit"><i className="ph-bold ph-sign-out text-xl"></i> Sair do App</button>
                     </aside>
 
                     {/* BOTTOM NAV MOBILE */}
-                    <nav className={`md:hidden fixed bottom-0 inset-x-0 border-t z-50 flex justify-around p-3 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl ${isDark?'bg-slate-900/90 border-slate-800':'bg-white/90 border-slate-200'}`}>
+                    <nav className={`md:hidden fixed bottom-0 inset-x-0 border-t z-50 flex justify-around p-3 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl ${isDark?'bg-slate-900/90 border-slate-800':'bg-white/90 border-white/50'}`}>
                         <button onClick={()=>setActiveTab('HOJE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'HOJE' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'HOJE' ? 'ph-fill' : 'ph'} ph-kanban text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Hoje</span></button>
                         <button onClick={()=>setActiveTab('CALENDARIO')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'CALENDARIO' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'CALENDARIO' ? 'ph-fill' : 'ph'} ph-calendar-blank text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Mensal</span></button>
                         {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'EQUIPE' ? (isDark?'text-white':'text-slate-800') : 'opacity-40'}`}><i className={`${activeTab === 'EQUIPE' ? 'ph-fill' : 'ph'} ph-users text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Equipe</span></button>}
@@ -476,18 +481,25 @@
                     </nav>
 
                     {/* CONTEÚDO */}
-                    <main className="flex-1 md:ml-72 p-4 md:p-10 relative z-10 w-full">
+                    <main className="flex-1 md:ml-72 p-4 md:p-10 relative z-10 w-full overflow-x-hidden">
+                        <div className="md:hidden flex justify-between items-center mb-6 p-4 rounded-2xl shadow-sm border border-inherit glass-panel">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center shadow-md"><i className="ph-fill ph-calendar-check text-xl"></i></div>
+                                <div><h1 className="font-black leading-none">Escalas SV</h1><p className="text-[10px] uppercase font-bold opacity-50">Olá, {user.nome.split(' ')[0]}</p></div>
+                            </div>
+                        </div>
+
                         <TopHeader user={user} />
 
-                        {activeTab === 'HOJE' && <PainelHojeView profissionais={dataCentral.PROFISSIONAIS} escalas={dataCentral.ESCALAS} onSave={api.saveRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
+                        {activeTab === 'HOJE' && <PainelHojeView themeClass={themeClass} />}
                         
                         {activeTab === 'EQUIPE' && isAdmin && <EquipeView data={dataCentral.PROFISSIONAIS} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
 
                         {activeTab === 'CALENDARIO' && (
                             <div className="animate-fade-in">
-                                <h2 className="text-3xl font-black mb-6">Calendário</h2>
+                                <h2 className="text-3xl font-black mb-6">Calendário Geral</h2>
                                 <div className={`p-10 text-center rounded-[2rem] border ${isDark?'glass-panel-dark border-white/10':'glass-panel border-black/10'}`}>
-                                    <p className="font-bold opacity-70">O módulo de calendário está sendo preparado para receber os filtros e alocações.</p>
+                                    <p className="font-bold opacity-70">O módulo de calendário está sendo preparado para o próximo passo!</p>
                                 </div>
                             </div>
                         )}
@@ -501,6 +513,3 @@
     </script>
 </body>
 </html>
-
-
-
