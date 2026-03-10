@@ -19,7 +19,8 @@
                     colors: { primary: '#1E40AF', secondary: '#F97316' },
                     animation: { 
                         'fade-in': 'fadeIn 0.3s ease-out',
-                        'pop-in': 'popIn 0.2s forwards'
+                        'pop-in': 'popIn 0.2s forwards',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                     },
                     keyframes: { 
                         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
@@ -41,242 +42,363 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; transition: background 1s ease-in-out; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
         .hide-scroll::-webkit-scrollbar { display: none; }
-        .glass-modal { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); }
+        .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+        .glass-panel-dark { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); color: white; }
         .card-hover { transition: all 0.3s ease; cursor: pointer; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.1); }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.2); }
+        
+        /* Temas de Fundo Baseados no Tempo */
+        .theme-morning { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #0f172a; }
+        .theme-afternoon { background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%); color: #0f172a; }
+        .theme-night { background: linear-gradient(135deg, #020617 0%, #1e1b4b 50%, #0f172a 100%); color: #f8fafc; }
+        .stars { position: absolute; inset: 0; background-image: radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)); background-size: 200px 200px; opacity: 0.3; animation: pulse-slow 4s infinite alternate; pointer-events: none; }
     </style>
-
-    <script>
-        const VERSAO_ATUAL = "17.2.0"; 
-        if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) {
-            localStorage.clear(); sessionStorage.clear();
-            localStorage.setItem('escalas_versao', VERSAO_ATUAL);
-            window.location.reload();
-        }
-    </script>
 </head>
-<body class="text-gray-800">
+<body>
     <div id="root"></div>
 
     <script type="text/babel" data-presets="react">
         const { useState, useEffect, Component } = React;
 
-        // === COLOQUE SUAS CHAVES AQUI ===
+        // === COLOQUE SUAS CHAVES DO FIREBASE AQUI ===
         const firebaseConfig = {
-  apiKey: "AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c",
-  authDomain: "escalas-sao-vicente.firebaseapp.com",
-  projectId: "escalas-sao-vicente",
-  storageBucket: "escalas-sao-vicente.firebasestorage.app",
-  messagingSenderId: "256697542067",
-  appId: "1:256697542067:web:b8087390bb57d74def97c6"
-};
+            apiKey: "AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c",
+            authDomain: "escalas-sao-vicente.firebaseapp.com",
+            projectId: "escalas-sao-vicente",
+            storageBucket: "escalas-sao-vicente.firebasestorage.app",
+            messagingSenderId: "256697542067",
+            appId: "1:256697542067:web:b8087390bb57d74def97c6"
+        };
+
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Limite de Erro (Proteção de Tela Branca)
-        class ErrorBoundary extends Component {
-            constructor(props) { super(props); this.state = { hasError: false }; }
-            static getDerivedStateFromError(error) { return { hasError: true }; }
-            render() {
-                if (this.state.hasError) {
-                    return (
-                        <div className="p-10 text-center flex flex-col items-center justify-center min-h-screen">
-                            <i className="ph-fill ph-warning-circle text-6xl text-red-500 mb-4"></i>
-                            <h2 className="text-2xl font-black mb-2">Erro de Visualização</h2>
-                            <button onClick={()=>window.location.reload()} className="bg-primary text-white px-8 py-3 rounded-xl font-bold shadow-lg">Recarregar</button>
-                        </div>
-                    );
-                }
-                return this.props.children; 
-            }
-        }
-
         // ==========================================
-        // MÓDULO: GESTÃO DE EQUIPE
+        // 1. RELÓGIO E TEMA INTELIGENTE
         // ==========================================
-        const EquipeView = ({ profissionais, onSave, onDelete, onRefresh }) => {
-            const [isModalOpen, setIsModalOpen] = useState(false);
-            const [formData, setFormData] = useState({});
-            const [loading, setLoading] = useState(false);
-            const [search, setSearch] = useState('');
-
-            const listaFiltrada = profissionais.filter(p => 
-                p.Nome.toLowerCase().includes(search.toLowerCase()) || 
-                p.Cargo.toLowerCase().includes(search.toLowerCase())
-            );
-
-            const openModal = (item = null) => {
-                if (item) {
-                    setFormData(item);
-                } else {
-                    setFormData({ ID: '', Nome: '', Cargo: 'Médico', Especialidade: '', Cor: '#1E40AF', CargaHoraria: '' });
-                }
-                setIsModalOpen(true);
-            };
-
-            const handleSave = async (e) => {
-                e.preventDefault();
-                setLoading(true);
-                await onSave('PROFISSIONAIS', formData, !!formData.ID);
-                setIsModalOpen(false);
-                onRefresh();
-                setLoading(false);
-            };
-
-            const handleDelete = async (id) => {
-                if (confirm('Deseja excluir este profissional permanentemente?')) {
-                    await onDelete('PROFISSIONAIS', id);
-                    onRefresh();
-                }
-            };
+        const TopHeader = ({ user }) => {
+            const [time, setTime] = useState(new Date());
+            useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(timer); }, []);
+            
+            const h = time.getHours();
+            let period = 'Bom dia'; let icon = 'ph-sun'; 
+            let msgs = ["Um excelente turno para você!", "A saúde em primeiro lugar.", "Faça a diferença hoje!"];
+            
+            if (h >= 12 && h < 18) { period = 'Boa tarde'; icon = 'ph-cloud-sun'; msgs = ["Mantenha o foco e a energia!", "Quase lá, excelente trabalho.", "O cuidado continua."]; } 
+            else if (h >= 18 || h < 6) { period = 'Boa noite'; icon = 'ph-moon-stars'; msgs = ["Um plantão tranquilo a todos.", "A noite também salva vidas.", "Bom descanso aos que saem, força aos que entram."]; }
+            
+            const randomMsg = msgs[time.getDate() % msgs.length]; // Mensagem do dia
 
             return (
-                <div className="space-y-6 animate-fade-in">
-                    <div className="flex flex-col md:flex-row justify-between gap-4 items-center bg-white p-4 md:p-6 rounded-[2rem] shadow-sm border border-slate-200">
-                        <div className="relative w-full md:w-96">
-                            <i className="ph-bold ph-magnifying-glass absolute left-4 top-3.5 text-slate-400 text-lg"></i>
-                            <input type="text" placeholder="Buscar por nome ou cargo..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:border-primary text-slate-700" />
+                <div className={`p-6 rounded-[2rem] shadow-sm mb-8 flex justify-between items-center ${h >= 18 || h < 6 ? 'glass-panel-dark' : 'glass-panel'}`}>
+                    <div className="flex items-center gap-4">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl ${h >= 18 || h < 6 ? 'bg-white/10' : 'bg-white/50 shadow-inner'}`}>
+                            <i className={`ph-fill ${icon} animate-pulse-slow`}></i>
                         </div>
-                        <button onClick={() => openModal()} className="w-full md:w-auto bg-slate-800 text-white px-8 py-3.5 rounded-xl font-black shadow-lg hover:scale-105 transition flex justify-center items-center gap-2">
-                            <i className="ph-bold ph-plus text-lg"></i> Novo Profissional
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {listaFiltrada.map((prof, i) => (
-                            <div key={i} className="bg-white p-6 border border-slate-200 rounded-[2rem] relative group flex flex-col items-center text-center shadow-sm card-hover overflow-hidden">
-                                <div className="absolute top-0 inset-x-0 h-20 opacity-20" style={{backgroundColor: prof.Cor}}></div>
-                                <div className="relative z-10 flex flex-col items-center text-center mt-2 w-full">
-                                    <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-black text-white border-4 border-white shadow-md mb-3" style={{backgroundColor: prof.Cor}}>
-                                        {prof.Nome.charAt(0).toUpperCase()}
-                                    </div>
-                                    <h3 className="font-black text-lg leading-tight text-slate-800">{prof.Nome}</h3>
-                                    <p className="text-[10px] font-black mb-4 mt-1 uppercase tracking-widest px-3 py-1 rounded-full" style={{color: prof.Cor, backgroundColor: `${prof.Cor}20`}}>{prof.Cargo}</p>
-                                    
-                                    <div className="w-full bg-slate-50 rounded-xl p-4 text-left space-y-2 mb-4 border border-slate-100">
-                                        <p className="text-[10px] font-bold text-slate-500 flex justify-between uppercase">
-                                            <span>Especialidade</span>
-                                            <span className="text-slate-800">{prof.Especialidade || 'Geral'}</span>
-                                        </p>
-                                        <p className="text-[10px] font-bold text-slate-500 flex justify-between uppercase pt-2 border-t border-slate-200">
-                                            <span>Disponibilidade</span>
-                                            <span className="text-slate-800">{prof.CargaHoraria || 'Livre'}</span>
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="absolute top-4 right-4 flex gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition z-20">
-                                    <button onClick={()=>openModal(prof)} className="w-10 h-10 bg-white shadow-md rounded-full text-blue-600 flex items-center justify-center hover:scale-110 transition"><i className="ph-bold ph-pencil-simple text-lg"></i></button>
-                                    <button onClick={()=>handleDelete(prof.ID)} className="w-10 h-10 bg-white shadow-md rounded-full text-red-600 flex items-center justify-center hover:scale-110 transition"><i className="ph-bold ph-trash text-lg"></i></button>
-                                </div>
-                            </div>
-                        ))}
-                        {listaFiltrada.length === 0 && (
-                            <div className="col-span-full p-16 text-center text-slate-400 font-bold border-2 border-dashed border-slate-200 rounded-[2rem] bg-white">
-                                Nenhum profissional cadastrado.
-                            </div>
-                        )}
-                    </div>
-
-                    {isModalOpen && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 glass-modal animate-fade-in" onClick={()=>setIsModalOpen(false)}>
-                            <div className="bg-white rounded-[2rem] w-full max-w-xl shadow-2xl flex flex-col border border-slate-200 animate-pop-in" onClick={e=>e.stopPropagation()}>
-                                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-[2rem]">
-                                    <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-slate-800 text-white rounded-xl flex items-center justify-center"><i className="ph-fill ph-user-plus"></i></div> 
-                                        {formData.ID ? 'Editar' : 'Novo'} Profissional
-                                    </h3>
-                                    <button onClick={()=>setIsModalOpen(false)} className="w-10 h-10 bg-white text-slate-500 rounded-full shadow-sm hover:bg-red-500 hover:text-white transition flex items-center justify-center"><i className="ph-bold ph-x"></i></button>
-                                </div>
-                                <form id="form-equipe" onSubmit={handleSave} className="p-8 space-y-5">
-                                    <div>
-                                        <label className="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">Nome Completo</label>
-                                        <input type="text" value={formData.Nome} onChange={e=>setFormData({...formData, Nome: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:border-primary" required placeholder="Ex: Dr. Bruno Almeida" />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">Cargo</label>
-                                            <select value={formData.Cargo} onChange={e=>setFormData({...formData, Cargo: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:border-primary">
-                                                <option>Médico</option>
-                                                <option>Enfermagem</option>
-                                                <option>Recepção</option>
-                                                <option>Triagem</option>
-                                                <option>Técnico</option>
-                                                <option>Gestão</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">Cor de Identificação</label>
-                                            <input type="color" value={formData.Cor} onChange={e=>setFormData({...formData, Cor: e.target.value})} className="w-full h-14 p-1 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer" />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">Especialidade / Função</label>
-                                        <input type="text" value={formData.Especialidade} onChange={e=>setFormData({...formData, Especialidade: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:border-primary" placeholder="Ex: Clínico Geral" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">Dias / Turnos Disponíveis (Opcional)</label>
-                                        <input type="text" value={formData.CargaHoraria} onChange={e=>setFormData({...formData, CargaHoraria: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:border-primary" placeholder="Ex: Segundas e Quartas (Manhã)" />
-                                    </div>
-                                </form>
-                                <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 rounded-b-[2rem]">
-                                    <button type="button" onClick={()=>setIsModalOpen(false)} className="px-6 py-3.5 font-bold text-slate-500 hover:text-slate-800 transition">Cancelar</button>
-                                    <button type="submit" form="form-equipe" disabled={loading} className="bg-slate-800 text-white font-black px-8 py-3.5 rounded-xl shadow-lg hover:bg-slate-900 transition flex items-center gap-2">
-                                        {loading ? <i className="ph animate-spin ph-spinner text-xl"></i> : <i className="ph-bold ph-floppy-disk text-xl"></i>} Salvar
-                                    </button>
-                                </div>
-                            </div>
+                        <div>
+                            <h2 className="text-3xl font-black leading-none">{time.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</h2>
+                            <p className="text-[10px] font-bold uppercase tracking-widest opacity-70 mt-1">{period}, {user?.nome?.split(' ')[0]}</p>
                         </div>
-                    )}
+                    </div>
+                    <div className="hidden md:block text-right">
+                        <p className="text-sm font-bold opacity-90">{randomMsg}</p>
+                        <p className="text-[10px] uppercase tracking-widest opacity-50">Portal de Escalas SV</p>
+                    </div>
                 </div>
             );
         };
 
         // ==========================================
-        // APP PRINCIPAL
+        // 2. MÓDULO: GESTÃO DE EQUIPE (COM SETORES)
+        // ==========================================
+        const EquipeView = ({ data, onSave, onDelete, onRefresh, themeClass }) => {
+            const [activeSector, setActiveSector] = useState(null);
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [formData, setFormData] = useState({});
+            const [newSectorName, setNewSectorName] = useState('');
+
+            // Extrai setores únicos do banco + setores padrão
+            const defaultSectors = ['SUPERVISÃO', 'ADM + RECEPÇÃO', 'ENFERMAGEM', 'MÉDICOS PLANTÃO'];
+            const allSectors = Array.from(new Set([...defaultSectors, ...data.map(p => p.Setor).filter(Boolean)])).sort();
+
+            const openModal = (item = null) => {
+                if (item) setFormData(item);
+                else setFormData({ ID: '', Nome: '', Cargo: '', Setor: activeSector || allSectors[0], Especialidade: '', CargaHoraria: '', TempoIntervalo: '15', DiasTrabalho: [], Cor: '#1E40AF', Obs: '' });
+                setIsModalOpen(true);
+            };
+
+            const toggleDia = (dia) => {
+                const dias = formData.DiasTrabalho || [];
+                if (dias.includes(dia)) setFormData({...formData, DiasTrabalho: dias.filter(d => d !== dia)});
+                else setFormData({...formData, DiasTrabalho: [...dias, dia]});
+            };
+
+            const isDark = themeClass.includes('night');
+            const panelClass = isDark ? 'glass-panel-dark' : 'glass-panel';
+
+            if (activeSector) {
+                const profsSetor = data.filter(p => p.Setor === activeSector).sort((a,b) => a.Nome.localeCompare(b.Nome));
+                return (
+                    <div className="animate-fade-in space-y-6">
+                        <div className="flex justify-between items-center">
+                            <button onClick={()=>setActiveSector(null)} className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 ${panelClass}`}><i className="ph-bold ph-arrow-left"></i> Voltar aos Setores</button>
+                            <button onClick={()=>openModal()} className="bg-primary text-white px-6 py-2 rounded-xl font-bold shadow-lg flex items-center gap-2"><i className="ph-bold ph-plus"></i> Novo Profissional</button>
+                        </div>
+                        <h2 className="text-2xl font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-users"></i> Setor: {activeSector}</h2>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {profsSetor.map((prof, i) => (
+                                <div key={i} className={`${panelClass} p-6 rounded-[2rem] relative group card-hover`}>
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black text-white shadow-md" style={{backgroundColor: prof.Cor || '#000'}}>{prof.Nome.charAt(0)}</div>
+                                        <div>
+                                            <h3 className="font-black leading-tight">{prof.Nome}</h3>
+                                            <p className="text-[10px] font-bold uppercase tracking-widest opacity-70">{prof.Cargo}</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 text-xs opacity-80 border-t border-white/20 pt-4">
+                                        <p><strong>Intervalo:</strong> {prof.TempoIntervalo} min</p>
+                                        <p><strong>Dias:</strong> {(prof.DiasTrabalho||[]).join(', ') || 'Não definido'}</p>
+                                    </div>
+                                    <div className="absolute top-4 right-4 opacity-100 lg:opacity-0 group-hover:opacity-100 flex gap-2">
+                                        <button onClick={()=>openModal(prof)} className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center"><i className="ph-bold ph-pencil-simple"></i></button>
+                                    </div>
+                                </div>
+                            ))}
+                            {profsSetor.length === 0 && <p className="col-span-full opacity-50 font-bold">Nenhum profissional cadastrado neste setor.</p>}
+                        </div>
+
+                        {/* MODAL DE CADASTRO */}
+                        {isModalOpen && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={()=>setIsModalOpen(false)}>
+                                <div className={`${isDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'} w-full max-w-2xl rounded-[2rem] p-8 shadow-2xl overflow-y-auto max-h-[90vh]`} onClick={e=>e.stopPropagation()}>
+                                    <h3 className="text-2xl font-black mb-6 border-b border-white/10 pb-4">{formData.ID ? 'Editar' : 'Novo'} Colaborador</h3>
+                                    <form onSubmit={async (e)=>{e.preventDefault(); await onSave('PROFISSIONAIS', formData, !!formData.ID); setIsModalOpen(false); onRefresh();}} className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="col-span-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Nome</label>
+                                                <input type="text" value={formData.Nome} onChange={e=>setFormData({...formData, Nome: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} required />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Cargo</label>
+                                                <input type="text" value={formData.Cargo} onChange={e=>setFormData({...formData, Cargo: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`} required />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Setor</label>
+                                                <select value={formData.Setor} onChange={e=>setFormData({...formData, Setor: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`}>
+                                                    {allSectors.map(s => <option key={s} value={s}>{s}</option>)}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Tempo de Intervalo</label>
+                                                <select value={formData.TempoIntervalo} onChange={e=>setFormData({...formData, TempoIntervalo: e.target.value})} className={`w-full p-4 rounded-xl font-bold outline-none border ${isDark?'bg-slate-900 border-slate-700':'bg-slate-50 border-slate-200'}`}>
+                                                    <option value="15">15 Minutos</option>
+                                                    <option value="30">30 Minutos</option>
+                                                    <option value="60">1 Hora</option>
+                                                    <option value="120">2 Horas</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black uppercase tracking-widest opacity-50">Cor no Calendário</label>
+                                                <input type="color" value={formData.Cor} onChange={e=>setFormData({...formData, Cor: e.target.value})} className="w-full h-[54px] p-1 rounded-xl cursor-pointer" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase tracking-widest opacity-50 block mb-2">Dias de Trabalho Padrão</label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(d => (
+                                                    <button type="button" key={d} onClick={()=>toggleDia(d)} className={`px-4 py-2 rounded-lg font-bold text-sm transition ${formData.DiasTrabalho?.includes(d) ? 'bg-primary text-white' : isDark?'bg-slate-900 text-slate-400':'bg-slate-100 text-slate-500'}`}>{d}</button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="pt-6 flex justify-end gap-3">
+                                            {formData.ID && <button type="button" onClick={async()=>{if(confirm('Excluir?')){await onDelete('PROFISSIONAIS', formData.ID); setIsModalOpen(false); onRefresh();}}} className="px-6 py-4 text-red-500 font-bold hover:bg-red-500/10 rounded-xl mr-auto">Excluir</button>}
+                                            <button type="button" onClick={()=>setIsModalOpen(false)} className="px-6 py-4 font-bold opacity-70 hover:opacity-100">Cancelar</button>
+                                            <button type="submit" className="bg-primary text-white px-8 py-4 rounded-xl font-black shadow-lg">Salvar Colaborador</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            // TELA DE SETORES
+            return (
+                <div className="animate-fade-in space-y-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+                        <div>
+                            <h2 className="text-3xl font-black">Setores da Clínica</h2>
+                            <p className="opacity-70 font-bold text-sm">Selecione um setor para gerenciar os profissionais.</p>
+                        </div>
+                        <div className="flex gap-2 w-full md:w-auto">
+                            <input type="text" placeholder="Nome do novo setor..." value={newSectorName} onChange={e=>setNewSectorName(e.target.value)} className={`px-4 py-3 rounded-xl font-bold outline-none w-full md:w-64 ${panelClass}`} />
+                            <button onClick={()=>{if(newSectorName){ setActiveSector(newSectorName.toUpperCase()); setNewSectorName('');}}} className="bg-slate-800 text-white px-6 rounded-xl font-black shadow-lg hover:scale-105 transition"><i className="ph-bold ph-plus"></i> Add</button>
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {allSectors.map((setor, i) => {
+                            const count = data.filter(p => p.Setor === setor).length;
+                            return (
+                                <div key={i} onClick={()=>setActiveSector(setor)} className={`${panelClass} p-8 rounded-[2rem] card-hover flex flex-col justify-center items-center text-center h-48`}>
+                                    <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-4"><i className="ph-fill ph-buildings"></i></div>
+                                    <h3 className="font-black text-xl leading-tight mb-1">{setor}</h3>
+                                    <p className="text-xs font-bold opacity-50 uppercase tracking-widest">{count} Profissionais</p>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        // ==========================================
+        // 3. MÓDULO: PAINEL DE HOJE (SALAS E INTERVALOS)
+        // ==========================================
+        const PainelHojeView = ({ profissionais, escalas, onSave, onRefresh, themeClass }) => {
+            const isDark = themeClass.includes('night');
+            const panelClass = isDark ? 'glass-panel-dark' : 'glass-panel';
+            const [now, setNow] = useState(Date.now());
+            
+            // Relógio interno para os intervalos
+            useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(timer); }, []);
+
+            // Simulando salas criadas (No futuro pode vir do DB)
+            const salas = ['Recepção Principal', 'Triagem 01', 'Consultório 01 (Médico)', 'Sala de Exames', 'Raio-X'];
+
+            // Pega as escalas de HOJE e agrupa por sala
+            const todayStr = new Date().toLocaleDateString('pt-BR');
+            const escalasHoje = escalas.filter(e => e.Data === todayStr);
+
+            const handleIntervalo = async (escala, acao) => {
+                // acao: 'INICIAR' ou 'VOLTAR'
+                if (acao === 'INICIAR') {
+                    // Pega tempo de intervalo do profissional
+                    const prof = profissionais.find(p => p.Nome === escala.Nome_Profissional);
+                    const tempoMin = prof ? parseInt(prof.TempoIntervalo) || 15 : 15;
+                    await onSave('ESCALAS', { ...escala, Status: 'INTERVALO', IntervaloInicio: Date.now(), IntervaloMinutos: tempoMin }, true);
+                } else {
+                    await onSave('ESCALAS', { ...escala, Status: 'ATIVO', IntervaloInicio: null }, true);
+                }
+                onRefresh();
+            };
+
+            // Função para calcular tempo restante
+            const renderTimer = (escala) => {
+                if (!escala.IntervaloInicio) return null;
+                const passadoMs = now - escala.IntervaloInicio;
+                const passadoMin = Math.floor(passadoMs / 60000);
+                const totalMin = escala.IntervaloMinutos || 15;
+                const restante = totalMin - passadoMin;
+
+                if (restante < -5) {
+                    return <span className="bg-red-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase animate-pulse">Atrasado ({Math.abs(restante)}m)</span>;
+                } else if (restante <= 0) {
+                    return <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase">Fim do Tempo</span>;
+                } else {
+                    return <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase flex items-center gap-1"><i className="ph-bold ph-timer"></i> {restante}m restantes</span>;
+                }
+            };
+
+            return (
+                <div className="animate-fade-in space-y-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+                        <div>
+                            <h2 className="text-3xl font-black">Plantão Ativo</h2>
+                            <p className="opacity-70 font-bold text-sm">Mapa de salas e status em tempo real.</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {salas.map((sala, i) => {
+                            const ocupantes = escalasHoje.filter(e => e.Sala === sala);
+                            return (
+                                <div key={i} className={`${panelClass} p-6 rounded-[2rem] flex flex-col`}>
+                                    <h4 className="font-black text-sm uppercase tracking-widest opacity-50 mb-4 flex items-center gap-2 border-b border-black/10 dark:border-white/10 pb-3"><i className="ph-fill ph-door text-xl"></i> {sala}</h4>
+                                    
+                                    <div className="space-y-3 flex-1">
+                                        {ocupantes.map((occ, j) => {
+                                            const isIntervalo = occ.Status === 'INTERVALO';
+                                            return (
+                                                <div key={j} className={`p-4 rounded-xl border ${isIntervalo ? 'border-orange-500 bg-orange-500/10' : isDark?'border-white/10 bg-white/5':'border-slate-200 bg-white'} relative transition`}>
+                                                    <h5 className="font-black">{occ.Nome_Profissional}</h5>
+                                                    <p className="text-[10px] font-bold opacity-70 uppercase tracking-widest">{occ.Horario}</p>
+                                                    
+                                                    <div className="mt-3 flex justify-between items-center">
+                                                        {isIntervalo ? renderTimer(occ) : <span className="text-[9px] font-black uppercase tracking-widest bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-1 rounded">No Posto</span>}
+                                                        
+                                                        {/* Botão de Ação */}
+                                                        {isIntervalo ? (
+                                                            <button onClick={()=>handleIntervalo(occ, 'VOLTAR')} className="text-xs font-bold bg-slate-800 text-white px-3 py-1.5 rounded-lg shadow-md hover:bg-slate-900 transition">Voltou</button>
+                                                        ) : (
+                                                            <button onClick={()=>handleIntervalo(occ, 'INICIAR')} className="text-xs font-bold bg-orange-100 text-orange-700 px-3 py-1.5 rounded-lg hover:bg-orange-200 transition flex items-center gap-1"><i className="ph-fill ph-coffee"></i> Pausa</button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                        {ocupantes.length === 0 && <p className="text-center text-xs font-bold opacity-40 py-6 border-2 border-dashed border-current rounded-xl">Sala Vazia</p>}
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        // ==========================================
+        // APP PRINCIPAL E ROTEAMENTO
         // ==========================================
         const App = () => {
             const [user, setUser] = useState(null);
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('HOJE');
-            const [loginError, setLoginError] = useState('');
-            const [dataCentral, setDataCentral] = useState({ PROFISSIONAIS: [] });
+            const [dataCentral, setDataCentral] = useState({ PROFISSIONAIS: [], ESCALAS: [] });
 
-            // Funções de Banco de Dados
+            // Hook para mudar o tema com base na hora
+            const [themeClass, setThemeClass] = useState('theme-morning');
+            useEffect(() => {
+                const updateTheme = () => {
+                    const h = new Date().getHours();
+                    if (h >= 6 && h < 12) setThemeClass('theme-morning');
+                    else if (h >= 12 && h < 18) setThemeClass('theme-afternoon');
+                    else setThemeClass('theme-night');
+                };
+                updateTheme();
+                const i = setInterval(updateTheme, 60000); // Checa a cada 1 min
+                return () => clearInterval(i);
+            }, []);
+
+            // Adiciona classe de tema no Body
+            useEffect(() => {
+                document.body.className = `${themeClass} font-sans min-h-screen relative overflow-x-hidden`;
+            }, [themeClass]);
+
             const fetchBanco = async () => {
                 try {
-                    const snap = await db.collection('PROFISSIONAIS').get();
-                    const profs = snap.docs.map(doc => ({ ID: doc.id, ...doc.data() }));
-                    setDataCentral({ PROFISSIONAIS: profs });
+                    const profs = await api.fetch('PROFISSIONAIS');
+                    const esc = await api.fetch('ESCALAS');
+                    setDataCentral({ PROFISSIONAIS: profs, ESCALAS: esc });
                 } catch(e) { console.error(e); }
             };
 
-            const saveRecord = async (col, data, isEdit) => {
-                let docData = { ...data };
-                let id = docData.ID; delete docData.ID;
-                if (isEdit && id) await db.collection(col).doc(id).update(docData);
-                else await db.collection(col).add(docData);
-            };
-
-            const deleteRecord = async (col, id) => {
-                await db.collection(col).doc(id).delete();
-            };
-
-            // Login e Autenticação
             useEffect(() => {
                 const unsub = auth.onAuthStateChanged(async (u) => {
                     if (u) {
                         let role = 'Colaborador';
                         const eStr = u.email.toLowerCase();
-                        if (eStr.includes('admin') || eStr.includes('gestao')) role = 'Admin';
+                        if (eStr.includes('admin') || eStr.includes('gestao') || eStr.includes('diretor')) role = 'Admin';
                         else if (eStr.includes('supervis')) role = 'Supervisor';
                         
                         setUser({ email: u.email, nome: u.email.split('@')[0], nivel: role });
-                        await fetchBanco(); // Puxa os dados ao logar
+                        await fetchBanco();
                     } else {
                         setUser(null);
                     }
@@ -286,47 +408,35 @@
             }, []);
 
             const handleLogin = async (e) => {
-            e.preventDefault();
-            setLoading(true);
-            setLoginError('');
-            try { 
-                await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); 
-            } 
-            catch(err) { 
-                // AQUI ESTÁ A MÁGICA: O Firebase vai escrever na tela exatamente o motivo do erro!
-                setLoginError('Erro: ' + err.message); 
-                setLoading(false); 
-            }
-        };
+                e.preventDefault();
+                setLoading(true);
+                try { await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); } 
+                catch(err) { alert('Erro: ' + err.message); setLoading(false); }
+            };
 
-            if (loading) {
-                return <div className="min-h-screen flex items-center justify-center bg-blue-50"><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
-            }
+            if (loading) return <div className={`min-h-screen flex items-center justify-center ${themeClass}`}><div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div></div>;
 
             if (!user) {
                 return (
-                    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-                        <div className="w-full max-w-md bg-white rounded-[2rem] shadow-xl p-8 md:p-10 animate-fade-in border border-slate-100">
-                            <div className="w-20 h-20 bg-blue-50 text-primary rounded-3xl flex justify-center items-center mx-auto mb-6 shadow-inner">
+                    <div className={`min-h-screen flex items-center justify-center p-4 relative ${themeClass}`}>
+                        {themeClass.includes('night') && <div className="stars"></div>}
+                        <div className={`w-full max-w-md rounded-[2rem] shadow-2xl p-8 md:p-10 animate-fade-in relative z-10 ${themeClass.includes('night') ? 'glass-panel-dark' : 'glass-panel bg-white'}`}>
+                            <div className="w-20 h-20 bg-primary/10 text-primary rounded-3xl flex justify-center items-center mx-auto mb-6 shadow-inner">
                                 <i className="ph-fill ph-calendar-check text-5xl"></i>
                             </div>
-                            <h1 className="text-3xl font-black text-center text-slate-800 mb-2">Escalas SV</h1>
-                            <p className="text-center text-slate-500 font-bold mb-8">Gestão de Plantões</p>
-                            
-                            {loginError && <p className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold mb-6 text-center">{loginError}</p>}
+                            <h1 className="text-3xl font-black text-center mb-2">Escalas SV</h1>
+                            <p className="text-center font-bold mb-8 opacity-60">Gestão Inteligente de Plantões</p>
                             
                             <form onSubmit={handleLogin} className="space-y-4">
                                 <div className="relative">
-                                    <i className="ph-fill ph-user absolute left-5 top-4.5 text-slate-400 text-lg"></i>
-                                    <input name="email" type="email" placeholder="E-mail de acesso" className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary font-bold text-slate-700" required />
+                                    <i className="ph-fill ph-user absolute left-5 top-4.5 opacity-50 text-lg"></i>
+                                    <input name="email" type="email" placeholder="E-mail" className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required />
                                 </div>
                                 <div className="relative">
-                                    <i className="ph-fill ph-lock-key absolute left-5 top-4.5 text-slate-400 text-lg"></i>
-                                    <input name="password" type="password" placeholder="Senha" className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary font-bold text-slate-700" required />
+                                    <i className="ph-fill ph-lock-key absolute left-5 top-4.5 opacity-50 text-lg"></i>
+                                    <input name="password" type="password" placeholder="Senha" className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required />
                                 </div>
-                                <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-900/20 hover:-translate-y-1 transition text-lg mt-4 flex justify-center items-center gap-2">
-                                    Entrar no App <i className="ph-bold ph-arrow-right"></i>
-                                </button>
+                                <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-2xl shadow-lg hover:-translate-y-1 transition text-lg mt-4">Entrar no Sistema</button>
                             </form>
                         </div>
                     </div>
@@ -334,86 +444,51 @@
             }
 
             const isAdmin = user.nivel === 'Admin' || user.nivel === 'Supervisor';
+            const isDark = themeClass.includes('night');
 
             return (
-                <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row pb-20 md:pb-0">
+                <div className="min-h-screen flex flex-col md:flex-row pb-20 md:pb-0 relative">
+                    {isDark && <div className="stars"></div>}
                     
-                    {/* SIDEBAR PARA PC */}
-                    <aside className="hidden md:flex w-72 bg-white border-r border-slate-200 flex-col h-screen fixed z-30">
-                        <div className="p-8 border-b border-slate-100 flex items-center gap-4">
-                            <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center shadow-md"><i className="ph-fill ph-calendar-check text-2xl"></i></div>
+                    {/* SIDEBAR PC */}
+                    <aside className={`hidden md:flex w-72 flex-col h-screen fixed z-30 shadow-2xl border-r ${isDark ? 'bg-slate-900/80 border-slate-700/50 backdrop-blur-xl' : 'bg-white/80 border-slate-200 backdrop-blur-xl'}`}>
+                        <div className="p-8 border-b border-inherit flex items-center gap-4">
+                            <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center shadow-md"><i className="ph-fill ph-heartbeat text-2xl animate-pulse"></i></div>
                             <div>
-                                <h2 className="font-black text-xl leading-none">Escalas</h2>
-                                <p className="text-[10px] uppercase tracking-widest text-primary font-bold">São Vicente</p>
+                                <h2 className="font-black text-xl leading-none">Escalas SV</h2>
+                                <p className="text-[10px] uppercase tracking-widest opacity-60 font-bold">Portal Médico</p>
                             </div>
                         </div>
-                        <div className="p-6">
-                            <p className="text-sm font-black text-slate-800">{user.nome}</p>
-                            <span className="text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 px-2 py-1 rounded mt-1 inline-block">{user.nivel}</span>
-                        </div>
-                        <nav className="flex-1 px-4 space-y-2">
-                            <button onClick={()=>setActiveTab('HOJE')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition ${activeTab === 'HOJE' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}><i className="ph-fill ph-kanban text-xl"></i> Painel de Hoje</button>
-                            <button onClick={()=>setActiveTab('CALENDARIO')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition ${activeTab === 'CALENDARIO' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}><i className="ph-fill ph-calendar-blank text-xl"></i> Calendário Geral</button>
-                            {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition ${activeTab === 'EQUIPE' ? 'bg-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}><i className="ph-fill ph-users text-xl"></i> Gestão de Equipe</button>}
+                        <nav className="flex-1 px-4 py-6 space-y-2">
+                            <button onClick={()=>setActiveTab('HOJE')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'HOJE' ? 'bg-primary text-white shadow-lg' : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-kanban text-xl"></i> Mapa do Plantão</button>
+                            <button onClick={()=>setActiveTab('CALENDARIO')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'CALENDARIO' ? 'bg-primary text-white shadow-lg' : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-calendar-blank text-xl"></i> Calendário</button>
+                            {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'EQUIPE' ? (isDark?'bg-white text-slate-900':'bg-slate-800 text-white') : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-users text-xl"></i> Gestão de Equipe</button>}
                         </nav>
-                        <button onClick={()=>auth.signOut()} className="p-6 text-red-500 font-bold flex items-center gap-3 hover:bg-red-50 transition border-t border-slate-100"><i className="ph-bold ph-sign-out text-xl"></i> Sair do App</button>
+                        <button onClick={()=>auth.signOut()} className="p-6 text-red-500 font-bold flex items-center gap-3 hover:bg-red-500/10 transition border-t border-inherit"><i className="ph-bold ph-sign-out text-xl"></i> Sair do App</button>
                     </aside>
 
-                    {/* MENU INFERIOR PARA CELULAR */}
-                    <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 flex justify-around p-3 pb-safe">
-                        <button onClick={()=>setActiveTab('HOJE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'HOJE' ? 'text-primary' : 'text-slate-400'}`}>
-                            <i className={`${activeTab === 'HOJE' ? 'ph-fill' : 'ph'} ph-kanban text-2xl`}></i>
-                            <span className="text-[9px] font-black uppercase tracking-wider">Hoje</span>
-                        </button>
-                        <button onClick={()=>setActiveTab('CALENDARIO')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'CALENDARIO' ? 'text-primary' : 'text-slate-400'}`}>
-                            <i className={`${activeTab === 'CALENDARIO' ? 'ph-fill' : 'ph'} ph-calendar-blank text-2xl`}></i>
-                            <span className="text-[9px] font-black uppercase tracking-wider">Mensal</span>
-                        </button>
-                        {isAdmin && (
-                            <button onClick={()=>setActiveTab('EQUIPE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'EQUIPE' ? 'text-slate-800' : 'text-slate-400'}`}>
-                                <i className={`${activeTab === 'EQUIPE' ? 'ph-fill' : 'ph'} ph-users text-2xl`}></i>
-                                <span className="text-[9px] font-black uppercase tracking-wider">Equipe</span>
-                            </button>
-                        )}
-                        <button onClick={()=>auth.signOut()} className="flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 text-red-400">
-                            <i className="ph ph-sign-out text-2xl"></i>
-                            <span className="text-[9px] font-black uppercase tracking-wider">Sair</span>
-                        </button>
+                    {/* BOTTOM NAV MOBILE */}
+                    <nav className={`md:hidden fixed bottom-0 inset-x-0 border-t z-50 flex justify-around p-3 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl ${isDark?'bg-slate-900/90 border-slate-800':'bg-white/90 border-slate-200'}`}>
+                        <button onClick={()=>setActiveTab('HOJE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'HOJE' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'HOJE' ? 'ph-fill' : 'ph'} ph-kanban text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Hoje</span></button>
+                        <button onClick={()=>setActiveTab('CALENDARIO')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'CALENDARIO' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'CALENDARIO' ? 'ph-fill' : 'ph'} ph-calendar-blank text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Mensal</span></button>
+                        {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'EQUIPE' ? (isDark?'text-white':'text-slate-800') : 'opacity-40'}`}><i className={`${activeTab === 'EQUIPE' ? 'ph-fill' : 'ph'} ph-users text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Equipe</span></button>}
+                        <button onClick={()=>auth.signOut()} className="flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 text-red-500 opacity-60 hover:opacity-100"><i className="ph ph-sign-out text-2xl"></i><span className="text-[9px] font-black uppercase tracking-wider">Sair</span></button>
                     </nav>
 
-                    {/* ÁREA CENTRAL */}
-                    <main className="flex-1 md:ml-72 p-4 md:p-10 animate-fade-in relative z-10 w-full overflow-x-hidden">
-                        <div className="md:hidden flex justify-between items-center mb-6 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center shadow-md"><i className="ph-fill ph-calendar-check text-xl"></i></div>
-                                <div><h1 className="font-black leading-none text-slate-800">Escalas SV</h1><p className="text-[10px] uppercase font-bold text-slate-400">Olá, {user.nome}</p></div>
-                            </div>
-                        </div>
+                    {/* CONTEÚDO */}
+                    <main className="flex-1 md:ml-72 p-4 md:p-10 relative z-10 w-full">
+                        <TopHeader user={user} />
 
-                        {activeTab === 'HOJE' && (
-                            <div>
-                                <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-6 hidden md:block">Plantões de Hoje</h2>
-                                <div className="bg-white border border-slate-200 rounded-[2rem] p-10 text-center shadow-sm">
-                                    <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4"><i className="ph-fill ph-wrench text-3xl animate-bounce-slight"></i></div>
-                                    <h3 className="font-black text-xl text-slate-800">Módulo em Construção</h3>
-                                    <p className="text-slate-500 font-medium mt-2 max-w-sm mx-auto">Em breve os cards dos profissionais aparecerão aqui.</p>
-                                </div>
-                            </div>
-                        )}
+                        {activeTab === 'HOJE' && <PainelHojeView profissionais={dataCentral.PROFISSIONAIS} escalas={dataCentral.ESCALAS} onSave={api.saveRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
+                        
+                        {activeTab === 'EQUIPE' && isAdmin && <EquipeView data={dataCentral.PROFISSIONAIS} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
 
                         {activeTab === 'CALENDARIO' && (
-                            <div>
-                                <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-6 hidden md:block">Calendário Geral</h2>
-                                <div className="bg-white border border-slate-200 rounded-[2rem] p-10 text-center shadow-sm">
-                                    <p className="text-slate-500 font-medium">Aqui vai entrar o calendário.</p>
+                            <div className="animate-fade-in">
+                                <h2 className="text-3xl font-black mb-6">Calendário</h2>
+                                <div className={`p-10 text-center rounded-[2rem] border ${isDark?'glass-panel-dark border-white/10':'glass-panel border-black/10'}`}>
+                                    <p className="font-bold opacity-70">O módulo de calendário está sendo preparado para receber os filtros e alocações.</p>
                                 </div>
-                            </div>
-                        )}
-                        
-                        {activeTab === 'EQUIPE' && isAdmin && (
-                            <div>
-                                <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-6 hidden md:block">Gestão de Equipe</h2>
-                                <EquipeView profissionais={dataCentral.PROFISSIONAIS} onSave={saveRecord} onDelete={deleteRecord} onRefresh={fetchBanco} />
                             </div>
                         )}
                     </main>
@@ -426,5 +501,6 @@
     </script>
 </body>
 </html>
+
 
 
