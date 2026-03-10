@@ -20,13 +20,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class', // Habilita o modo escuro manual
             theme: { 
                 extend: { 
-                    colors: { primary: '#1E40AF', secondary: '#8b5cf6', accent: '#10b981' },
+                    colors: { primary: '#0ea5e9', secondary: '#1E40AF', accent: '#10b981' },
                     animation: { 
-                        'fade-in': 'fadeIn 0.5s ease-out',
-                        'pop-in': 'popIn 0.3s forwards',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'pop-in': 'popIn 0.2s forwards'
                     },
                     keyframes: { 
                         fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
@@ -36,7 +36,7 @@
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -50,49 +50,38 @@
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 6px; background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 10px; }
-        .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
         .hide-scroll::-webkit-scrollbar { display: none; }
         
-        /* CLAYMORPHISM & GLASSMORPHISM PREMIUM */
-        .clay-card {
-            background: rgba(255, 255, 255, 0.65); border-radius: 1.5rem; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-            box-shadow: 10px 10px 20px rgba(0,0,0,0.05), -10px -10px 20px rgba(255,255,255,0.7);
-            border: 1px solid rgba(255,255,255,0.6); transition: all 0.3s ease;
+        /* DESIGN CLEAN E FLAT (Sem brilhos, sem vidro) */
+        .clean-card {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
         }
-        .dark .clay-card {
-            background: rgba(30, 41, 59, 0.65); box-shadow: 10px 10px 20px rgba(0,0,0,0.4), -10px -10px 20px rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1); color: #f8fafc;
+        .dark .clean-card {
+            background-color: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            color: #f8fafc;
         }
-        .clay-card:hover { transform: translateY(-4px); box-shadow: 15px 15px 25px rgba(0,0,0,0.08), -15px -15px 25px rgba(255,255,255,0.9); }
-        .dark .clay-card:hover { box-shadow: 15px 15px 25px rgba(0,0,0,0.5); }
-        
-        /* A NEBULOSA MÁGICA ANIMADA */
-        .nebula-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; background-color: var(--bg-base); transition: background-color 2s ease; }
-        .nebula-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.7; animation: floatBlob 25s infinite alternate ease-in-out; will-change: transform; }
-        .blob1 { top: -10%; left: -10%; width: 55vw; height: 55vw; background: var(--color1); animation-delay: 0s; }
-        .blob2 { bottom: -20%; right: -10%; width: 65vw; height: 65vw; background: var(--color2); animation-delay: -5s; }
-        .blob3 { top: 30%; left: 30%; width: 45vw; height: 45vw; background: var(--color3); animation-delay: -10s; }
-        
-        @keyframes floatBlob {
-            0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(8%, 12%) scale(1.15); }
-            66% { transform: translate(-12%, 8%) scale(0.85); }
-            100% { transform: translate(0, -12%) scale(1); }
+        .clean-card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08); 
         }
-
-        /* VARIÁVEIS DE TEMA E CORES DA NEBULOSA */
-        .theme-morning { --bg-base: #e0f2fe; --color1: #bae6fd; --color2: #fdf4ff; --color3: #e0e7ff; color: #0f172a; }
-        .theme-afternoon { --bg-base: #ffedd5; --color1: #fed7aa; --color2: #fbcfe8; --color3: #fde047; color: #0f172a; }
-        .theme-night { --bg-base: #020617; --color1: #312e81; --color2: #4c1d95; --color3: #1e1b4b; color: #f8fafc; }
+        .dark .clean-card:hover { 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); 
+        }
         
-        .stars { position: fixed; inset: 0; background-image: radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)); background-size: 200px 200px; opacity: 0.4; animation: pulse-slow 4s infinite alternate; pointer-events: none; z-index: 0; }
-        .timeline-line::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: rgba(0,0,0,0.1); z-index: 0; }
-        .dark .timeline-line::before { background: rgba(255,255,255,0.1); }
+        .timeline-line::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: #e2e8f0; z-index: 0; }
+        .dark .timeline-line::before { background: #334155; }
     </style>
 
     <script>
-        const VERSAO_ATUAL = "25.0.0"; 
+        const VERSAO_ATUAL = "26.0.0"; 
         if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) {
             localStorage.clear(); sessionStorage.clear();
             localStorage.setItem('escalas_versao', VERSAO_ATUAL);
@@ -100,7 +89,7 @@
         }
     </script>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300">
     <div id="root"></div>
 
     <script type="text/babel" data-presets="react">
@@ -159,11 +148,11 @@
             render() {
                 if (this.state.hasError) {
                     return (
-                        <div className="p-10 text-center flex flex-col items-center justify-center min-h-screen bg-slate-50 relative z-50">
+                        <div className="p-10 text-center flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900 relative z-50">
                             <i className="ph-fill ph-warning-circle text-6xl text-red-500 mb-4"></i>
-                            <h2 className="text-2xl font-black mb-2 text-slate-800">Erro de Interface</h2>
-                            <p className="text-[10px] text-red-500 bg-red-50 p-4 font-mono mb-4 border border-red-200 max-w-xl mx-auto">{this.state.errStr}</p>
-                            <button onClick={()=>window.location.reload()} className="bg-primary text-white px-8 py-3 rounded-xl font-bold shadow-lg">Recarregar</button>
+                            <h2 className="text-2xl font-black mb-2">Erro de Interface</h2>
+                            <p className="text-[10px] text-red-500 bg-red-50 dark:bg-red-900/20 p-4 font-mono mb-4 border border-red-200 dark:border-red-800 max-w-xl mx-auto rounded-xl">{this.state.errStr}</p>
+                            <button onClick={()=>window.location.reload()} className="bg-primary text-white px-8 py-3 rounded-xl font-bold shadow-md">Recarregar</button>
                         </div>
                     );
                 }
@@ -171,28 +160,38 @@
             }
         }
 
-        const TopHeader = ({ user, themeClass }) => {
+        // ==========================================
+        // CABEÇALHO COM BOTÃO DE DARK MODE
+        // ==========================================
+        const TopHeader = ({ user, isDark, toggleDark }) => {
             const [time, setTime] = useState(new Date());
             useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(timer); }, []);
             const h = time.getHours();
-            let period = 'Bom dia'; let icon = 'ph-sun text-yellow-500'; 
-            let msgs = ["A saúde em primeiro lugar.", "Faça a diferença hoje!"];
-            if (h >= 12 && h < 18) { period = 'Boa tarde'; icon = 'ph-cloud-sun text-orange-500'; msgs = ["Mantenha o foco!", "O cuidado continua."]; } 
-            else if (h >= 18 || h < 6) { period = 'Boa noite'; icon = 'ph-moon-stars text-blue-300'; msgs = ["A noite também salva vidas.", "Bom descanso."]; }
+            let period = 'Bom dia'; 
+            if (h >= 12 && h < 18) period = 'Boa tarde'; 
+            else if (h >= 18 || h < 6) period = 'Boa noite'; 
+            
             const userName = user && user.nome ? user.nome.split(' ')[0] : 'Equipe';
 
             return (
-                <div className="clay-card p-6 md:p-8 mb-8 flex justify-between items-center relative z-10">
+                <div className="clean-card p-6 mb-8 flex justify-between items-center">
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-4xl shadow-inner bg-black/5 dark:bg-white/10"><i className={`ph-fill ${icon} animate-pulse-slow`}></i></div>
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-3xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                            <i className="ph-fill ph-calendar-check"></i>
+                        </div>
                         <div>
-                            <h2 className="text-2xl md:text-3xl font-black leading-none">{time.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</h2>
-                            <p className="text-[10px] font-bold uppercase tracking-widest opacity-70 mt-1">{period}, {userName}</p>
+                            <h2 className="text-2xl font-black leading-none">{time.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</h2>
+                            <p className="text-[11px] font-bold uppercase tracking-widest opacity-60 mt-1">{period}, {userName}</p>
                         </div>
                     </div>
-                    <div className="hidden md:block text-right">
-                        <p className="text-sm font-bold opacity-90">{msgs[time.getDate() % msgs.length]}</p>
-                        <p className="text-[10px] uppercase tracking-widest opacity-50">Portal de Escalas SV</p>
+                    <div className="flex items-center gap-4">
+                        <div className="hidden md:block text-right mr-2">
+                            <p className="text-[10px] uppercase tracking-widest opacity-50 font-bold">Portal Médico</p>
+                            <p className="text-sm font-black">Escalas SV</p>
+                        </div>
+                        <button onClick={toggleDark} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-yellow-400 flex items-center justify-center hover:scale-110 transition text-lg" title="Mudar Tema">
+                            {isDark ? <i className="ph-fill ph-sun"></i> : <i className="ph-fill ph-moon"></i>}
+                        </button>
                     </div>
                 </div>
             );
@@ -209,7 +208,7 @@
             const salvar = async () => {
                 setLoading(true);
                 await onSaveConfig('CONFIGURACOES', { ID: 'parametros', setores, habilidades: habs, postos });
-                onRefresh(); setLoading(false); alert("Configurações atualizadas!");
+                onRefresh(); setLoading(false); alert("Configurações salvas!");
             };
 
             const addItem = (tipo) => {
@@ -224,26 +223,26 @@
             };
 
             return (
-                <div className="animate-fade-in space-y-6 max-w-7xl mx-auto relative z-10">
+                <div className="animate-fade-in space-y-6 max-w-7xl mx-auto">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                         <div className="text-center md:text-left"><h2 className="text-3xl font-black">Ajustes da Clínica</h2></div>
-                        <button onClick={salvar} disabled={loading} className="w-full md:w-auto bg-primary text-white font-black px-8 py-3.5 rounded-xl shadow-lg hover:scale-105 transition">{loading ? 'Salvando...' : 'Salvar Servidor'}</button>
+                        <button onClick={salvar} disabled={loading} className="w-full md:w-auto bg-primary text-white font-bold px-8 py-3 rounded-xl shadow hover:scale-105 transition">{loading ? 'Salvando...' : 'Salvar Servidor'}</button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="clay-card p-6">
+                        <div className="clean-card p-6">
                             <h3 className="font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-buildings text-primary text-xl"></i> Departamentos</h3>
-                            <div className="flex gap-2 mb-4"><input type="text" value={newSetor} onChange={e=>setNewSetor(e.target.value)} placeholder="Ex: ENFERMAGEM" className="flex-1 p-3 rounded-lg text-sm font-bold border border-black/10 dark:border-white/10 outline-none bg-black/5 dark:bg-white/5" /><button onClick={()=>addItem('setor')} className="bg-primary text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button></div>
-                            <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">{setores.map((s, i) => (<div key={i} className="flex justify-between items-center bg-white/50 dark:bg-black/20 p-3 rounded-lg text-xs font-black border border-black/5 dark:border-white/5"><span>{s}</span><button onClick={()=>removeItem('setor', i)} className="text-red-500"><i className="ph-bold ph-trash"></i></button></div>))}</div>
+                            <div className="flex gap-2 mb-4"><input type="text" value={newSetor} onChange={e=>setNewSetor(e.target.value)} placeholder="Ex: ENFERMAGEM" className="flex-1 p-3 rounded-lg text-sm font-bold border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900" /><button onClick={()=>addItem('setor')} className="bg-primary text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button></div>
+                            <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">{setores.map((s, i) => (<div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg text-xs font-black border border-slate-100 dark:border-slate-700"><span>{s}</span><button onClick={()=>removeItem('setor', i)} className="text-red-500"><i className="ph-bold ph-trash"></i></button></div>))}</div>
                         </div>
-                        <div className="clay-card p-6">
+                        <div className="clean-card p-6">
                             <h3 className="font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-door text-secondary text-xl"></i> Mapas de Salas</h3>
-                            <div className="space-y-2 mb-4"><input type="text" value={newPostoNome} onChange={e=>setNewPostoNome(e.target.value)} placeholder="Ex: Consultório 01" className="w-full p-3 rounded-lg text-sm font-bold border border-black/10 dark:border-white/10 outline-none bg-black/5 dark:bg-white/5" /><div className="flex gap-2"><select value={newPostoSetor} onChange={e=>setNewPostoSetor(e.target.value)} className="flex-1 p-3 rounded-lg text-xs font-bold border border-black/10 dark:border-white/10 outline-none bg-black/5 dark:bg-white/5"><option value="">Setor...</option>{setores.map((s,i)=><option key={i} value={s}>{s}</option>)}</select><button onClick={()=>addItem('posto')} className="bg-secondary text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button></div></div>
-                            <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">{postos.map((p, i) => (<div key={i} className="flex justify-between items-center bg-white/50 dark:bg-black/20 p-3 rounded-lg text-xs border border-black/5 dark:border-white/5"><div><p className="font-black">{p.nome}</p><p className="text-[9px] opacity-60 uppercase">{p.setor}</p></div><button onClick={()=>removeItem('posto', i)} className="text-red-500"><i className="ph-bold ph-trash"></i></button></div>))}</div>
+                            <div className="space-y-2 mb-4"><input type="text" value={newPostoNome} onChange={e=>setNewPostoNome(e.target.value)} placeholder="Ex: Consultório 01" className="w-full p-3 rounded-lg text-sm font-bold border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900" /><div className="flex gap-2"><select value={newPostoSetor} onChange={e=>setNewPostoSetor(e.target.value)} className="flex-1 p-3 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900"><option value="">Setor...</option>{setores.map((s,i)=><option key={i} value={s}>{s}</option>)}</select><button onClick={()=>addItem('posto')} className="bg-secondary text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button></div></div>
+                            <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">{postos.map((p, i) => (<div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg text-xs border border-slate-100 dark:border-slate-700"><div><p className="font-black">{p.nome}</p><p className="text-[9px] opacity-60 uppercase">{p.setor}</p></div><button onClick={()=>removeItem('posto', i)} className="text-red-500"><i className="ph-bold ph-trash"></i></button></div>))}</div>
                         </div>
-                        <div className="clay-card p-6">
+                        <div className="clean-card p-6">
                             <h3 className="font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-accent text-xl"></i> Competências</h3>
-                            <div className="flex gap-2 mb-4"><input type="text" value={newHab} onChange={e=>setNewHab(e.target.value)} placeholder="Ex: Coleta" className="flex-1 p-3 rounded-lg text-sm font-bold border border-black/10 dark:border-white/10 outline-none bg-black/5 dark:bg-white/5" /><button onClick={()=>addItem('hab')} className="bg-accent text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button></div>
-                            <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">{habs.map((h, i) => (<div key={i} className="bg-white/50 dark:bg-black/20 border border-black/5 dark:border-white/5 px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-2">{h} <button onClick={()=>removeItem('hab', i)} className="text-red-500"><i className="ph-bold ph-x"></i></button></div>))}</div>
+                            <div className="flex gap-2 mb-4"><input type="text" value={newHab} onChange={e=>setNewHab(e.target.value)} placeholder="Ex: Coleta" className="flex-1 p-3 rounded-lg text-sm font-bold border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900" /><button onClick={()=>addItem('hab')} className="bg-accent text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button></div>
+                            <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">{habs.map((h, i) => (<div key={i} className="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-2">{h} <button onClick={()=>removeItem('hab', i)} className="text-red-500"><i className="ph-bold ph-x"></i></button></div>))}</div>
                         </div>
                     </div>
                 </div>
@@ -258,40 +257,43 @@
             const filtrados = data.filter(p => safeString(p.Nome).toLowerCase().includes(search.toLowerCase()));
 
             return (
-                <div className="animate-fade-in space-y-6 relative z-10 max-w-7xl mx-auto">
+                <div className="animate-fade-in space-y-6 max-w-7xl mx-auto">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                         <div><h2 className="text-3xl font-black">Time São Vicente</h2></div>
-                        <div className="flex gap-2 w-full md:w-auto"><input type="text" placeholder="Buscar..." value={search} onChange={e=>setSearch(e.target.value)} className="pl-6 pr-4 py-3 rounded-xl font-bold outline-none w-full bg-white/50 dark:bg-black/20 border border-black/10 dark:border-white/10" /><button onClick={()=>openModal()} className="bg-primary text-white px-6 rounded-xl font-black shadow-lg hover:scale-105 transition">Novo</button></div>
+                        <div className="flex gap-2 w-full md:w-auto"><input type="text" placeholder="Buscar..." value={search} onChange={e=>setSearch(e.target.value)} className="pl-4 pr-4 py-2.5 rounded-xl font-bold outline-none w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm" /><button onClick={()=>openModal()} className="bg-primary text-white px-6 rounded-xl font-bold shadow hover:bg-blue-600 transition">Novo</button></div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {filtrados.map((prof, i) => (
-                            <div key={i} onClick={()=>openModal(prof)} className="clay-card p-6 flex flex-col items-center text-center relative group overflow-hidden cursor-pointer">
-                                <div className="absolute top-0 inset-x-0 h-16 opacity-30" style={{backgroundColor: prof.Cor || '#0ea5e9'}}></div>
-                                {prof.FotoURL ? <img src={formatImageUrl(prof.FotoURL)} className="w-16 h-16 rounded-2xl object-cover shadow-md z-10 mb-3 border-2 border-white/50" /> : <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-md z-10 mb-3 border-2 border-white/50" style={{backgroundColor: prof.Cor || '#0ea5e9'}}>{safeString(prof.Nome).charAt(0).toUpperCase()}</div>}
-                                <h3 className="font-black text-lg leading-tight z-10 truncate w-full px-2">{safeString(prof.Nome)}</h3>
-                                <p className="text-[10px] font-black mt-1 uppercase tracking-widest opacity-60 z-10 truncate">{safeString(prof.Cargo)}</p>
-                                <span className="text-[8px] font-black uppercase bg-black/5 dark:bg-white/10 px-2 py-1 rounded mt-2 border border-black/10 dark:border-white/10">{prof.Setor || 'Sem Setor'}</span>
-                                <div className="absolute top-4 right-4 opacity-100 lg:opacity-0 group-hover:opacity-100 flex gap-2 z-20"><button onClick={async(e)=>{e.stopPropagation(); if(confirm('Excluir?')){await onDelete('PROFISSIONAIS', prof.ID); onRefresh();}}} className="w-8 h-8 bg-red-100 dark:bg-red-900/50 shadow-md rounded-full text-red-500 flex items-center justify-center hover:scale-110"><i className="ph-bold ph-trash"></i></button></div>
+                            <div key={i} onClick={()=>openModal(prof)} className="clean-card p-6 flex flex-col items-center text-center relative group cursor-pointer overflow-hidden">
+                                <div className="absolute top-0 inset-x-0 h-12 opacity-20" style={{backgroundColor: prof.Cor || '#0ea5e9'}}></div>
+                                {prof.FotoURL ? <img src={formatImageUrl(prof.FotoURL)} className="w-16 h-16 rounded-full object-cover shadow-sm z-10 mb-3 border-2 border-white dark:border-slate-700" /> : <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black text-white shadow-sm z-10 mb-3 border-2 border-white dark:border-slate-700" style={{backgroundColor: prof.Cor || '#0ea5e9'}}>{safeString(prof.Nome).charAt(0).toUpperCase()}</div>}
+                                <h3 className="font-black text-base leading-tight z-10 truncate w-full px-2">{safeString(prof.Nome)}</h3>
+                                <p className="text-[10px] font-bold mt-1 uppercase tracking-widest opacity-60 z-10 truncate">{safeString(prof.Cargo)}</p>
+                                <span className="text-[8px] font-black uppercase bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded mt-2 border border-slate-200 dark:border-slate-600">{prof.Setor || 'Sem Setor'}</span>
+                                <div className="mt-4 flex flex-wrap justify-center gap-1 opacity-80">
+                                    {(prof.Habilidades||[]).slice(0,2).map((h,j)=><span key={j} className="text-[8px] font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded">{h}</span>)}
+                                </div>
+                                <div className="absolute top-3 right-3 opacity-100 lg:opacity-0 group-hover:opacity-100 flex gap-2 z-20"><button onClick={async(e)=>{e.stopPropagation(); if(confirm('Excluir?')){await onDelete('PROFISSIONAIS', prof.ID); onRefresh();}}} className="w-8 h-8 bg-red-50 text-red-500 dark:bg-red-900/30 dark:text-red-400 rounded-full flex items-center justify-center hover:scale-110 transition"><i className="ph-bold ph-trash"></i></button></div>
                             </div>
                         ))}
                     </div>
                     {isModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in" onClick={()=>setIsModalOpen(false)}>
-                            <div className="clay-card w-full max-w-4xl p-0 overflow-hidden flex flex-col max-h-[90vh]" onClick={e=>e.stopPropagation()}>
-                                <div className="p-6 border-b border-black/10 dark:border-white/10 flex justify-between items-center bg-black/5 dark:bg-white/5"><h3 className="text-xl font-black">Cadastro</h3><button onClick={()=>setIsModalOpen(false)} className="w-8 h-8 rounded-full hover:bg-red-500 hover:text-white flex items-center justify-center transition"><i className="ph-bold ph-x"></i></button></div>
-                                <form onSubmit={handleSave} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in" onClick={()=>setIsModalOpen(false)}>
+                            <div className="clean-card w-full max-w-3xl p-0 overflow-hidden flex flex-col max-h-[90vh]" onClick={e=>e.stopPropagation()}>
+                                <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50"><h3 className="text-xl font-black">Cadastro de Profissional</h3><button onClick={()=>setIsModalOpen(false)} className="w-8 h-8 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition"><i className="ph-bold ph-x"></i></button></div>
+                                <form onSubmit={handleSave} className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 bg-white dark:bg-slate-800">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="md:col-span-2"><label className="text-[10px] font-black uppercase opacity-50">Nome Completo</label><input type="text" value={safeString(formData.Nome)} onChange={e=>setFormData({...formData, Nome: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:border-primary" required /></div>
-                                        <div className="md:col-span-2"><label className="text-[10px] font-black uppercase opacity-50">Foto (Link)</label><input type="text" value={safeString(formData.FotoURL)} onChange={e=>setFormData({...formData, FotoURL: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:border-primary" /></div>
-                                        <div><label className="text-[10px] font-black uppercase opacity-50">Cargo</label><input type="text" value={safeString(formData.Cargo)} onChange={e=>setFormData({...formData, Cargo: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:border-primary" required /></div>
-                                        <div><label className="text-[10px] font-black uppercase opacity-50">Setor</label><select value={safeString(formData.Setor)} onChange={e=>setFormData({...formData, Setor: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:border-primary"><option value="">Selecione...</option>{(sysConfig.setores||[]).map(s=><option key={s} value={s}>{s}</option>)}</select></div>
-                                        <div><label className="text-[10px] font-black uppercase opacity-50">Cor</label><input type="color" value={safeString(formData.Cor || '#0ea5e9')} onChange={e=>setFormData({...formData, Cor: e.target.value})} className="w-full h-12 p-1 mt-1 rounded-xl cursor-pointer border border-black/10 dark:border-white/10" /></div>
+                                        <div className="md:col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Nome Completo</label><input type="text" value={safeString(formData.Nome)} onChange={e=>setFormData({...formData, Nome: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:border-primary dark:focus:border-primary" required /></div>
+                                        <div className="md:col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Foto (Link Web/Drive)</label><input type="text" value={safeString(formData.FotoURL)} onChange={e=>setFormData({...formData, FotoURL: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:border-primary dark:focus:border-primary" /></div>
+                                        <div><label className="text-[10px] font-black uppercase opacity-60">Cargo</label><input type="text" value={safeString(formData.Cargo)} onChange={e=>setFormData({...formData, Cargo: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:border-primary dark:focus:border-primary" required /></div>
+                                        <div><label className="text-[10px] font-black uppercase opacity-60">Setor</label><select value={safeString(formData.Setor)} onChange={e=>setFormData({...formData, Setor: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:border-primary dark:focus:border-primary"><option value="">Selecione...</option>{(sysConfig.setores||[]).map(s=><option key={s} value={s}>{s}</option>)}</select></div>
+                                        <div><label className="text-[10px] font-black uppercase opacity-60">Cor Destacada</label><input type="color" value={safeString(formData.Cor || '#0ea5e9')} onChange={e=>setFormData({...formData, Cor: e.target.value})} className="w-full h-12 p-1 mt-1 rounded-xl cursor-pointer border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900" /></div>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 block mb-2">Habilidades</label>
-                                        <div className="flex flex-wrap gap-2">{(sysConfig.habilidades||[]).map(h => { const ativo = (formData.Habilidades||[]).includes(h); return <button type="button" key={h} onClick={()=>toggleHab(h)} className={`px-4 py-2 rounded-lg text-[10px] font-bold border transition ${ativo ? 'bg-primary border-primary text-white' : 'bg-black/5 dark:bg-white/5 border-transparent opacity-60'}`}>{h}</button>; })}</div>
+                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-2">Habilidades Funcionais</label>
+                                        <div className="flex flex-wrap gap-2">{(sysConfig.habilidades||[]).map(h => { const ativo = (formData.Habilidades||[]).includes(h); return <button type="button" key={h} onClick={()=>toggleHab(h)} className={`px-4 py-2 rounded-lg text-[10px] font-bold border transition ${ativo ? 'bg-primary border-primary text-white' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}>{h}</button>; })}</div>
                                     </div>
-                                    <div className="pt-4 flex justify-end gap-3"><button type="button" onClick={()=>setIsModalOpen(false)} className="px-6 py-3 font-bold opacity-70">Cancelar</button><button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black shadow-lg hover:scale-105 transition">Salvar Ficha</button></div>
+                                    <div className="pt-4 flex justify-end gap-3"><button type="button" onClick={()=>setIsModalOpen(false)} className="px-6 py-3 font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white">Cancelar</button><button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-bold shadow hover:bg-blue-600 transition">Salvar Ficha</button></div>
                                 </form>
                             </div>
                         </div>
@@ -303,6 +305,7 @@
         const PainelHojeView = ({ profissionais, escalas, config, user, onSave, onRefresh }) => {
             const isAdmin = user.nivel === 'Admin' || user.nivel === 'Supervisor';
             const [now, setNow] = useState(Date.now()); const [modalAction, setModalAction] = useState(null); 
+            const [isAssumindo, setIsAssumindo] = useState(false);
             useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(timer); }, []);
 
             const supervisorAtual = config?.supervisorAtual || 'Nenhum Assumiu';
@@ -311,48 +314,99 @@
             const todayStr = new Date().toLocaleDateString('pt-BR');
             const escalasHoje = escalas.filter(e => safeString(e.Data) === todayStr);
 
+            const assumirPlantao = async (nome) => {
+                await api.saveRecord('CONFIGURACOES', { ID: 'plantao', supervisorAtual: nome });
+                setIsAssumindo(false); onRefresh();
+            };
+
+            const handleStatusSimples = async (escala, novoStatus) => {
+                let update = { ...escala, Status: novoStatus };
+                if (novoStatus === 'INTERVALO') {
+                    const prof = profissionais.find(p => p.Nome === escala.Nome_Profissional);
+                    update.IntervaloInicio = Date.now(); update.IntervaloMinutos = prof ? parseInt(prof.TempoIntervalo) || 15 : 15;
+                } else { update.IntervaloInicio = null; }
+                await api.saveRecord('ESCALAS', update); onRefresh();
+            };
+
             const handleAcaoModal = async (e) => {
                 e.preventDefault();
                 if (modalAction.tipo === 'alocar') {
                     const prof = profissionais.find(p => p.ID === e.target.profissional.value);
                     if(!prof) return;
                     await api.saveRecord('ESCALAS', { ID: '', Data: todayStr, Sala: modalAction.sala, Nome_Profissional: prof.Nome, Cargo: prof.Cargo, Horario: e.target.horario.value, Status: 'NO POSTO', Cor: prof.Cor });
+                } else if (modalAction.tipo === 'ausencia') {
+                    await api.saveRecord('ESCALAS', { ...modalAction.escala, Status: 'AUSENTE', MotivoAusencia: e.target.motivo.value, ObsDia: `Ausente: ${e.target.motivo.value}` });
                 }
                 setModalAction(null); onRefresh();
             };
 
             return (
-                <div className="animate-fade-in space-y-10 relative z-10 max-w-[1600px] mx-auto">
-                    <div className="clay-card p-6 rounded-[2rem] border-l-4 border-l-primary flex flex-col md:flex-row justify-between items-center gap-4 shadow-lg">
-                        <div className="flex items-center gap-4"><div className="w-16 h-16 bg-primary/20 text-primary rounded-2xl flex items-center justify-center text-3xl"><i className="ph-fill ph-office-chair"></i></div><div><p className="text-[10px] uppercase tracking-widest font-bold opacity-70">Casa de Vidro</p><h3 className="font-black text-2xl leading-none">No Comando: <span className="text-primary">{supervisorAtual}</span></h3></div></div>
-                        {isAdmin && <button onClick={async()=>{await api.saveRecord('CONFIGURACOES', { ID: 'plantao', supervisorAtual: user.nome }); onRefresh();}} className="bg-slate-800 dark:bg-white text-white dark:text-slate-900 px-8 py-3.5 rounded-xl font-black shadow-md hover:scale-105 transition">Assumir Plantão</button>}
+                <div className="animate-fade-in space-y-10 max-w-[1600px] mx-auto">
+                    <div className="clean-card p-6 rounded-[1.5rem] border-l-4 border-l-primary flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-xl flex items-center justify-center text-3xl"><i className="ph-fill ph-shield-check"></i></div>
+                            <div><p className="text-[10px] uppercase tracking-widest font-bold opacity-60">Supervisão Geral</p><h3 className="font-black text-xl leading-none">No Comando: <span className="text-primary">{supervisorAtual}</span></h3></div>
+                        </div>
+                        {isAdmin && (
+                            isAssumindo ? (
+                                <div className="flex gap-2 w-full md:w-auto animate-fade-in">
+                                    <select id="superSelect" className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold outline-none text-sm">
+                                        <option value="">Quem está assumindo?</option><option value={user.nome}>{user.nome} (Eu)</option>{profissionais.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+                                    </select>
+                                    <button onClick={()=>{const v = document.getElementById('superSelect').value; if(v) assumirPlantao(v);}} className="bg-primary text-white px-4 rounded-xl font-bold hover:bg-blue-600">OK</button>
+                                </div>
+                            ) : (
+                                <button onClick={()=>setIsAssumindo(true)} className="w-full md:w-auto bg-slate-800 dark:bg-slate-700 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-700 transition">Trocar Supervisor</button>
+                            )
+                        )}
                     </div>
 
-                    {setoresAtivos.length === 0 && <div className="p-10 text-center clay-card opacity-70 font-bold max-w-lg mx-auto">Cadastre Setores e Postos em Ajustes.</div>}
+                    {setoresAtivos.length === 0 && <div className="p-10 text-center clean-card opacity-60 font-bold max-w-lg mx-auto border-dashed">Vá em "Ajustes" e cadastre seus Setores e Postos.</div>}
 
                     {setoresAtivos.map(setor => {
                         const postosDoSetor = postosSistema.filter(p => p.setor === setor);
                         return (
                             <div key={setor} className="space-y-4">
-                                <h3 className="text-xl font-black flex items-center gap-2 border-b border-black/10 dark:border-white/10 pb-2"><i className="ph-fill ph-buildings text-primary"></i> Setor: {setor}</h3>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                                <h3 className="text-lg font-black flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-2 text-slate-700 dark:text-slate-300"><i className="ph-fill ph-buildings opacity-50"></i> {setor}</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                     {postosDoSetor.map((postoObj, i) => {
                                         const sala = postoObj.nome;
                                         const ocupantes = escalasHoje.filter(e => e.Sala === sala);
                                         const isLivre = ocupantes.length === 0;
-                                        const cardTheme = ['border-blue-400 bg-blue-100/50 dark:bg-blue-900/30', 'border-accent bg-accent/20 dark:bg-accent/30', 'border-purple-400 bg-purple-100/50 dark:bg-purple-900/30', 'border-amber-400 bg-amber-100/50 dark:bg-amber-900/30'][i % 4];
 
                                         return (
-                                            <div key={i} className={`clay-card border-2 flex flex-col p-1 min-h-[150px] relative ${cardTheme} ${isLivre ? 'opacity-70 border-dashed' : 'border-solid'}`}>
-                                                <div className="p-3 bg-black/5 dark:bg-white/5 rounded-t-xl font-black text-[11px] uppercase tracking-widest flex justify-between items-center"><span className="truncate">{sala}</span>{isAdmin && <button onClick={()=>setModalAction({tipo: 'alocar', sala})} className="hover:scale-125 transition opacity-50 hover:opacity-100"><i className="ph-bold ph-plus-circle text-lg"></i></button>}</div>
+                                            <div key={i} className={`clean-card flex flex-col p-1 min-h-[140px] relative ${isLivre ? 'opacity-80 border-dashed bg-slate-50/50 dark:bg-slate-900/50' : 'border-solid'}`}>
+                                                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-t-xl font-black text-[11px] uppercase tracking-widest flex justify-between items-center border-b border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                                                    <span className="truncate">{sala}</span>
+                                                    {isAdmin && <button onClick={()=>setModalAction({tipo: 'alocar', sala})} className="text-primary hover:scale-110 transition"><i className="ph-bold ph-plus-circle text-lg"></i></button>}
+                                                </div>
                                                 <div className="flex-1 p-2 space-y-2">
-                                                    {isLivre ? <div className="flex flex-col items-center justify-center h-full text-accent py-4"><i className="ph-fill ph-check-circle text-2xl mb-1"></i><span className="text-[9px] font-black uppercase">Posto Livre</span></div> : 
-                                                    ocupantes.map((occ, j) => (
-                                                        <div key={j} className="p-2 rounded-xl relative transition group bg-white/50 dark:bg-black/20 border border-black/5 dark:border-white/5 backdrop-blur-md">
-                                                            <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black text-white" style={{backgroundColor: occ.Cor || '#000'}}>{occ.Nome_Profissional.charAt(0)}</div><div className="truncate flex-1"><p className="text-[11px] font-black truncate">{occ.Nome_Profissional}</p><p className="text-[8px] font-bold opacity-60 truncate">{occ.Cargo}</p></div></div>
-                                                            <div className="flex justify-between items-center border-t border-black/10 dark:border-white/10 pt-2"><span className="text-[8px] font-black text-green-600 bg-green-100 dark:bg-green-900/50 px-1.5 py-0.5 rounded">Operando</span>{isAdmin && <button onClick={async()=>{await api.deleteRecord('ESCALAS', occ.ID); onRefresh();}} className="text-[8px] text-red-500 font-black">Remover</button>}</div>
-                                                        </div>
-                                                    ))}
+                                                    {isLivre ? <div className="flex flex-col items-center justify-center h-full text-slate-400 py-4"><i className="ph-fill ph-check-circle text-xl mb-1 opacity-50"></i><span className="text-[9px] font-black uppercase opacity-70">Posto Livre</span></div> : 
+                                                    ocupantes.map((occ, j) => {
+                                                        const isIntervalo = occ.Status === 'INTERVALO';
+                                                        const isAusente = occ.Status === 'AUSENTE';
+                                                        let cardBg = 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700';
+                                                        if (isIntervalo) cardBg = 'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800';
+                                                        if (isAusente) cardBg = 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-80';
+
+                                                        return (
+                                                            <div key={j} className={`p-2.5 rounded-xl relative transition group ${cardBg} shadow-sm`}>
+                                                                {isIntervalo && <div className="absolute -top-2 -right-2 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center text-[10px] animate-bounce">☕</div>}
+                                                                <div className="flex items-center gap-2 mb-2"><div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{backgroundColor: occ.Cor || '#0ea5e9'}}>{occ.Nome_Profissional.charAt(0)}</div><div className="truncate flex-1"><p className={`text-[10px] font-black truncate leading-tight ${isAusente?'line-through text-red-500':''}`}>{occ.Nome_Profissional}</p><p className="text-[8px] font-bold opacity-60 truncate mt-0.5">{occ.Cargo}</p></div></div>
+                                                                <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2">
+                                                                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${isAusente?'text-red-600 bg-red-100':'text-green-600 bg-green-100 dark:bg-green-900/30'}`}>{isAusente?'Ausente':'Ativo'}</span>
+                                                                    {isAdmin && !isAusente && (
+                                                                        <div className="flex gap-1">
+                                                                            {!isIntervalo && <button onClick={()=>handleStatusSimples(occ, 'INTERVALO')} className="w-5 h-5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-orange-100 hover:text-orange-600 transition"><i className="ph-bold ph-coffee text-[10px]"></i></button>}
+                                                                            {isIntervalo && <button onClick={()=>handleStatusSimples(occ, 'NO POSTO')} className="w-5 h-5 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition"><i className="ph-bold ph-arrow-u-down-left text-[10px]"></i></button>}
+                                                                            <button onClick={()=>setModalAction({tipo:'ausencia', escala: occ})} className="w-5 h-5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-red-100 hover:text-red-600 transition"><i className="ph-bold ph-warning text-[10px]"></i></button>
+                                                                            <button onClick={async()=>{if(confirm('Remover?')){await api.deleteRecord('ESCALAS', occ.ID); onRefresh();}}} className="w-5 h-5 bg-slate-100 dark:bg-slate-700 text-slate-400 rounded hover:text-red-500 transition"><i className="ph-bold ph-x"></i></button>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    })}
                                                 </div>
                                             </div>
                                         )
@@ -363,15 +417,25 @@
                     })}
 
                     {modalAction && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in" onClick={()=>setModalAction(null)}>
-                            <div className="clay-card w-full max-w-md p-8 animate-pop-in" onClick={e=>e.stopPropagation()}>
-                                <form onSubmit={handleAcaoModal} className="space-y-4">
-                                    <h3 className="text-xl font-black mb-4"><i className="ph-fill ph-plus-circle text-primary"></i> Alocar na {modalAction.sala}</h3>
-                                    <select name="profissional" className="w-full p-4 rounded-xl border border-black/10 bg-black/5 dark:bg-white/5 font-bold outline-none" required><option value="">Escolha o profissional livre...</option>{profissionais.filter(p => !escalasHoje.some(e => e.Nome_Profissional === p.Nome)).map(p => <option key={p.ID} value={p.ID}>{p.Nome} ({p.Cargo})</option>)}</select>
-                                    <input type="text" name="horario" placeholder="Horário (Ex: 08:00 às 18:00)" defaultValue="08:00 às 18:00" className="w-full p-4 rounded-xl border border-black/10 bg-black/5 dark:bg-white/5 font-bold outline-none" required />
-                                    <button type="submit" className="w-full py-4 bg-primary text-white font-black rounded-xl">Confirmar Alocação</button>
-                                </form>
-                                <button type="button" onClick={()=>setModalAction(null)} className="w-full py-3 mt-4 text-sm font-bold opacity-50 hover:opacity-100">Cancelar</button>
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in" onClick={()=>setModalAction(null)}>
+                            <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
+                                {modalAction.tipo === 'alocar' && (
+                                    <form onSubmit={handleAcaoModal} className="space-y-4">
+                                        <h3 className="text-lg font-black mb-4">Alocar em: {modalAction.sala}</h3>
+                                        <select name="profissional" className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold outline-none text-sm" required><option value="">Escolha o profissional...</option>{profissionais.map(p => <option key={p.ID} value={p.ID}>{p.Nome} ({p.Cargo})</option>)}</select>
+                                        <input type="text" name="horario" placeholder="Horário (Ex: 08:00 às 18:00)" defaultValue="08:00 às 18:00" className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold outline-none text-sm" required />
+                                        <button type="submit" className="w-full py-3 bg-primary text-white font-bold rounded-xl">Confirmar</button>
+                                    </form>
+                                )}
+                                {modalAction.tipo === 'ausencia' && (
+                                    <form onSubmit={handleAcaoModal} className="space-y-4">
+                                        <h3 className="text-lg font-black mb-2 text-red-500">Marcar Ausência</h3>
+                                        <p className="text-xs font-bold opacity-70 mb-4">{modalAction.escala.Nome_Profissional}</p>
+                                        <select name="motivo" className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold outline-none text-sm" required><option value="Faltou">Faltou</option><option value="Atestado">Atestado Médico</option><option value="Trabalho Externo">Trabalho Externo</option></select>
+                                        <button type="submit" className="w-full py-3 bg-red-500 text-white font-bold rounded-xl">Confirmar</button>
+                                    </form>
+                                )}
+                                <button type="button" onClick={()=>setModalAction(null)} className="w-full py-2 mt-2 text-sm font-bold opacity-50 hover:opacity-100 text-center block">Cancelar</button>
                             </div>
                         </div>
                     )}
@@ -391,18 +455,18 @@
             });
 
             return (
-                <div className="animate-fade-in max-w-4xl mx-auto space-y-6 relative z-10 pb-10">
-                    <div className="clay-card p-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div className="flex items-center gap-4"><button onClick={()=>setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1))} className="w-10 h-10 bg-black/5 dark:bg-white/10 rounded-full flex justify-center items-center hover:scale-110 transition"><i className="ph-bold ph-caret-left"></i></button><h2 className="text-xl font-black uppercase tracking-widest w-40 text-center">{mesAtual.toLocaleString('pt-BR', {month:'long', year:'numeric'})}</h2><button onClick={()=>setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1))} className="w-10 h-10 bg-black/5 dark:bg-white/10 rounded-full flex justify-center items-center hover:scale-110 transition"><i className="ph-bold ph-caret-right"></i></button></div>
-                        {isAdmin ? <select value={selectedProf} onChange={e=>setSelectedProf(e.target.value)} className="p-3 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 font-bold text-sm w-full md:w-64 outline-none"><option value="">Selecionar Profissional...</option>{profissionais.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}</select> : <div className="px-4 py-2 bg-primary/10 text-primary rounded-xl font-black text-sm">Escala de: {user.nome}</div>}
+                <div className="animate-fade-in max-w-4xl mx-auto space-y-6 pb-10">
+                    <div className="clean-card p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div className="flex items-center gap-4"><button onClick={()=>setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1))} className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-left"></i></button><h2 className="text-lg font-black uppercase tracking-widest w-40 text-center">{mesAtual.toLocaleString('pt-BR', {month:'long', year:'numeric'})}</h2><button onClick={()=>setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1))} className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-right"></i></button></div>
+                        {isAdmin ? <select value={selectedProf} onChange={e=>setSelectedProf(e.target.value)} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm w-full md:w-64 outline-none"><option value="">Selecionar Profissional...</option>{profissionais.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}</select> : <div className="px-4 py-2 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-xl font-black text-sm border border-blue-100 dark:border-blue-800">Escala: {user.nome}</div>}
                     </div>
 
-                    {!selectedProf ? <div className="p-10 text-center clay-card opacity-60 font-bold">Selecione um profissional para gerar a linha do tempo.</div> : 
-                    <div className="clay-card p-8 relative overflow-hidden">
-                        <h3 className="font-black opacity-50 uppercase tracking-widest text-xs mb-8 border-b border-black/10 dark:border-white/10 pb-4">Histórico Mensal</h3>
+                    {!selectedProf ? <div className="p-10 text-center clean-card opacity-60 font-bold border-dashed">Selecione um profissional para gerar a escala.</div> : 
+                    <div className="clean-card p-8 relative overflow-hidden">
+                        <h3 className="font-black opacity-50 uppercase tracking-widest text-xs mb-8 border-b border-slate-100 dark:border-slate-800 pb-4">Relatório do Mês</h3>
                         <div className="relative">
                             <div className="timeline-line"></div>
-                            <div className="space-y-8">
+                            <div className="space-y-6">
                                 {dias.map((d, i) => {
                                     const escalasDoDia = escalas.filter(e => e.Nome_Profissional === selectedProf && e.Data === d.dataStr);
                                     if (escalasDoDia.length === 0) return null;
@@ -410,13 +474,16 @@
 
                                     return (
                                         <div key={i} className="flex relative z-10 animate-fade-in group">
-                                            <div className="w-16 shrink-0 flex flex-col items-center pt-2"><div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shadow-md z-10 transition-transform group-hover:scale-110 ${isToday ? 'bg-primary text-white ring-4 ring-blue-200' : 'bg-black/10 dark:bg-white/10'}`}>{d.data.getDate()}</div><span className={`text-[9px] font-black uppercase mt-1 ${isToday?'text-primary':'opacity-50'}`}>{d.diaSemana}</span></div>
+                                            <div className="w-16 shrink-0 flex flex-col items-center pt-2"><div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shadow-sm z-10 ${isToday ? 'bg-primary text-white ring-4 ring-blue-100 dark:ring-blue-900/50' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700'}`}>{d.data.getDate()}</div><span className={`text-[9px] font-black uppercase mt-1 ${isToday?'text-primary':'opacity-50'}`}>{d.diaSemana}</span></div>
                                             <div className="flex-1 pl-4">
-                                                <div className={`p-5 rounded-[1.5rem] border transition-all ${isToday ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 shadow-md' : 'bg-black/5 dark:bg-white/5 border-transparent hover:border-black/10'}`}>
+                                                <div className={`p-4 rounded-2xl border transition-all ${isToday ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 shadow-sm'}`}>
                                                     {escalasDoDia.map((esc, j) => (
-                                                        <div key={j} className="mb-3 last:mb-0">
-                                                            <div className="flex items-center gap-2 mb-1"><span className="w-2 h-2 rounded-full bg-accent"></span><h4 className="font-black text-sm">{esc.Sala}</h4></div>
-                                                            <p className="text-xs font-bold opacity-60 ml-4"><i className="ph-fill ph-clock"></i> {esc.Horario}</p>
+                                                        <div key={j} className="flex items-center justify-between">
+                                                            <div>
+                                                                <div className="flex items-center gap-2 mb-0.5"><span className="w-1.5 h-1.5 rounded-full bg-accent"></span><h4 className="font-black text-sm text-slate-700 dark:text-slate-200">{esc.Sala}</h4></div>
+                                                                <p className="text-xs font-bold opacity-60 ml-3.5"><i className="ph-fill ph-clock"></i> {esc.Horario}</p>
+                                                            </div>
+                                                            <span className="text-[9px] font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-500">Realizado</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -437,21 +504,14 @@
             const [activeTab, setActiveTab] = useState('HOJE');
             const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
             const [dataCentral, setDataCentral] = useState({ PROFISSIONAIS: [], ESCALAS: [], CONFIGURACOES: {} });
-
-            const [themeClass, setThemeClass] = useState('theme-morning');
+            
+            // DARK MODE MANUAL 
+            const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
+            
             useEffect(() => {
-                const updateTheme = () => {
-                    const h = new Date().getHours();
-                    if (h >= 6 && h < 12) setThemeClass('theme-morning');
-                    else if (h >= 12 && h < 18) setThemeClass('theme-afternoon');
-                    else setThemeClass('theme-night');
-                };
-                updateTheme();
-                const i = setInterval(updateTheme, 60000); 
-                return () => clearInterval(i);
-            }, []);
-
-            useEffect(() => { document.body.className = `${themeClass} min-h-screen relative overflow-x-hidden`; }, [themeClass]);
+                if (isDark) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } 
+                else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }
+            }, [isDark]);
 
             const fetchBanco = async () => {
                 try {
@@ -461,7 +521,7 @@
                     const sysConfig = cnf.find(c => c.ID === 'parametros') || {};
                     const plantaoConfig = cnf.find(c => c.ID === 'plantao') || {};
                     setDataCentral({ PROFISSIONAIS: profs || [], ESCALAS: esc || [], CONFIGURACOES: {...sysConfig, ...plantaoConfig} });
-                } catch(e) { console.error("Erro banco", e); }
+                } catch(e) { console.error("Erro", e); }
             };
 
             useEffect(() => {
@@ -469,7 +529,7 @@
                     if (u) {
                         let role = 'Colaborador';
                         const eStr = u.email.toLowerCase();
-                        if (eStr.includes('admin') || eStr.includes('gestao') || eStr.includes('diretor')) role = 'Admin';
+                        if (eStr.includes('admin') || eStr.includes('gestao')) role = 'Admin';
                         else if (eStr.includes('supervis')) role = 'Supervisor';
                         setUser({ email: u.email, nome: u.email.split('@')[0], nivel: role });
                         await fetchBanco();
@@ -482,72 +542,68 @@
             const handleLogin = async (e) => {
                 e.preventDefault(); setLoading(true);
                 try { await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); } 
-                catch(err) { alert('Erro de login!'); setLoading(false); }
+                catch(err) { alert('Erro no login! Verifique os dados.'); setLoading(false); }
             };
 
-            if (loading) return <div className={`min-h-screen flex items-center justify-center ${themeClass}`}><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin relative z-50"></div></div>;
+            if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900"><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
 
             if (!user) {
                 return (
-                    <div className={`min-h-screen flex items-center justify-center p-4 relative ${themeClass}`}>
-                        <div className="nebula-bg"><div className="nebula-blob blob1"></div><div className="nebula-blob blob2"></div><div className="nebula-blob blob3"></div></div>
-                        {themeClass.includes('night') && <div className="stars"></div>}
-                        
-                        <div className={`w-full max-w-md clay-card p-8 md:p-10 animate-fade-in relative z-10`}>
-                            <div className="w-20 h-20 bg-primary/10 text-primary rounded-3xl flex justify-center items-center mx-auto mb-6 shadow-inner"><i className="ph-fill ph-calendar-check text-5xl"></i></div>
-                            <h1 className="text-3xl font-black text-center mb-2">Escalas SV Pro</h1>
-                            <p className="text-center font-bold mb-8 opacity-60">Gestão Inteligente de Plantões</p>
+                    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900">
+                        <div className="w-full max-w-md clean-card p-8 md:p-10 animate-fade-in shadow-xl">
+                            <div className="w-16 h-16 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-2xl flex justify-center items-center mx-auto mb-6"><i className="ph-fill ph-calendar-check text-4xl"></i></div>
+                            <h1 className="text-3xl font-black text-center mb-1">Escalas SV</h1>
+                            <p className="text-center text-sm font-bold mb-8 opacity-50 uppercase tracking-widest">Portal de Acesso</p>
                             
                             <form onSubmit={handleLogin} className="space-y-4">
-                                <div className="relative"><i className="ph-fill ph-user absolute left-5 top-4.5 opacity-50 text-lg"></i><input name="email" type="email" placeholder="E-mail" className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required /></div>
-                                <div className="relative"><i className="ph-fill ph-lock-key absolute left-5 top-4.5 opacity-50 text-lg"></i><input name="password" type="password" placeholder="Senha" className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required /></div>
-                                <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-2xl shadow-lg hover:-translate-y-1 transition text-lg mt-4">Acessar</button>
+                                <input name="email" type="email" placeholder="E-mail" className="w-full p-4 rounded-xl outline-none font-bold bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 focus:border-primary transition" required />
+                                <input name="password" type="password" placeholder="Senha" className="w-full p-4 rounded-xl outline-none font-bold bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 focus:border-primary transition" required />
+                                <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-xl shadow-md hover:bg-blue-600 transition text-lg mt-2">Entrar</button>
                             </form>
                         </div>
+                        {/* Botão flutuante de dark mode na tela de login */}
+                        <button onClick={()=>setIsDark(!isDark)} className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-md text-slate-500 flex items-center justify-center"><i className={isDark ? "ph-fill ph-sun text-yellow-500" : "ph-fill ph-moon"}></i></button>
                     </div>
                 );
             }
 
             const isAdmin = user.nivel === 'Admin' || user.nivel === 'Supervisor';
-            const isDark = themeClass.includes('night');
 
             return (
-                <div className="min-h-screen flex flex-col md:flex-row pb-20 md:pb-0 relative">
-                    <div className="nebula-bg"><div className="nebula-blob blob1"></div><div className="nebula-blob blob2"></div><div className="nebula-blob blob3"></div></div>
-                    {isDark && <div className="stars"></div>}
-                    
-                    <aside className={`hidden md:flex flex-col h-screen fixed z-30 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-24' : 'w-72'} ${isDark ? 'bg-slate-900/60 border-r border-white/5 backdrop-blur-2xl' : 'bg-white/60 border-r border-black/5 backdrop-blur-2xl'}`}>
-                        <div className="p-6 border-b border-inherit flex items-center justify-between">
-                            <div className="flex items-center gap-4 overflow-hidden"><div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center shadow-md shrink-0"><i className="ph-fill ph-heartbeat text-2xl animate-pulse"></i></div>{!isSidebarCollapsed && <div><h2 className="font-black text-xl leading-none whitespace-nowrap">Escalas SV</h2><p className="text-[10px] uppercase tracking-widest opacity-60 font-bold">Portal Médico</p></div>}</div>
-                            <button onClick={()=>setIsSidebarCollapsed(!isSidebarCollapsed)} className="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition shrink-0"><i className={`ph-bold ${isSidebarCollapsed ? 'ph-caret-right' : 'ph-caret-left'}`}></i></button>
+                <div className="min-h-screen flex flex-col md:flex-row pb-20 md:pb-0">
+                    <aside className={`hidden md:flex flex-col h-screen fixed z-30 transition-all duration-300 ease-in-out border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between h-20">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                                <div className="w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center shadow-sm shrink-0"><i className="ph-fill ph-heartbeat text-xl"></i></div>
+                                {!isSidebarCollapsed && <div><h2 className="font-black text-lg leading-none">Escalas</h2><p className="text-[9px] uppercase tracking-widest opacity-50 font-bold">São Vicente</p></div>}
+                            </div>
                         </div>
-                        <nav className="flex-1 px-4 py-6 space-y-2 overflow-x-hidden">
-                            <button onClick={()=>setActiveTab('HOJE')} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'HOJE' ? 'bg-primary text-white shadow-lg' : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`} title="Mapa do Plantão"><i className="ph-fill ph-kanban text-xl shrink-0"></i> {!isSidebarCollapsed && <span className="truncate">Mapa do Plantão</span>}</button>
-                            <button onClick={()=>setActiveTab('CALENDARIO')} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'CALENDARIO' ? 'bg-primary text-white shadow-lg' : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`} title="Minha Escala"><i className="ph-fill ph-calendar-blank text-xl shrink-0"></i> {!isSidebarCollapsed && <span className="truncate">Minha Escala</span>}</button>
-                            {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'EQUIPE' ? (isDark?'bg-white text-slate-900':'bg-slate-800 text-white shadow-lg') : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`} title="Gestão de Equipe"><i className="ph-fill ph-users text-xl shrink-0"></i> {!isSidebarCollapsed && <span className="truncate">Gestão de Equipe</span>}</button>}
-                            {isAdmin && <button onClick={()=>setActiveTab('CONFIG')} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'CONFIG' ? 'bg-accent text-white shadow-lg' : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`} title="Ajustes da Clínica"><i className="ph-fill ph-gear text-xl shrink-0"></i> {!isSidebarCollapsed && <span className="truncate">Ajustes da Clínica</span>}</button>}
+                        <nav className="flex-1 px-3 py-6 space-y-2 overflow-x-hidden">
+                            <button onClick={()=>setActiveTab('HOJE')} className={`w-full flex items-center gap-3 px-3 py-3.5 rounded-xl font-bold text-sm transition ${activeTab === 'HOJE' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`} title="Plantão"><i className="ph-fill ph-kanban text-lg shrink-0"></i> {!isSidebarCollapsed && <span>Plantão</span>}</button>
+                            <button onClick={()=>setActiveTab('CALENDARIO')} className={`w-full flex items-center gap-3 px-3 py-3.5 rounded-xl font-bold text-sm transition ${activeTab === 'CALENDARIO' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`} title="Escala"><i className="ph-fill ph-calendar-blank text-lg shrink-0"></i> {!isSidebarCollapsed && <span>Escala</span>}</button>
+                            {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`w-full flex items-center gap-3 px-3 py-3.5 rounded-xl font-bold text-sm transition ${activeTab === 'EQUIPE' ? 'bg-slate-800 text-white dark:bg-slate-700' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`} title="Equipe"><i className="ph-fill ph-users text-lg shrink-0"></i> {!isSidebarCollapsed && <span>Equipe</span>}</button>}
+                            {isAdmin && <button onClick={()=>setActiveTab('CONFIG')} className={`w-full flex items-center gap-3 px-3 py-3.5 rounded-xl font-bold text-sm transition ${activeTab === 'CONFIG' ? 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-white' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`} title="Ajustes"><i className="ph-fill ph-gear text-lg shrink-0"></i> {!isSidebarCollapsed && <span>Ajustes</span>}</button>}
                         </nav>
-                        <button onClick={()=>auth.signOut()} className="p-6 text-red-500 font-bold flex items-center gap-3 hover:bg-red-500/10 transition border-t border-inherit overflow-hidden"><i className="ph-bold ph-sign-out text-xl shrink-0"></i> {!isSidebarCollapsed && <span>Sair do App</span>}</button>
+                        <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <button onClick={()=>auth.signOut()} className="text-red-500 font-bold flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition" title="Sair"><i className="ph-bold ph-sign-out text-lg"></i> {!isSidebarCollapsed && <span className="text-xs">Sair</span>}</button>
+                            <button onClick={()=>setIsSidebarCollapsed(!isSidebarCollapsed)} className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex justify-center items-center text-slate-400 hover:text-slate-800 dark:hover:text-white transition shrink-0"><i className={`ph-bold ${isSidebarCollapsed ? 'ph-caret-right' : 'ph-caret-left'}`}></i></button>
+                        </div>
                     </aside>
 
-                    <nav className={`md:hidden fixed bottom-0 inset-x-0 border-t z-50 flex justify-around p-3 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl ${isDark?'bg-slate-900/80 border-white/5':'bg-white/80 border-black/5'}`}>
-                        <button onClick={()=>setActiveTab('HOJE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-16 ${activeTab === 'HOJE' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'HOJE' ? 'ph-fill' : 'ph'} ph-kanban text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Hoje</span></button>
-                        <button onClick={()=>setActiveTab('CALENDARIO')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-16 ${activeTab === 'CALENDARIO' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'CALENDARIO' ? 'ph-fill' : 'ph'} ph-calendar-blank text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Escala</span></button>
-                        {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-16 ${activeTab === 'EQUIPE' ? (isDark?'text-white':'text-slate-800') : 'opacity-40'}`}><i className={`${activeTab === 'EQUIPE' ? 'ph-fill' : 'ph'} ph-users text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Equipe</span></button>}
-                        {isAdmin && <button onClick={()=>setActiveTab('CONFIG')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-16 ${activeTab === 'CONFIG' ? 'text-accent' : 'opacity-40'}`}><i className={`${activeTab === 'CONFIG' ? 'ph-fill' : 'ph'} ph-gear text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Ajustes</span></button>}
+                    <nav className="md:hidden fixed bottom-0 inset-x-0 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around p-2 pb-safe bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+                        <button onClick={()=>setActiveTab('HOJE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl w-16 ${activeTab === 'HOJE' ? 'text-primary' : 'text-slate-400'}`}><i className={`${activeTab === 'HOJE' ? 'ph-fill' : 'ph'} ph-kanban text-2xl`}></i><span className="text-[9px] font-black uppercase">Hoje</span></button>
+                        <button onClick={()=>setActiveTab('CALENDARIO')} className={`flex flex-col items-center gap-1 p-2 rounded-xl w-16 ${activeTab === 'CALENDARIO' ? 'text-primary' : 'text-slate-400'}`}><i className={`${activeTab === 'CALENDARIO' ? 'ph-fill' : 'ph'} ph-calendar-blank text-2xl`}></i><span className="text-[9px] font-black uppercase">Escala</span></button>
+                        {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl w-16 ${activeTab === 'EQUIPE' ? 'text-slate-800 dark:text-white' : 'text-slate-400'}`}><i className={`${activeTab === 'EQUIPE' ? 'ph-fill' : 'ph'} ph-users text-2xl`}></i><span className="text-[9px] font-black uppercase">Equipe</span></button>}
+                        {isAdmin && <button onClick={()=>setActiveTab('CONFIG')} className={`flex flex-col items-center gap-1 p-2 rounded-xl w-16 ${activeTab === 'CONFIG' ? 'text-slate-800 dark:text-white' : 'text-slate-400'}`}><i className={`${activeTab === 'CONFIG' ? 'ph-fill' : 'ph'} ph-gear text-2xl`}></i><span className="text-[9px] font-black uppercase">Ajustes</span></button>}
                     </nav>
 
-                    <main className={`flex-1 transition-all duration-300 p-4 md:p-10 relative z-10 w-full overflow-x-hidden ${isSidebarCollapsed ? 'md:ml-24' : 'md:ml-72'}`}>
-                        <div className="md:hidden flex justify-between items-center mb-6 p-4 rounded-2xl shadow-sm border border-inherit clay-card">
-                            <div className="flex items-center gap-3"><div className="w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center shadow-md"><i className="ph-fill ph-calendar-check text-xl"></i></div><div><h1 className="font-black leading-none">Escalas SV</h1><p className="text-[10px] uppercase font-bold opacity-50">Olá, {user.nome.split(' ')[0]}</p></div></div>
-                        </div>
+                    <main className={`flex-1 transition-all duration-300 p-4 md:p-8 w-full overflow-x-hidden ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
+                        {(activeTab === 'HOJE' || activeTab === 'CALENDARIO') && <div className="max-w-[1600px] mx-auto"><TopHeader user={user} isDark={isDark} toggleDark={()=>setIsDark(!isDark)} /></div>}
 
-                        {(activeTab === 'HOJE' || activeTab === 'CALENDARIO') && <div className="max-w-[1600px] mx-auto"><TopHeader user={user} themeClass={themeClass} /></div>}
-
-                        {activeTab === 'HOJE' && <PainelHojeView profissionais={dataCentral.PROFISSIONAIS} escalas={dataCentral.ESCALAS} config={dataCentral.CONFIGURACOES} user={user} onSave={api.saveRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
-                        {activeTab === 'EQUIPE' && isAdmin && <EquipeView data={dataCentral.PROFISSIONAIS} sysConfig={dataCentral.CONFIGURACOES} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
-                        {activeTab === 'CONFIG' && isAdmin && <ConfiguracoesView sysConfig={dataCentral.CONFIGURACOES} onSaveConfig={api.saveRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
-                        {activeTab === 'CALENDARIO' && <CalendarioView profissionais={dataCentral.PROFISSIONAIS} escalas={dataCentral.ESCALAS} user={user} themeClass={themeClass} />}
+                        {activeTab === 'HOJE' && <PainelHojeView profissionais={dataCentral.PROFISSIONAIS} escalas={dataCentral.ESCALAS} config={dataCentral.CONFIGURACOES} user={user} onSave={api.saveRecord} onRefresh={fetchBanco} />}
+                        {activeTab === 'EQUIPE' && isAdmin && <EquipeView data={dataCentral.PROFISSIONAIS} sysConfig={dataCentral.CONFIGURACOES} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={fetchBanco} />}
+                        {activeTab === 'CONFIG' && isAdmin && <ConfiguracoesView sysConfig={dataCentral.CONFIGURACOES} onSaveConfig={api.saveRecord} onRefresh={fetchBanco} />}
+                        {activeTab === 'CALENDARIO' && <CalendarioView profissionais={dataCentral.PROFISSIONAIS} escalas={dataCentral.ESCALAS} user={user} />}
                     </main>
                 </div>
             );
@@ -558,4 +614,3 @@
     </script>
 </body>
 </html>
-
