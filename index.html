@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><meta name="theme-color" content="#1E40AF"><title>Escalas SV ERP</title>
-<script>window.addEventListener('error', e => { document.body.innerHTML = `<div style="background:#fee2e2;color:#991b1b;padding:40px;text-align:center;"><h1>Erro</h1><p>${e.message} (Linha ${e.lineno})</p><button onclick="location.reload()">Recarregar</button></div>`; });</script>
+<script>window.addEventListener('error', e => { document.body.innerHTML = `<div style="background:#fee2e2;color:#991b1b;padding:40px;text-align:center;"><h1>Erro Detectado</h1><p>${e.message} (Linha ${e.lineno})</p><button onclick="location.reload()" style="padding:10px 20px; background:#991b1b; color:white; border-radius:8px; margin-top:20px;">Recarregar</button></div>`; });</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:'#0ea5e9',secondary:'#1E40AF',accent:'#10b981'},animation:{'fade-in':'fadeIn 0.3s ease-out'},keyframes:{fadeIn:{'0%':{opacity:'0',transform:'translateY(10px)'},'100%':{opacity:'1',transform:'translateY(0)'}}}}}}</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet"><script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -15,7 +15,12 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .clean-card:hover{transform:translateY(-2px);box-shadow:0 10px 15px -3px rgba(0,0,0,0.08);}.dark .clean-card:hover{box-shadow:0 10px 15px -3px rgba(0,0,0,0.3);}
 .fade-next{background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(248,250,252,0.8) 100%);}
 .dark .fade-next{background:linear-gradient(180deg, rgba(30,41,59,0) 0%, rgba(15,23,42,0.8) 100%);}
+.timeline-line::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e2e8f0;z-index:0;}.dark .timeline-line::before{background:#334155;}
 </style>
+<script>
+    const VERSAO_ATUAL = "28.0.0"; 
+    if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); }
+</script>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300">
 <div id="root"></div>
@@ -35,7 +40,7 @@ const fmtImg = (u) => { let s=safeStr(u).trim(); if(!s)return''; let m=s.match(/
 
 class ErrorBoundary extends Component {
     constructor(props){super(props);this.state={hasError:false,e:''};} static getDerivedStateFromError(e){return{hasError:true};} componentDidCatch(e){this.setState({e:String(e)});}
-    render(){ if(this.state.hasError) return <div className="p-10 text-center"><h2 className="text-2xl text-red-500 font-black">Erro</h2><p>{this.state.e}</p><button onClick={()=>location.reload()} className="p-3 bg-blue-500 text-white rounded mt-4">Recarregar</button></div>; return this.props.children; }
+    render(){ if(this.state.hasError) return <div className="p-10 text-center"><h2 className="text-2xl text-red-500 font-black mb-2">Erro</h2><p className="text-xs bg-red-100 text-red-800 p-4 rounded max-w-xl mx-auto">{this.state.e}</p><button onClick={()=>location.reload()} className="p-3 bg-blue-500 text-white rounded font-bold mt-4">Recarregar</button></div>; return this.props.children; }
 }
 
 const TopHeader = ({ user, isDark, toggleDark }) => {
@@ -44,12 +49,15 @@ const TopHeader = ({ user, isDark, toggleDark }) => {
     return (
         <div className="clean-card p-6 mb-6 flex justify-between items-center">
             <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-xl flex items-center justify-center text-3xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"><i className="ph-fill ph-hospital"></i></div><div><h2 className="text-2xl font-black">{t.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</h2><p className="text-[10px] font-bold uppercase opacity-60 mt-1">{p}, {user?.nome?.split(' ')[0]}</p></div></div>
-            <button onClick={toggleDark} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex justify-center items-center text-xl">{isDark?<i className="ph-fill ph-sun text-yellow-400"></i>:<i className="ph-fill ph-moon text-slate-600"></i>}</button>
+            <div className="flex items-center gap-4">
+                <div className="hidden md:block text-right"><p className="text-[10px] uppercase font-bold opacity-50">Portal Médico</p><p className="font-black text-sm">Escalas SV</p></div>
+                <button onClick={toggleDark} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex justify-center items-center text-xl">{isDark?<i className="ph-fill ph-sun text-yellow-400"></i>:<i className="ph-fill ph-moon text-slate-600"></i>}</button>
+            </div>
         </div>
     );
 };
 
-// ================== ABA 1: AJUSTES (HIERARQUIA E EDIÇÃO) ==================
+// ================== ABA 1: AJUSTES ==================
 const AjustesView = ({ cfg, onSave, onRefresh }) => {
     const [u, setU] = useState(cfg.unidades||[]); const [s, setS] = useState(cfg.setores||[]); const [p, setP] = useState(cfg.postos||[]);
     const [h, setH] = useState(cfg.habilidades||[]); const [a, setA] = useState(cfg.ausencias||[]); const [dash, setDash] = useState(cfg.showDash!==false);
@@ -57,38 +65,29 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
 
     const salvar = async () => { setL(true); await onSave('CONFIGURACOES',{ID:'parametros',unidades:u,setores:s,postos:p,habilidades:h,ausencias:a,showDash:dash}); onRefresh(); setL(false); alert("Configurações Salvas!"); };
 
-    // Funções Genéricas de CRUD rápido via Prompt para poupar linhas
     const add = (tipo) => {
-        if(tipo==='u'){ let n=prompt('Nome da Unidade/Prédio:'); if(n) setU([...u, {id:Date.now(), nome:n.toUpperCase()}]); }
-        if(tipo==='s'){ 
-            if(u.length===0) return alert("Cadastre uma unidade primeiro!");
-            let un=prompt(`Qual unidade? (${u.map(x=>x.nome).join(', ')})`); if(!un)return;
-            let n=prompt('Nome do Setor:'); if(n) setS([...s, {id:Date.now(), nome:n.toUpperCase(), unidade:un.toUpperCase()}]); 
-        }
-        if(tipo==='p'){
-            if(s.length===0) return alert("Cadastre um setor primeiro!");
-            let se=prompt(`Qual setor? (${s.map(x=>x.nome).join(', ')})`); if(!se)return;
-            let n=prompt('Nome do Posto/Sala:'); if(n) setP([...p, {id:Date.now(), nome:n, setor:se.toUpperCase()}]);
-        }
+        if(tipo==='u'){ let n=prompt('Nome da Unidade:'); if(n) setU([...u, {id:Date.now(), nome:n.toUpperCase()}]); }
+        if(tipo==='s'){ if(u.length===0) return alert("Cadastre uma unidade primeiro!"); let un=prompt(`Qual unidade? (${u.map(x=>x.nome).join(', ')})`); if(!un)return; let n=prompt('Nome do Setor:'); if(n) setS([...s, {id:Date.now(), nome:n.toUpperCase(), unidade:un.toUpperCase()}]); }
+        if(tipo==='p'){ if(s.length===0) return alert("Cadastre um setor primeiro!"); let se=prompt(`Qual setor? (${s.map(x=>x.nome).join(', ')})`); if(!se)return; let n=prompt('Nome do Posto/Sala:'); if(n) setP([...p, {id:Date.now(), nome:n, setor:se.toUpperCase()}]); }
         if(tipo==='h'){ let n=prompt('Nova Habilidade:'); if(n) setH([...h, n]); }
-        if(tipo==='a'){ let n=prompt('Novo Status Longo (Férias, etc):'); if(n) setA([...a, n]); }
+        if(tipo==='a'){ let n=prompt('Nova Ausência:'); if(n) setA([...a, n]); }
     };
     const edit = (tipo, idx) => {
         if(tipo==='u'){ let n=prompt('Editar Unidade:', u[idx].nome); if(n){ let arr=[...u]; arr[idx].nome=n.toUpperCase(); setU(arr); } }
         if(tipo==='s'){ let n=prompt('Editar Setor:', s[idx].nome); if(n){ let arr=[...s]; arr[idx].nome=n.toUpperCase(); setS(arr); } }
         if(tipo==='p'){ let n=prompt('Editar Posto:', p[idx].nome); if(n){ let arr=[...p]; arr[idx].nome=n; setP(arr); } }
         if(tipo==='h'){ let n=prompt('Editar Habilidade:', h[idx]); if(n){ let arr=[...h]; arr[idx]=n; setH(arr); } }
-        if(tipo==='a'){ let n=prompt('Editar Status:', a[idx]); if(n){ let arr=[...a]; arr[idx]=n; setA(arr); } }
+        if(tipo==='a'){ let n=prompt('Editar Ausência:', a[idx]); if(n){ let arr=[...a]; arr[idx]=n; setA(arr); } }
     };
     const del = (tipo, idx) => {
-        if(!confirm("Tem certeza que deseja excluir?")) return;
+        if(!confirm("Excluir?")) return;
         if(tipo==='u') setU(u.filter((_,i)=>i!==idx)); if(tipo==='s') setS(s.filter((_,i)=>i!==idx)); if(tipo==='p') setP(p.filter((_,i)=>i!==idx));
         if(tipo==='h') setH(h.filter((_,i)=>i!==idx)); if(tipo==='a') setA(a.filter((_,i)=>i!==idx));
     };
 
     const ListRender = ({title, arr, tipo, desc}) => (
         <div className="clean-card p-5">
-            <div className="flex justify-between items-center mb-3"><h3 className="font-black text-sm">{title}</h3><button onClick={()=>add(tipo)} className="bg-primary text-white w-6 h-6 rounded flex items-center justify-center">+</button></div>
+            <div className="flex justify-between items-center mb-2"><h3 className="font-black text-sm">{title}</h3><button onClick={()=>add(tipo)} className="bg-primary text-white w-6 h-6 rounded font-black">+</button></div>
             <p className="text-[9px] opacity-50 mb-3">{desc}</p>
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                 {arr.map((item, i) => (
@@ -97,31 +96,30 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
                         <div className="flex gap-1 shrink-0"><button onClick={()=>edit(tipo, i)} className="text-yellow-600 bg-yellow-100 p-1 rounded"><i className="ph-bold ph-pencil"></i></button><button onClick={()=>del(tipo, i)} className="text-red-600 bg-red-100 p-1 rounded"><i className="ph-bold ph-trash"></i></button></div>
                     </div>
                 ))}
+                {arr.length===0 && <p className="text-[10px] opacity-40">Nenhum item cadastrado.</p>}
             </div>
         </div>
     );
 
     return (
         <div className="animate-fade-in space-y-6 max-w-6xl mx-auto">
-            <div className="flex justify-between items-center"><h2 className="text-2xl font-black">Ajustes & Parâmetros</h2><button onClick={salvar} disabled={loading} className="bg-primary text-white px-6 py-2 rounded-xl font-bold">{loading?'Salvando...':'Salvar'}</button></div>
-            
-            <div className="clean-card p-4 flex justify-between items-center bg-blue-50 dark:bg-slate-800">
-                <div><h4 className="font-bold text-sm">Dashboard da Tela Principal</h4><p className="text-[10px] opacity-60">Exibir cards de contagem de funcionários (Ativos, Férias, etc)</p></div>
-                <button onClick={()=>setDash(!dash)} className={`w-12 h-6 rounded-full transition-colors relative ${dash?'bg-green-500':'bg-slate-300'}`}><div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${dash?'translate-x-6.5 left-0':'left-0.5'}`}></div></button>
+            <div className="flex justify-between items-center"><h2 className="text-2xl font-black">Ajustes & Parâmetros</h2><button onClick={salvar} disabled={loading} className="bg-primary text-white px-6 py-2 rounded-xl font-bold">{loading?'Salvando...':'Salvar Servidor'}</button></div>
+            <div className="clean-card p-4 flex justify-between items-center bg-blue-50/50 dark:bg-slate-800/50">
+                <div><h4 className="font-bold text-sm">Dashboard Principal</h4><p className="text-[10px] opacity-60">Exibir contagem de funcionários</p></div>
+                <button onClick={()=>setDash(!dash)} className={`w-12 h-6 rounded-full transition-colors relative ${dash?'bg-green-500':'bg-slate-300 dark:bg-slate-600'}`}><div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${dash?'translate-x-6.5 left-0':'left-0.5'}`}></div></button>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <ListRender title="1. Unidades/Prédios" arr={u} tipo="u" desc="Prédios físicos da clínica." />
-                <ListRender title="2. Setores" arr={s} tipo="s" desc="Departamentos dentro das unidades." />
-                <ListRender title="3. Postos/Salas" arr={p} tipo="p" desc="Locais exatos de trabalho (ex: Cons. 1)." />
-                <ListRender title="Status de Ausência Longa" arr={a} tipo="a" desc="Férias, Atestados (Afastam o colaborador)." />
-                <ListRender title="Competências" arr={h} tipo="h" desc="Habilidades para filtro de cobertura." />
+                <ListRender title="1. Unidades/Prédios" arr={u} tipo="u" desc="Estruturas físicas." />
+                <ListRender title="2. Setores" arr={s} tipo="s" desc="Departamentos." />
+                <ListRender title="3. Postos/Salas" arr={p} tipo="p" desc="Locais exatos de trabalho." />
+                <ListRender title="Motivos de Afastamento" arr={a} tipo="a" desc="Férias, Licenças." />
+                <ListRender title="Competências" arr={h} tipo="h" desc="Habilidades da equipe." />
             </div>
         </div>
     );
 };
 
-// ================== ABA 2: EQUIPE (MÉDICOS VS COLABORADORES) ==================
+// ================== ABA 2: EQUIPE ==================
 const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
     const [modal, setModal] = useState(false); const [fd, setFd] = useState({}); const [busca, setBusca] = useState('');
     const s = cfg.setores||[]; const h = cfg.habilidades||[]; const a = cfg.ausencias||[];
@@ -134,16 +132,15 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
 
     return (
         <div className="animate-fade-in space-y-6 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center"><h2 className="text-2xl font-black">Corpo Clínico & Equipe</h2><div className="flex gap-2"><input type="text" placeholder="Buscar..." value={busca} onChange={e=>setBusca(e.target.value)} className="p-2 rounded-lg border outline-none text-sm bg-transparent" /><button onClick={()=>openModal()} className="bg-primary text-white px-4 rounded-lg font-bold">Novo</button></div></div>
-            
+            <div className="flex justify-between items-center"><h2 className="text-2xl font-black">Corpo Clínico & Equipe</h2><div className="flex gap-2"><input type="text" placeholder="Buscar..." value={busca} onChange={e=>setBusca(e.target.value)} className="p-2 rounded-lg border dark:border-slate-700 outline-none text-sm bg-transparent" /><button onClick={()=>openModal()} className="bg-primary text-white px-4 rounded-lg font-bold">Novo</button></div></div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {filtrados.map((p, i) => (
                     <div key={i} onClick={()=>openModal(p)} className="clean-card p-5 flex flex-col items-center text-center relative cursor-pointer group">
                         {p.StatusGeral && p.StatusGeral !== 'Ativo' && <span className="absolute top-2 left-2 bg-red-100 text-red-600 text-[8px] font-black px-2 py-1 rounded">{p.StatusGeral}</span>}
                         {p.FotoURL ? <img src={fmtImg(p.FotoURL)} className="w-14 h-14 rounded-full object-cover shadow mb-2" /> : <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black text-white shadow mb-2" style={{backgroundColor:p.Cor||'#0ea5e9'}}>{safeStr(p.Nome)[0]}</div>}
                         <h3 className="font-black text-sm truncate w-full leading-tight">{p.Nome}</h3>
-                        <p className="text-[9px] font-bold opacity-60 uppercase">{p.Tipo === 'Médico' ? `Médico CRM: ${p.CRM||'N/A'}` : p.Cargo}</p>
-                        <button onClick={(e)=>{e.stopPropagation();if(confirm('Excluir?')){onDelete('PROFISSIONAIS',p.ID);onRefresh();}}} className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100"><i className="ph-fill ph-trash"></i></button>
+                        <p className="text-[9px] font-bold opacity-60 uppercase mt-0.5">{p.Tipo === 'Médico' ? `CRM: ${p.CRM||'N/A'}` : p.Cargo}</p>
+                        <button onClick={(e)=>{e.stopPropagation();if(confirm('Excluir?')){onDelete('PROFISSIONAIS',p.ID);onRefresh();}}} className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 bg-red-50 p-1 rounded"><i className="ph-fill ph-trash"></i></button>
                     </div>
                 ))}
             </div>
@@ -151,36 +148,31 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
             {modal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" onClick={()=>setModal(false)}>
                     <div className="clean-card w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e=>e.stopPropagation()}>
-                        <div className="p-4 border-b flex justify-between bg-slate-50 dark:bg-slate-800"><h3 className="font-black">Ficha Cadastral</h3><button onClick={()=>setModal(false)}><i className="ph-bold ph-x"></i></button></div>
+                        <div className="p-4 border-b dark:border-slate-700 flex justify-between bg-slate-50 dark:bg-slate-800"><h3 className="font-black">Ficha Cadastral</h3><button onClick={()=>setModal(false)}><i className="ph-bold ph-x"></i></button></div>
                         <form onSubmit={save} className="p-5 overflow-y-auto space-y-4 text-sm">
                             <div className="flex gap-4 mb-2">
-                                <label className="flex items-center gap-2 font-bold cursor-pointer"><input type="radio" name="tipo" checked={fd.Tipo==='Colaborador'} onChange={()=>setFd({...fd, Tipo:'Colaborador'})} /> Colaborador Base</label>
-                                <label className="flex items-center gap-2 font-bold cursor-pointer text-blue-600"><input type="radio" name="tipo" checked={fd.Tipo==='Médico'} onChange={()=>setFd({...fd, Tipo:'Médico'})} /> Corpo Clínico (Médico)</label>
+                                <label className="flex items-center gap-2 font-bold cursor-pointer"><input type="radio" checked={fd.Tipo==='Colaborador'} onChange={()=>setFd({...fd, Tipo:'Colaborador'})} /> Equipe Base</label>
+                                <label className="flex items-center gap-2 font-bold cursor-pointer text-blue-600 dark:text-blue-400"><input type="radio" checked={fd.Tipo==='Médico'} onChange={()=>setFd({...fd, Tipo:'Médico'})} /> Corpo Clínico (Médico)</label>
                             </div>
-                            
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Nome</label><input type="text" value={fd.Nome} onChange={e=>setFd({...fd,Nome:e.target.value})} className="w-full p-2 border rounded bg-transparent" required/></div>
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Foto URL</label><input type="text" value={fd.FotoURL||''} onChange={e=>setFd({...fd,FotoURL:e.target.value})} className="w-full p-2 border rounded bg-transparent"/></div>
+                                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Nome</label><input type="text" value={fd.Nome} onChange={e=>setFd({...fd,Nome:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
+                                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Foto URL</label><input type="text" value={fd.FotoURL||''} onChange={e=>setFd({...fd,FotoURL:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
                                 {fd.Tipo==='Médico' ? (
                                     <>
-                                    <div><label className="text-[10px] font-black uppercase opacity-60">CRM</label><input type="text" value={fd.CRM||''} onChange={e=>setFd({...fd,CRM:e.target.value})} className="w-full p-2 border rounded bg-transparent" required/></div>
-                                    <div><label className="text-[10px] font-black uppercase opacity-60">Especialidade (Cargo)</label><input type="text" value={fd.Cargo} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border rounded bg-transparent" required/></div>
+                                    <div><label className="text-[10px] font-black uppercase opacity-60">CRM</label><input type="text" value={fd.CRM||''} onChange={e=>setFd({...fd,CRM:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
+                                    <div><label className="text-[10px] font-black uppercase opacity-60">Especialidade (Cargo)</label><input type="text" value={fd.Cargo} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
                                     </>
                                 ) : (
                                     <>
-                                    <div><label className="text-[10px] font-black uppercase opacity-60">Cargo</label><input type="text" value={fd.Cargo} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border rounded bg-transparent" required/></div>
-                                    <div><label className="text-[10px] font-black uppercase opacity-60">Setor Base</label><select value={fd.Setor} onChange={e=>setFd({...fd,Setor:e.target.value})} className="w-full p-2 border rounded bg-transparent"><option value="">Selecione...</option>{s.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
+                                    <div><label className="text-[10px] font-black uppercase opacity-60">Cargo</label><input type="text" value={fd.Cargo} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
+                                    <div><label className="text-[10px] font-black uppercase opacity-60">Setor Base</label><select value={fd.Setor} onChange={e=>setFd({...fd,Setor:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"><option value="">Selecione...</option>{s.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
                                     </>
                                 )}
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Status Atual (Afastamento)</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd,StatusGeral:e.target.value})} className="w-full p-2 border rounded bg-transparent text-red-500 font-bold"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{a.map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-8 cursor-pointer" /></div>
+                                <div><label className="text-[10px] font-black uppercase opacity-60">Afastamentos</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd,StatusGeral:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent font-bold"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{a.map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
+                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor</label><input type="color" value={fd.Cor||'#0ea5e9'} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-9 cursor-pointer border dark:border-slate-700 rounded" /></div>
                             </div>
-                            
-                            <div><label className="text-[10px] font-black uppercase opacity-60">Competências</label>
-                                <div className="flex flex-wrap gap-1 mt-1">{h.map((x,i)=><button type="button" key={i} onClick={()=>toggleHab(x)} className={`px-2 py-1 text-[10px] rounded border ${fd.Habilidades?.includes(x)?'bg-primary text-white':'bg-transparent'}`}>{x}</button>)}</div>
-                            </div>
-                            
-                            <div className="pt-4 flex justify-end gap-2"><button type="button" onClick={()=>setModal(false)} className="px-4 py-2 opacity-60">Cancelar</button><button type="submit" className="bg-primary text-white px-6 py-2 rounded font-bold">Salvar</button></div>
+                            <div><label className="text-[10px] font-black uppercase opacity-60">Competências</label><div className="flex flex-wrap gap-1 mt-1">{h.map((x,i)=><button type="button" key={i} onClick={()=>toggleHab(x)} className={`px-2 py-1 text-[10px] font-bold rounded border dark:border-slate-700 ${fd.Habilidades?.includes(x)?'bg-primary text-white border-primary':'bg-transparent'}`}>{x}</button>)}</div></div>
+                            <div className="pt-4 flex justify-end gap-2"><button type="button" onClick={()=>setModal(false)} className="px-4 py-2 opacity-60 font-bold">Cancelar</button><button type="submit" className="bg-primary text-white px-6 py-2 rounded font-bold">Salvar Ficha</button></div>
                         </form>
                     </div>
                 </div>
@@ -189,51 +181,108 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
     );
 };
 
-// ================== ABA 3: ESCALAS (BUILDER) ==================
-const EscalasBuilderView = ({ profs, cfg, onSave, onRefresh }) => {
-    const psts = cfg.postos||[]; const [selP, setSelP] = useState(''); const [selSala, setSelSala] = useState('');
+// ================== ABA 3: CALENDÁRIO / BUILDER (TIMELINE) ==================
+const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
+    const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
+    const [mode, setMode] = useState('TIMELINE'); 
+    const [selProf, setSelProf] = useState(isAd ? '' : user.nome);
+    const [mesAtual, setMesAtual] = useState(new Date());
+
+    // Builder State
+    const psts = cfg.postos||[]; const [selSala, setSelSala] = useState('');
     const [hIn, setHIn] = useState('08:00'); const [hOut, setHOut] = useState('18:00'); const [obs, setObs] = useState('');
     const [dates, setDates] = useState([]); const [dInput, setDInput] = useState('');
-    
+
     const addD = () => { if(dInput && !dates.includes(dInput)){ setDates([...dates, dInput]); setDInput(''); } };
     const gerar = async () => {
-        if(!selP || !selSala || dates.length===0) return alert("Preencha Profissional, Sala e Datas!");
-        const prof = profs.find(x=>x.ID===selP);
+        if(!selProf || !selSala || dates.length===0) return alert("Preencha Profissional, Sala e Datas!");
+        const prof = profs.find(x=>x.ID===selProf || x.Nome===selProf);
         for(let d of dates){
             const dFmt = d.split('-').reverse().join('/');
             await onSave('ESCALAS', { Data: dFmt, Sala: selSala, Nome_Profissional: prof.Nome, Cargo: prof.Cargo, Horario: `${hIn} às ${hOut}`, Status: 'NO POSTO', Cor: prof.Cor, Habilidades: prof.Habilidades||[], ObsDia: obs });
         }
-        alert("Escalas Geradas com Sucesso!"); setDates([]); onRefresh();
+        alert("Escalas Geradas!"); setDates([]); setMode('TIMELINE'); onRefresh();
     };
 
+    // Timeline logic
+    const diasNoMes = new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 0).getDate();
+    const dias = Array.from({length: diasNoMes}, (_, i) => { const data = new Date(mesAtual.getFullYear(), mesAtual.getMonth(), i + 1); return { data, diaSemana: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][data.getDay()], dataStr: data.toLocaleDateString('pt-BR') }; });
+
     return (
-        <div className="animate-fade-in max-w-4xl mx-auto space-y-6">
-            <h2 className="text-2xl font-black">Construtor de Escalas</h2>
-            <div className="clean-card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                    <div><label className="text-xs font-bold opacity-60">Profissional</label><select value={selP} onChange={e=>setSelP(e.target.value)} className="w-full p-3 border rounded-xl mt-1 bg-transparent"><option value="">Selecione...</option>{profs.filter(x=>x.StatusGeral==='Ativo'||!x.StatusGeral).map(x=><option key={x.ID} value={x.ID}>{x.Nome}</option>)}</select></div>
-                    <div><label className="text-xs font-bold opacity-60">Posto / Sala</label><select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border rounded-xl mt-1 bg-transparent"><option value="">Selecione...</option>{psts.map((x,i)=><option key={i} value={x.nome}>{x.nome} ({x.setor})</option>)}</select></div>
-                    <div className="flex gap-2">
-                        <div className="flex-1"><label className="text-xs font-bold opacity-60">Entra</label><input type="time" value={hIn} onChange={e=>setHIn(e.target.value)} className="w-full p-3 border rounded-xl mt-1 bg-transparent" /></div>
-                        <div className="flex-1"><label className="text-xs font-bold opacity-60">Sai</label><input type="time" value={hOut} onChange={e=>setHOut(e.target.value)} className="w-full p-3 border rounded-xl mt-1 bg-transparent" /></div>
-                    </div>
-                    <div><label className="text-xs font-bold opacity-60">Observações (Opcional)</label><input type="text" value={obs} onChange={e=>setObs(e.target.value)} className="w-full p-3 border rounded-xl mt-1 bg-transparent" placeholder="Ex: Cobre almoço do Dr. João" /></div>
+        <div className="animate-fade-in max-w-4xl mx-auto space-y-6 pb-10">
+            {isAd && (
+                <div className="flex gap-2 mb-4 border-b border-slate-200 dark:border-slate-700 pb-4">
+                    <button onClick={()=>setMode('TIMELINE')} className={`px-4 py-2 rounded-xl font-bold text-sm ${mode==='TIMELINE'?'bg-primary text-white':'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>Visualizar Escala</button>
+                    <button onClick={()=>setMode('BUILDER')} className={`px-4 py-2 rounded-xl font-bold text-sm ${mode==='BUILDER'?'bg-accent text-white':'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}><i className="ph-bold ph-magic-wand"></i> Gerador Automático</button>
                 </div>
-                <div className="border-l border-slate-200 dark:border-slate-700 pl-0 md:pl-6 space-y-4">
-                    <label className="text-xs font-bold opacity-60">Múltiplas Datas</label>
-                    <div className="flex gap-2"><input type="date" value={dInput} onChange={e=>setDInput(e.target.value)} className="flex-1 p-3 border rounded-xl bg-transparent" /><button onClick={addD} className="bg-slate-800 text-white px-4 rounded-xl font-bold">+</button></div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                        {dates.map((d,i)=><span key={i} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-2">{d.split('-').reverse().join('/')} <i onClick={()=>setDates(dates.filter(x=>x!==d))} className="ph-bold ph-x cursor-pointer"></i></span>)}
-                        {dates.length===0 && <p className="text-xs opacity-50">Nenhuma data adicionada.</p>}
+            )}
+
+            {mode === 'BUILDER' ? (
+                <div className="clean-card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                        <div><label className="text-xs font-bold opacity-60">Colaborador / Médico</label><select value={selProf} onChange={e=>setSelProf(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione...</option>{profs.filter(x=>x.StatusGeral==='Ativo'||!x.StatusGeral).map(x=><option key={x.ID} value={x.Nome}>{x.Nome}</option>)}</select></div>
+                        <div><label className="text-xs font-bold opacity-60">Posto / Sala</label><select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione...</option>{psts.map((x,i)=><option key={i} value={x.nome}>{x.nome} ({x.setor})</option>)}</select></div>
+                        <div className="flex gap-2">
+                            <div className="flex-1"><label className="text-xs font-bold opacity-60">Início</label><input type="time" value={hIn} onChange={e=>setHIn(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" /></div>
+                            <div className="flex-1"><label className="text-xs font-bold opacity-60">Fim</label><input type="time" value={hOut} onChange={e=>setHOut(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" /></div>
+                        </div>
+                        <div><label className="text-xs font-bold opacity-60">Anotação (Aparece na Timeline)</label><input type="text" value={obs} onChange={e=>setObs(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" placeholder="Ex: Plantão extra" /></div>
                     </div>
-                    <button onClick={gerar} className="w-full mt-auto bg-green-500 text-white py-4 rounded-xl font-black shadow-lg hover:bg-green-600 transition">Disparar Escalas</button>
+                    <div className="border-l border-slate-200 dark:border-slate-700 pl-0 md:pl-6 space-y-4 flex flex-col">
+                        <div><label className="text-xs font-bold opacity-60">Adicionar Datas da Escala</label><div className="flex gap-2 mt-1"><input type="date" value={dInput} onChange={e=>setDInput(e.target.value)} className="flex-1 p-3 border dark:border-slate-700 rounded-xl bg-transparent text-sm" /><button onClick={addD} className="bg-slate-800 dark:bg-slate-700 text-white px-4 rounded-xl font-black">+</button></div></div>
+                        <div className="flex flex-wrap gap-2 flex-1 content-start mt-2">
+                            {dates.map((d,i)=><span key={i} className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 border border-blue-200 dark:border-blue-800">{d.split('-').reverse().join('/')} <i onClick={()=>setDates(dates.filter(x=>x!==d))} className="ph-bold ph-x cursor-pointer hover:text-red-500"></i></span>)}
+                            {dates.length===0 && <p className="text-[10px] opacity-40 w-full text-center py-4 border-2 border-dashed rounded-xl border-slate-200 dark:border-slate-700">Selecione os dias acima.</p>}
+                        </div>
+                        <button onClick={gerar} className="w-full bg-accent text-white py-4 rounded-xl font-black shadow-lg hover:scale-[1.02] transition mt-auto">Salvar na Escala</button>
+                    </div>
                 </div>
-            </div>
+            ) : (
+                <div className="space-y-6">
+                    <div className="clean-card p-5 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div className="flex items-center gap-4"><button onClick={()=>setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1))} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-left"></i></button><h2 className="text-lg font-black uppercase tracking-widest w-32 text-center">{mesAtual.toLocaleString('pt-BR', {month:'long'})}</h2><button onClick={()=>setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1))} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-right"></i></button></div>
+                        {isAd ? <select value={selProf} onChange={e=>setSelProf(e.target.value)} className="p-2.5 rounded-lg border dark:border-slate-700 outline-none bg-transparent font-bold text-sm w-full md:w-64"><option value="">Selecionar Perfil...</option>{profs.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}</select> : <div className="px-4 py-2 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-xl font-black text-sm">Minha Escala</div>}
+                    </div>
+
+                    {!selProf ? <div className="p-10 text-center clean-card opacity-60 font-bold border-dashed">Selecione para gerar a linha do tempo.</div> :
+                    <div className="clean-card p-6 relative overflow-hidden">
+                        <h3 className="font-black opacity-50 uppercase tracking-widest text-xs mb-6 border-b border-slate-100 dark:border-slate-800 pb-2">Linha do Tempo</h3>
+                        <div className="relative">
+                            <div className="timeline-line"></div>
+                            <div className="space-y-4">
+                                {dias.map((d, i) => {
+                                    const escDia = escalas.filter(e => e.Nome_Profissional === selProf && e.Data === d.dataStr);
+                                    if (escDia.length === 0) return null;
+                                    const isToday = d.dataStr === new Date().toLocaleDateString('pt-BR');
+
+                                    return (
+                                        <div key={i} className="flex relative z-10 animate-fade-in group">
+                                            <div className="w-16 shrink-0 flex flex-col items-center pt-2"><div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shadow-sm z-10 ${isToday ? 'bg-primary text-white ring-4 ring-blue-100 dark:ring-blue-900/50' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700'}`}>{d.data.getDate()}</div><span className={`text-[9px] font-black uppercase mt-1 ${isToday?'text-primary':'opacity-50'}`}>{d.diaSemana}</span></div>
+                                            <div className="flex-1 pl-4">
+                                                <div className={`p-4 rounded-2xl border transition-all ${isToday ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 shadow-sm' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
+                                                    {escDia.map((esc, j) => (
+                                                        <div key={j} className="mb-2 last:mb-0">
+                                                            <div className="flex items-center gap-2 mb-1"><span className="w-2 h-2 rounded-full bg-accent"></span><h4 className="font-black text-sm text-slate-700 dark:text-slate-200">{esc.Sala} {esc.EmApoio?'(Apoio)':''}</h4></div>
+                                                            <p className="text-xs font-bold opacity-60 ml-4"><i className="ph-fill ph-clock"></i> {esc.Horario}</p>
+                                                            {esc.ObsDia && <p className="text-[9px] font-bold text-orange-600 bg-orange-50 dark:bg-orange-900/30 px-2 py-1 rounded w-max mt-1.5 ml-4 border border-orange-100 dark:border-orange-800"><i className="ph-bold ph-info"></i> {esc.ObsDia}</p>}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                {dias.filter(d => escalas.some(e=>e.Nome_Profissional===selProf&&e.Data===d.dataStr)).length === 0 && <p className="pl-16 text-xs font-bold opacity-50 py-4">Sem plantões previstos este mês.</p>}
+                            </div>
+                        </div>
+                    </div>}
+                </div>
+            )}
         </div>
     );
 };
 
-// ================== ABA 4: MAPA DE PLANTÃO (UNIDADES -> SETORES) ==================
+// ================== ABA 4: MAPA DE PLANTÃO (HOJE) ==================
 const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
     const [now, setNow] = useState(Date.now()); const [actU, setActU] = useState(null);
@@ -243,50 +292,34 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const escHj = escalas.filter(e => e.Data === dStr);
     const postosSis = cfg.postos||[]; const setoresSis = cfg.setores||[]; const unids = cfg.unidades||[];
     
-    // Calcula Dashboards
     const qAtivos = escHj.length;
     const qAfastados = profs.filter(p => p.StatusGeral && p.StatusGeral !== 'Ativo').length;
     const qFolga = profs.length - qAtivos - qAfastados;
 
     const setStatus = async (esc, st) => { let u={...esc, Status:st}; if(st==='INTERVALO'){ u.IntervaloInicio=Date.now(); u.IntervaloMinutos=15; } else u.IntervaloInicio=null; await api.saveRecord('ESCALAS', u); onRefresh(); };
 
-    // LÓGICA DE DEGRADÊ E PRÓXIMO TURNO
     const renderPosto = (sala, ocupantes) => {
-        // Ordena ocupantes pelo horario de inicio (ex: "08:00 às 12:00")
         ocupantes.sort((a,b)=> (a.Horario||'').localeCompare(b.Horario||''));
-        
-        // Pega hora atual como string "HH:MM"
         const d=new Date(now); const hStr=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
-        
-        // Acha quem está ativo AGORA (horario inicio <= hStr e horario fim >= hStr)
-        let ativoIdx = ocupantes.findIndex(o => {
-            let pts = (o.Horario||'').split(' às '); if(pts.length!==2) return true; // sem formato, assume ativo
-            return hStr >= pts[0].trim() && hStr <= pts[1].trim();
-        });
-        if(ativoIdx===-1) ativoIdx = 0; // se ninguem bate, pega o primeiro
+        let ativoIdx = ocupantes.findIndex(o => { let pts = (o.Horario||'').split(' às '); if(pts.length!==2) return true; return hStr >= pts[0].trim() && hStr <= pts[1].trim(); });
+        if(ativoIdx===-1) ativoIdx = 0; 
 
-        const current = ocupantes[ativoIdx];
-        const next = ocupantes[ativoIdx+1]; // O próximo da lista
-
+        const current = ocupantes[ativoIdx]; const next = ocupantes[ativoIdx+1]; 
         const isInt = current?.Status === 'INTERVALO'; const isAus = current?.Status === 'AUSENTE';
 
         return (
-            <div className="flex-1 p-2 flex flex-col justify-between">
-                {/* Ocupante Principal */}
-                <div className={`p-2 rounded-xl relative border shadow-sm ${isInt?'bg-orange-50 border-orange-200':isAus?'bg-red-50 border-red-200 opacity-60':'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
-                    <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black" style={{background:current.Cor||'#000'}}>{current.Nome_Profissional[0]}</div><div className="truncate"><p className="text-[11px] font-black">{current.Nome_Profissional}</p><p className="text-[8px] font-bold opacity-60">{current.Cargo} • {current.Horario}</p></div></div>
-                    {/* Ações (Reduzidas p espaço) */}
-                    <div className="flex justify-between items-center border-t border-black/10 dark:border-white/10 pt-2">
-                        <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600'}`}>{current.Status}</span>
-                        {isAd && !isAus && <div className="flex gap-1"><button onClick={()=>setStatus(current, isInt?'NO POSTO':'INTERVALO')} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center"><i className="ph-fill ph-coffee"></i></button><button onClick={()=>setStatus(current, 'AUSENTE')} className="w-6 h-6 bg-red-100 text-red-600 rounded flex justify-center items-center"><i className="ph-fill ph-warning"></i></button></div>}
+            <div className="flex-1 p-2 flex flex-col justify-between space-y-2">
+                <div className={`p-2.5 rounded-xl relative border shadow-sm transition-colors ${isInt?'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800':isAus?'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70':'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
+                    <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0" style={{background:current.Cor||'#000'}}>{current.Nome_Profissional[0]}</div><div className="truncate"><p className={`text-[11px] font-black truncate ${isAus?'line-through':''}`}>{current.Nome_Profissional}</p><p className="text-[8px] font-bold opacity-60 truncate">{current.Cargo} • {current.Horario}</p></div></div>
+                    <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2">
+                        <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>{current.Status}</span>
+                        {isAd && !isAus && <div className="flex gap-1"><button onClick={()=>setStatus(current, isInt?'NO POSTO':'INTERVALO')} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button><button onClick={()=>setStatus(current, 'AUSENTE')} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-red-100 transition text-slate-500"><i className="ph-fill ph-warning"></i></button></div>}
                     </div>
                 </div>
-
-                {/* EFEITO DEGRADÊ: Próximo Turno */}
                 {next && (
-                    <div className="mt-2 p-2 rounded-xl border border-slate-200 dark:border-slate-700 fade-next relative overflow-hidden">
-                        <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-1">Próximo Turno</p>
-                        <div className="flex items-center gap-2 opacity-70"><div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px]" style={{background:next.Cor||'#000'}}>{next.Nome_Profissional[0]}</div><div><p className="text-[9px] font-black">{next.Nome_Profissional}</p><p className="text-[8px]">{next.Horario}</p></div></div>
+                    <div className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 fade-next relative overflow-hidden">
+                        <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-1">Entra às {next.Horario.split(' ')[0]}</p>
+                        <div className="flex items-center gap-2 opacity-70"><div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px]" style={{background:next.Cor||'#000'}}>{next.Nome_Profissional[0]}</div><div><p className="text-[9px] font-black truncate max-w-[100px]">{next.Nome_Profissional}</p></div></div>
                     </div>
                 )}
             </div>
@@ -294,49 +327,47 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     };
 
     if(!actU) {
-        // TELA 1: MOSTRAR UNIDADES E DASHBOARD
         return (
             <div className="animate-fade-in space-y-8 max-w-7xl mx-auto">
                 {cfg.showDash !== false && (
-                    <div className="grid grid-cols-3 gap-4 mb-8">
-                        <div className="clean-card p-4 text-center border-b-4 border-b-green-500"><p className="text-xs font-bold opacity-60 uppercase">Em Plantão</p><h3 className="text-3xl font-black text-green-600">{qAtivos}</h3></div>
-                        <div className="clean-card p-4 text-center border-b-4 border-b-slate-400"><p className="text-xs font-bold opacity-60 uppercase">Folga</p><h3 className="text-3xl font-black text-slate-500">{qFolga}</h3></div>
-                        <div className="clean-card p-4 text-center border-b-4 border-b-red-500"><p className="text-xs font-bold opacity-60 uppercase">Afastados/Licença</p><h3 className="text-3xl font-black text-red-500">{qAfastados}</h3></div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                        <div className="clean-card p-5 text-center border-b-4 border-b-green-500"><p className="text-[10px] font-black opacity-50 uppercase tracking-widest">Em Plantão (Hoje)</p><h3 className="text-4xl font-black text-green-600 mt-1">{qAtivos}</h3></div>
+                        <div className="clean-card p-5 text-center border-b-4 border-b-slate-300 dark:border-b-slate-600"><p className="text-[10px] font-black opacity-50 uppercase tracking-widest">Folga</p><h3 className="text-4xl font-black text-slate-400 mt-1">{qFolga}</h3></div>
+                        <div className="clean-card p-5 text-center border-b-4 border-b-red-500"><p className="text-[10px] font-black opacity-50 uppercase tracking-widest">Licenças / Férias</p><h3 className="text-4xl font-black text-red-500 mt-1">{qAfastados}</h3></div>
                     </div>
                 )}
-                <h2 className="text-2xl font-black mb-4"><i className="ph-fill ph-buildings text-primary"></i> Selecione a Unidade</h2>
+                <h2 className="text-2xl font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-hospital text-primary"></i> Selecione a Unidade</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {unids.map((u,i) => (
-                        <div key={i} onClick={()=>setActU(u.nome)} className="clean-card p-8 flex flex-col items-center justify-center cursor-pointer group hover:bg-primary hover:text-white transition-all">
-                            <i className="ph-fill ph-hospital text-5xl text-primary group-hover:text-white mb-4 transition-colors"></i>
+                        <div key={i} onClick={()=>setActU(u.nome)} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-primary transition-all">
+                            <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-buildings"></i></div>
                             <h3 className="font-black text-xl uppercase tracking-widest">{u.nome}</h3>
                         </div>
                     ))}
-                    {unids.length===0 && <p className="opacity-50">Cadastre Unidades em Ajustes.</p>}
+                    {unids.length===0 && <div className="col-span-full p-10 text-center border-2 border-dashed rounded-2xl opacity-50 font-bold">Vá na aba "Ajustes" e cadastre Prédios e Unidades.</div>}
                 </div>
             </div>
         );
     }
 
-    // TELA 2: DENTRO DA UNIDADE (SETORES -> POSTOS)
     const setoresDaUnidade = setoresSis.filter(s => s.unidade === actU).map(s=>s.nome);
     
     return (
-        <div className="animate-fade-in space-y-8 max-w-[1600px] mx-auto">
-            <div className="flex items-center gap-4"><button onClick={()=>setActU(null)} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100"><i className="ph-bold ph-arrow-left"></i></button><h2 className="text-2xl font-black">Unidade: {actU}</h2></div>
+        <div className="animate-fade-in space-y-8 max-w-[1600px] mx-auto pb-10">
+            <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-4"><button onClick={()=>setActU(null)} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button><div><p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Unidade Ativa</p><h2 className="text-2xl font-black">{actU}</h2></div></div>
             
             {setoresDaUnidade.map(setor => {
                 const postosSetor = postosSis.filter(p => p.setor === setor);
                 return (
                     <div key={setor} className="space-y-4">
-                        <h3 className="text-lg font-black border-b border-slate-200 dark:border-slate-700 pb-2 text-slate-600 dark:text-slate-300 opacity-80 uppercase tracking-widest">{setor}</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <h3 className="text-lg font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2"><i className="ph-fill ph-squares-four opacity-50"></i> {setor}</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                             {postosSetor.map((pst, i) => {
                                 const ocup = escHj.filter(e => e.Sala === pst.nome);
                                 return (
-                                    <div key={i} className={`clean-card flex flex-col p-1 min-h-[140px] border-t-4 ${ocup.length===0?'opacity-70 border-t-slate-300':'border-t-primary'}`}>
-                                        <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-t-xl font-black text-[11px] uppercase tracking-widest text-center border-b border-slate-100 dark:border-slate-700">{pst.nome}</div>
-                                        {ocup.length===0 ? <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-4"><i className="ph-fill ph-check-circle text-2xl mb-1 opacity-50"></i><span className="text-[9px] font-black uppercase">Livre</span></div> : renderPosto(pst.nome, ocup)}
+                                    <div key={i} className={`clean-card flex flex-col p-1 min-h-[140px] border-t-4 ${ocup.length===0?'opacity-70 border-t-slate-300 dark:border-t-slate-600':'border-t-primary shadow-md'}`}>
+                                        <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-t-xl font-black text-[11px] uppercase tracking-widest text-center border-b border-slate-100 dark:border-slate-700 truncate px-2">{pst.nome}</div>
+                                        {ocup.length===0 ? <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-6"><i className="ph-bold ph-ghost text-3xl mb-2 opacity-30"></i><span className="text-[9px] font-black uppercase">Posto Livre</span></div> : renderPosto(pst.nome, ocup)}
                                     </div>
                                 )
                             })}
@@ -344,6 +375,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     </div>
                 )
             })}
+            {setoresDaUnidade.length===0 && <p className="p-10 text-center opacity-50 font-bold border-2 border-dashed rounded-xl">Nenhum setor atrelado a esta unidade.</p>}
         </div>
     );
 };
@@ -366,27 +398,28 @@ const App = () => {
     if (l) return <div className="min-h-screen flex items-center justify-center"><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
 
     if (!u) return (
-        <div className="min-h-screen flex items-center justify-center p-4"><div className="w-full max-w-md clean-card p-10"><h1 className="text-3xl font-black text-center mb-8">Escalas SV ERP</h1><form onSubmit={async e=>{e.preventDefault();setL(true);try{await auth.signInWithEmailAndPassword(e.target.e.value, e.target.p.value);}catch(err){alert('Erro');setL(false);}}} className="space-y-4"><input name="e" type="email" placeholder="E-mail" className="w-full p-4 rounded-xl border outline-none bg-slate-50 dark:bg-slate-900" required /><input name="p" type="password" placeholder="Senha" className="w-full p-4 rounded-xl border outline-none bg-slate-50 dark:bg-slate-900" required /><button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-xl">Entrar</button></form></div></div>
+        <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900"><div className="w-full max-w-md clean-card p-10"><div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6"><i className="ph-fill ph-hospital"></i></div><h1 className="text-3xl font-black text-center mb-8">Escalas SV</h1><form onSubmit={async e=>{e.preventDefault();setL(true);try{await auth.signInWithEmailAndPassword(e.target.e.value, e.target.p.value);}catch(err){alert('Acesso Negado');setL(false);}}} className="space-y-4"><input name="e" type="email" placeholder="E-mail" className="w-full p-4 rounded-xl border dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-800" required /><input name="p" type="password" placeholder="Senha" className="w-full p-4 rounded-xl border dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-800" required /><button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-xl shadow-lg hover:bg-blue-600">Entrar no Sistema</button></form></div><button onClick={()=>setIsD(!isD)} className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow flex items-center justify-center text-slate-500"><i className={isD?"ph-fill ph-sun text-yellow-500":"ph-fill ph-moon"}></i></button></div>
     );
 
     const isAd = u.nivel === 'Admin';
-    const menu = [ {id:'HOJE', i:'ph-kanban', n:'Plantão'}, {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas', ad:isAd}, {id:'EQUIPE', i:'ph-users', n:'Equipe', ad:isAd}, {id:'CONFIG', i:'ph-gear', n:'Ajustes', ad:isAd} ];
+    const menu = [ {id:'HOJE', i:'ph-kanban', n:'Plantão'}, {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas', ad:false}, {id:'EQUIPE', i:'ph-users', n:'Equipe', ad:isAd}, {id:'CONFIG', i:'ph-gear', n:'Ajustes', ad:isAd} ];
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row pb-20 md:pb-0">
             <aside className="hidden md:flex flex-col h-screen fixed z-30 w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3"><div className="w-10 h-10 bg-primary text-white rounded-lg flex justify-center items-center"><i className="ph-fill ph-heartbeat text-xl"></i></div><div><h2 className="font-black">Escalas SV</h2><p className="text-[9px] uppercase opacity-50 font-bold">ERP Médico</p></div></div>
-                <nav className="flex-1 px-4 py-6 space-y-2">{menu.filter(m=>!m.ad||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm ${t===m.id?'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400':'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><i className={`ph-fill ${m.i} text-lg`}></i> {m.n}</button>)}</nav>
-                <div className="p-4 border-t border-slate-100 dark:border-slate-800"><button onClick={()=>auth.signOut()} className="text-red-500 font-bold flex items-center gap-2 p-2"><i className="ph-bold ph-sign-out"></i> Sair</button></div>
+                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3"><div className="w-10 h-10 bg-primary text-white rounded-lg flex justify-center items-center"><i className="ph-fill ph-hospital text-xl"></i></div><div><h2 className="font-black text-lg">Escalas SV</h2><p className="text-[9px] uppercase opacity-50 font-bold tracking-widest">ERP Hospitalar</p></div></div>
+                <nav className="flex-1 px-4 py-6 space-y-2">{menu.filter(m=>!m.ad||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition ${t===m.id?'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400':'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><i className={`ph-fill ${m.i} text-xl`}></i> {m.n}</button>)}</nav>
+                <div className="p-4 border-t border-slate-100 dark:border-slate-800"><button onClick={()=>auth.signOut()} className="text-red-500 font-bold flex items-center gap-2 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded w-full"><i className="ph-bold ph-sign-out text-lg"></i> Sair do App</button></div>
             </aside>
-            <nav className="md:hidden fixed bottom-0 inset-x-0 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around p-2 pb-safe bg-white dark:bg-slate-900">{menu.filter(m=>!m.ad||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`flex flex-col items-center gap-1 p-2 rounded-xl w-16 ${t===m.id?'text-primary':'text-slate-400'}`}><i className={`ph-fill ${m.i} text-2xl`}></i><span className="text-[9px] font-black uppercase">{m.n}</span></button>)}</nav>
+            <nav className="md:hidden fixed bottom-0 inset-x-0 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around p-2 pb-safe bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">{menu.filter(m=>!m.ad||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`flex flex-col items-center gap-1 p-2 rounded-xl w-16 transition ${t===m.id?'text-primary':'text-slate-400'}`}><i className={`ph-fill ${m.i} text-2xl`}></i><span className="text-[9px] font-black uppercase">{m.n}</span></button>)}</nav>
             
             <main className="flex-1 transition-all p-4 md:p-8 w-full md:ml-64">
                 {(t==='HOJE'||t==='CALENDARIO') && <div className="max-w-[1600px] mx-auto"><TopHeader user={u} isDark={isD} toggleDark={()=>setIsD(!isD)} /></div>}
-                {t==='HOJE' && <PainelHojeView profissionais={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} config={dbD.CONFIGURACOES} user={u} onSave={api.saveRecord} onRefresh={f} />}
-                {t==='CALENDARIO' && isAd && <EscalasBuilderView profs={dbD.PROFISSIONAIS} cfg={dbD.CONFIGURACOES} onSave={api.saveRecord} onRefresh={f} />}
+                
+                {t==='HOJE' && <PainelHojeView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES} user={u} onSave={api.saveRecord} onRefresh={f} />}
+                {t==='CALENDARIO' && <CalendarioView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES} user={u} onSave={api.saveRecord} onRefresh={f} />}
                 {t==='EQUIPE' && isAd && <EquipeView data={dbD.PROFISSIONAIS} cfg={dbD.CONFIGURACOES} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={f} />}
-                {t==='CONFIG' && isAd && <ConfiguracoesView sysConfig={dbD.CONFIGURACOES} onSaveConfig={api.saveRecord} onRefresh={f} />}
+                {t==='CONFIG' && isAd && <AjustesView cfg={dbD.CONFIGURACOES} onSave={api.saveRecord} onRefresh={f} />}
             </main>
         </div>
     );
