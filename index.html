@@ -15,7 +15,7 @@
         window.addEventListener('error', function(event) {
             document.body.innerHTML = '<div style="background:#fee2e2;color:#991b1b;padding:40px;font-family:sans-serif;height:100vh;text-align:center;">' +
                 '<h1 style="font-size:2rem;font-weight:900;margin-bottom:10px;">Sistema Protegido</h1>' +
-                '<p>O navegador tentou mostrar uma tela branca, mas nós o pegamos. <b>Tire um print desta tela e envie para análise:</b></p>' +
+                '<p>O navegador encontrou um erro. <b>Tire um print desta tela e envie para análise:</b></p>' +
                 '<div style="background:white;padding:20px;border-radius:10px;text-align:left;max-width:600px;margin:20px auto;border:2px solid #f87171;">' +
                 '<strong>ERRO:</strong> ' + event.message + '<br/><br/><strong>LINHA:</strong> ' + event.lineno + '</div>' +
                 '<button onclick="window.location.reload()" style="padding:15px 30px;background:#991b1b;color:white;border-radius:10px;font-weight:bold;cursor:pointer;border:none;">Tentar Novamente</button></div>';
@@ -68,7 +68,7 @@
     </style>
 
     <script>
-        const VERSAO_ATUAL = "18.0.0"; 
+        const VERSAO_ATUAL = "18.1.0"; 
         if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) {
             localStorage.clear(); sessionStorage.clear();
             localStorage.setItem('escalas_versao', VERSAO_ATUAL);
@@ -82,7 +82,7 @@
     <script type="text/babel" data-presets="react">
         const { useState, useEffect, Component } = React;
 
-        // === COLOQUE SUAS CHAVES AQUI ===
+        // === COLOQUE A SUA CHAVE AQUI ===
         const firebaseConfig = {
            apiKey: "AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c",
   authDomain: "escalas-sao-vicente.firebaseapp.com",
@@ -90,11 +90,49 @@
   storageBucket: "escalas-sao-vicente.firebasestorage.app",
   messagingSenderId: "256697542067",
   appId: "1:256697542067:web:b8087390bb57d74def97c6"
-        };
+};
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
+
+        // ==========================================
+        // MOTOR DE BANCO DE DADOS (O QUE FALTAVA!)
+        // ==========================================
+        const api = {
+            fetch: async (colName) => { 
+                if(!db) return []; 
+                try { 
+                    const snap = await db.collection(colName).get(); 
+                    return snap.docs.map(doc => ({ ID: doc.id, ...doc.data() })); 
+                } catch (e) { return []; } 
+            },
+            saveRecord: async (colName, data, isEdit) => { 
+                if(!db) return { success: false }; 
+                try { 
+                    let docData = { ...data }; 
+                    // Limpa espaços vazios nas strings
+                    Object.keys(docData).forEach(k => { if(typeof docData[k] === 'string') docData[k] = docData[k].trim(); }); 
+                    let id = docData.ID; 
+                    delete docData.ID; 
+                    Object.keys(docData).forEach(k => docData[k] === undefined && delete docData[k]); 
+                    
+                    if (isEdit && id) {
+                        await db.collection(colName).doc(id).update(docData); 
+                    } else {
+                        await db.collection(colName).add(docData); 
+                    }
+                    return { success: true }; 
+                } catch (e) { return { success: false }; } 
+            },
+            deleteRecord: async (colName, id) => { 
+                if(!db) return { success: false }; 
+                try { 
+                    await db.collection(colName).doc(id).delete(); 
+                    return { success: true }; 
+                } catch (e) { return { success: false }; } 
+            }
+        };
 
         // ==========================================
         // COMPONENTES VISUAIS
@@ -177,24 +215,16 @@
             const handleSave = async (e) => {
                 e.preventDefault();
                 setLoading(true);
-                let docData = { ...formData };
-                let id = docData.ID; delete docData.ID;
-                
-                try {
-                    if (id) await db.collection('PROFISSIONAIS').doc(id).update(docData);
-                    else await db.collection('PROFISSIONAIS').add(docData);
-                    setIsModalOpen(false);
-                    onRefresh();
-                } catch(err) { alert('Erro ao salvar!'); }
+                await onSave('PROFISSIONAIS', formData, !!formData.ID);
+                setIsModalOpen(false);
+                onRefresh();
                 setLoading(false);
             };
 
             const handleDelete = async (id) => {
                 if (confirm('Deseja excluir permanentemente?')) {
-                    try {
-                        await db.collection('PROFISSIONAIS').doc(id).delete();
-                        onRefresh();
-                    } catch(err) { alert('Erro ao excluir!'); }
+                    await onDelete('PROFISSIONAIS', id);
+                    onRefresh();
                 }
             };
 
@@ -366,7 +396,7 @@
             const [activeTab, setActiveTab] = useState('HOJE');
             const [dataCentral, setDataCentral] = useState({ PROFISSIONAIS: [], ESCALAS: [] });
 
-            // Theming
+            // Hook para mudar o tema com base na hora
             const [themeClass, setThemeClass] = useState('theme-morning');
             useEffect(() => {
                 const updateTheme = () => {
@@ -376,17 +406,21 @@
                     else setThemeClass('theme-night');
                 };
                 updateTheme();
-                const i = setInterval(updateTheme, 60000); 
+                const i = setInterval(updateTheme, 60000); // Checa a cada 1 min
                 return () => clearInterval(i);
             }, []);
 
-            useEffect(() => { document.body.className = `${themeClass} font-sans min-h-screen relative overflow-x-hidden`; }, [themeClass]);
+            // Adiciona classe de tema no Body
+            useEffect(() => {
+                document.body.className = `${themeClass} font-sans min-h-screen relative overflow-x-hidden`;
+            }, [themeClass]);
 
             const fetchBanco = async () => {
                 try {
                     const profs = await api.fetch('PROFISSIONAIS');
-                    setDataCentral(prev => ({ ...prev, PROFISSIONAIS: profs || [] }));
-                } catch(e) { console.error("Erro ao buscar", e); }
+                    const esc = await api.fetch('ESCALAS');
+                    setDataCentral({ PROFISSIONAIS: profs, ESCALAS: esc });
+                } catch(e) { console.error(e); }
             };
 
             useEffect(() => {
@@ -410,16 +444,11 @@
             const handleLogin = async (e) => {
                 e.preventDefault();
                 setLoading(true);
-                try { 
-                    await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); 
-                } 
-                catch(err) { 
-                    alert('Erro no Login: ' + err.message); 
-                    setLoading(false); 
-                }
+                try { await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); } 
+                catch(err) { alert('Erro: ' + err.message); setLoading(false); }
             };
 
-            if (loading) return <div className={`min-h-screen flex items-center justify-center ${themeClass}`}><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
+            if (loading) return <div className={`min-h-screen flex items-center justify-center ${themeClass}`}><div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div></div>;
 
             if (!user) {
                 return (
@@ -441,7 +470,7 @@
                                     <i className="ph-fill ph-lock-key absolute left-5 top-4.5 opacity-50 text-lg"></i>
                                     <input name="password" type="password" placeholder="Senha" className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required />
                                 </div>
-                                <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-2xl shadow-lg hover:-translate-y-1 transition text-lg mt-4">Entrar no App</button>
+                                <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-2xl shadow-lg hover:-translate-y-1 transition text-lg mt-4">Entrar no Sistema</button>
                             </form>
                         </div>
                     </div>
@@ -456,7 +485,7 @@
                     {isDark && <div className="stars"></div>}
                     
                     {/* SIDEBAR PC */}
-                    <aside className={`hidden md:flex w-72 flex-col h-screen fixed z-30 shadow-2xl border-r ${isDark ? 'bg-slate-900/80 border-slate-700/50 backdrop-blur-xl' : 'bg-white/80 border-white/50 backdrop-blur-xl'}`}>
+                    <aside className={`hidden md:flex w-72 flex-col h-screen fixed z-30 shadow-2xl border-r ${isDark ? 'bg-slate-900/80 border-slate-700/50 backdrop-blur-xl' : 'bg-white/80 border-slate-200 backdrop-blur-xl'}`}>
                         <div className="p-8 border-b border-inherit flex items-center gap-4">
                             <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center shadow-md"><i className="ph-fill ph-heartbeat text-2xl animate-pulse"></i></div>
                             <div>
@@ -467,13 +496,13 @@
                         <nav className="flex-1 px-4 py-6 space-y-2">
                             <button onClick={()=>setActiveTab('HOJE')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'HOJE' ? 'bg-primary text-white shadow-lg' : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-kanban text-xl"></i> Mapa do Plantão</button>
                             <button onClick={()=>setActiveTab('CALENDARIO')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'CALENDARIO' ? 'bg-primary text-white shadow-lg' : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-calendar-blank text-xl"></i> Calendário</button>
-                            {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'EQUIPE' ? (isDark?'bg-white text-slate-900':'bg-slate-800 text-white shadow-lg') : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-users text-xl"></i> Gestão de Equipe</button>}
+                            {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-black text-sm transition ${activeTab === 'EQUIPE' ? (isDark?'bg-white text-slate-900':'bg-slate-800 text-white') : 'opacity-60 hover:opacity-100 hover:bg-black/5'}`}><i className="ph-fill ph-users text-xl"></i> Gestão de Equipe</button>}
                         </nav>
                         <button onClick={()=>auth.signOut()} className="p-6 text-red-500 font-bold flex items-center gap-3 hover:bg-red-500/10 transition border-t border-inherit"><i className="ph-bold ph-sign-out text-xl"></i> Sair do App</button>
                     </aside>
 
                     {/* BOTTOM NAV MOBILE */}
-                    <nav className={`md:hidden fixed bottom-0 inset-x-0 border-t z-50 flex justify-around p-3 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl ${isDark?'bg-slate-900/90 border-slate-800':'bg-white/90 border-white/50'}`}>
+                    <nav className={`md:hidden fixed bottom-0 inset-x-0 border-t z-50 flex justify-around p-3 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl ${isDark?'bg-slate-900/90 border-slate-800':'bg-white/90 border-slate-200'}`}>
                         <button onClick={()=>setActiveTab('HOJE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'HOJE' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'HOJE' ? 'ph-fill' : 'ph'} ph-kanban text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Hoje</span></button>
                         <button onClick={()=>setActiveTab('CALENDARIO')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'CALENDARIO' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'CALENDARIO' ? 'ph-fill' : 'ph'} ph-calendar-blank text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Mensal</span></button>
                         {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-20 ${activeTab === 'EQUIPE' ? (isDark?'text-white':'text-slate-800') : 'opacity-40'}`}><i className={`${activeTab === 'EQUIPE' ? 'ph-fill' : 'ph'} ph-users text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Equipe</span></button>}
@@ -481,14 +510,7 @@
                     </nav>
 
                     {/* CONTEÚDO */}
-                    <main className="flex-1 md:ml-72 p-4 md:p-10 relative z-10 w-full overflow-x-hidden">
-                        <div className="md:hidden flex justify-between items-center mb-6 p-4 rounded-2xl shadow-sm border border-inherit glass-panel">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center shadow-md"><i className="ph-fill ph-calendar-check text-xl"></i></div>
-                                <div><h1 className="font-black leading-none">Escalas SV</h1><p className="text-[10px] uppercase font-bold opacity-50">Olá, {user.nome.split(' ')[0]}</p></div>
-                            </div>
-                        </div>
-
+                    <main className="flex-1 md:ml-72 p-4 md:p-10 relative z-10 w-full">
                         <TopHeader user={user} />
 
                         {activeTab === 'HOJE' && <PainelHojeView themeClass={themeClass} />}
@@ -497,9 +519,9 @@
 
                         {activeTab === 'CALENDARIO' && (
                             <div className="animate-fade-in">
-                                <h2 className="text-3xl font-black mb-6">Calendário Geral</h2>
+                                <h2 className="text-3xl font-black mb-6">Calendário</h2>
                                 <div className={`p-10 text-center rounded-[2rem] border ${isDark?'glass-panel-dark border-white/10':'glass-panel border-black/10'}`}>
-                                    <p className="font-bold opacity-70">O módulo de calendário está sendo preparado para o próximo passo!</p>
+                                    <p className="font-bold opacity-70">O módulo de calendário está sendo preparado para receber os filtros e alocações.</p>
                                 </div>
                             </div>
                         )}
@@ -513,4 +535,3 @@
     </script>
 </body>
 </html>
-
