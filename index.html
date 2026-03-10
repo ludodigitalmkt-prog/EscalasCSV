@@ -287,11 +287,18 @@
             }, []);
 
             const handleLogin = async (e) => {
-                e.preventDefault();
-                setLoading(true); setLoginError('');
-                try { await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); } 
-                catch(err) { setLoginError('Acesso negado. Verifique os dados.'); setLoading(false); }
-            };
+            e.preventDefault();
+            setLoading(true);
+            setLoginError('');
+            try { 
+                await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); 
+            } 
+            catch(err) { 
+                // AQUI ESTÁ A MÁGICA: O Firebase vai escrever na tela exatamente o motivo do erro!
+                setLoginError('Erro: ' + err.message); 
+                setLoading(false); 
+            }
+        };
 
             if (loading) {
                 return <div className="min-h-screen flex items-center justify-center bg-blue-50"><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
@@ -420,3 +427,4 @@
     </script>
 </body>
 </html>
+
