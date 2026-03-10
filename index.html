@@ -22,14 +22,14 @@
         tailwind.config = {
             theme: { 
                 extend: { 
-                    colors: { primary: '#0ea5e9', secondary: '#1E40AF', accent: '#10b981', darkBg: '#0f172a' },
+                    colors: { primary: '#1E40AF', secondary: '#8b5cf6', accent: '#10b981' },
                     animation: { 
                         'fade-in': 'fadeIn 0.4s ease-out',
                         'pop-in': 'popIn 0.3s forwards',
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                     },
                     keyframes: { 
-                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
                         popIn: { '0%': { opacity: '0', transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } }
                     }
                 } 
@@ -48,35 +48,50 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; transition: background 1s ease-in-out; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 6px; background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         
         .clay-card {
-            background: #ffffff; border-radius: 1.5rem;
-            box-shadow: 10px 10px 20px #e2e8f0, -10px -10px 20px #ffffff;
+            background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px); border-radius: 1.5rem;
+            box-shadow: 8px 8px 16px rgba(0,0,0,0.05), -8px -8px 16px rgba(255,255,255,0.8);
             border: 1px solid rgba(255,255,255,0.5); transition: all 0.3s ease;
         }
         .dark .clay-card {
-            background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(16px);
-            box-shadow: 10px 10px 20px rgba(0,0,0,0.3), -10px -10px 20px rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px);
+            box-shadow: 8px 8px 16px rgba(0,0,0,0.4), -8px -8px 16px rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05); color: #f1f5f9;
         }
-        .clay-card:hover { transform: translateY(-4px); box-shadow: 15px 15px 25px #e2e8f0, -15px -15px 25px #ffffff; }
-        .dark .clay-card:hover { box-shadow: 15px 15px 25px rgba(0,0,0,0.4); }
+        .clay-card:hover { transform: translateY(-4px); box-shadow: 12px 12px 20px rgba(0,0,0,0.1), -12px -12px 20px rgba(255,255,255,0.9); }
+        .dark .clay-card:hover { box-shadow: 12px 12px 20px rgba(0,0,0,0.5); }
         
-        .theme-morning { background: #f0f9ff; color: #0f172a; }
-        .theme-afternoon { background: #fffbeb; color: #0f172a; }
-        .theme-night { background: #0f172a; color: #f8fafc; }
+        /* EFEITO NEBULOSA DINÂMICO */
+        .nebula-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; background-color: var(--bg-base); transition: background-color 2s ease; }
+        .nebula-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.6; animation: floatBlob 20s infinite alternate ease-in-out; will-change: transform; }
+        .blob1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: var(--color1); animation-delay: 0s; }
+        .blob2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: var(--color2); animation-delay: -5s; }
+        .blob3 { top: 20%; left: 30%; width: 40vw; height: 40vw; background: var(--color3); animation-delay: -10s; }
         
-        .stars { position: fixed; inset: 0; background-image: radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)); background-size: 200px 200px; opacity: 0.3; animation: pulse-slow 4s infinite alternate; pointer-events: none; z-index: 0; }
-        .timeline-line::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: #e2e8f0; z-index: 0; }
-        .dark .timeline-line::before { background: #334155; }
+        @keyframes floatBlob {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(5%, 10%) scale(1.1); }
+            66% { transform: translate(-10%, 5%) scale(0.9); }
+            100% { transform: translate(0, -10%) scale(1); }
+        }
+
+        /* Variáveis de Tema (Manhã, Tarde, Noite) */
+        .theme-morning { --bg-base: #e0f2fe; --color1: #bae6fd; --color2: #fdf4ff; --color3: #e0e7ff; color: #0f172a; }
+        .theme-afternoon { --bg-base: #ffedd5; --color1: #fed7aa; --color2: #fbcfe8; --color3: #fde047; color: #0f172a; }
+        .theme-night { --bg-base: #020617; --color1: #312e81; --color2: #4c1d95; --color3: #1e1b4b; color: #f8fafc; }
+        .stars { position: absolute; inset: 0; background-image: radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 160px, #ffffff, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)); background-size: 200px 200px; opacity: 0.3; animation: pulse-slow 4s infinite alternate; pointer-events: none; }
+        
+        .timeline-line::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: rgba(0,0,0,0.1); z-index: 0; }
+        .dark .timeline-line::before { background: rgba(255,255,255,0.1); }
     </style>
 
     <script>
-        const VERSAO_ATUAL = "22.0.0"; 
+        const VERSAO_ATUAL = "23.0.0"; 
         if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) {
             localStorage.clear(); sessionStorage.clear();
             localStorage.setItem('escalas_versao', VERSAO_ATUAL);
@@ -105,7 +120,7 @@
         const auth = firebase.auth();
 
         // ==========================================
-        // MOTOR DE BANCO DE DADOS (CORRIGIDO PARA SALVAR REGRAS)
+        // MOTOR DE BANCO DE DADOS
         // ==========================================
         const api = {
             fetch: async (colName) => { 
@@ -120,15 +135,10 @@
                     let docData = { ...data }; 
                     let id = docData.ID; 
                     delete docData.ID; 
-                    
-                    // A CORREÇÃO MÁGICA: .set({merge: true}) cria o documento se ele não existir
-                    if (id) {
-                        await db.collection(colName).doc(id).set(docData, { merge: true });
-                    } else {
-                        await db.collection(colName).add(docData); 
-                    }
+                    if (id) { await db.collection(colName).doc(id).set(docData, { merge: true }); } 
+                    else { await db.collection(colName).add(docData); }
                     return { success: true }; 
-                } catch (e) { console.error("Erro ao salvar:", e); return { success: false }; } 
+                } catch (e) { return { success: false }; } 
             },
             deleteRecord: async (colName, id) => { 
                 try { 
@@ -149,25 +159,9 @@
             return str; 
         };
 
-        class ErrorBoundary extends Component {
-            constructor(props) { super(props); this.state = { hasError: false, errStr: '' }; }
-            static getDerivedStateFromError(error) { return { hasError: true }; }
-            componentDidCatch(error) { this.setState({ errStr: String(error) }); }
-            render() {
-                if (this.state.hasError) {
-                    return (
-                        <div className="p-10 text-center flex flex-col items-center justify-center min-h-screen relative z-50 bg-white">
-                            <i className="ph-fill ph-warning-circle text-6xl text-red-500 mb-4"></i>
-                            <h2 className="text-2xl font-black mb-2 text-slate-800">Erro de Interface</h2>
-                            <p className="text-[10px] text-red-500 bg-red-50 p-4 font-mono mb-4 border border-red-200 max-w-xl mx-auto">{this.state.errStr}</p>
-                            <button onClick={()=>window.location.reload()} className="bg-primary text-white px-8 py-3 rounded-xl font-bold shadow-lg">Recarregar</button>
-                        </div>
-                    );
-                }
-                return this.props.children; 
-            }
-        }
-
+        // ==========================================
+        // COMPONENTES VISUAIS BASE
+        // ==========================================
         const TopHeader = ({ user, themeClass }) => {
             const [time, setTime] = useState(new Date());
             useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(timer); }, []);
@@ -180,12 +174,11 @@
             
             const randomMsg = msgs[time.getDate() % msgs.length]; 
             const userName = user && user.nome ? user.nome.split(' ')[0] : 'Equipe';
-            const isDark = themeClass.includes('night');
 
             return (
-                <div className={`p-6 md:p-8 rounded-[2rem] shadow-sm mb-8 flex justify-between items-center relative z-10 ${isDark ? 'bg-slate-800/80 backdrop-blur border border-white/10' : 'bg-white border border-slate-100'}`}>
+                <div className="clay-card p-6 md:p-8 mb-8 flex justify-between items-center relative z-10">
                     <div className="flex items-center gap-4">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-4xl shadow-inner ${isDark?'bg-slate-900':'bg-slate-50'}`}>
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-4xl shadow-inner bg-black/5 dark:bg-white/10">
                             <i className={`ph-fill ${icon} animate-pulse-slow`}></i>
                         </div>
                         <div>
@@ -204,8 +197,7 @@
         // ==========================================
         // ABA 1: CONFIGURAÇÕES (REGRAS DA CLÍNICA)
         // ==========================================
-        const ConfiguracoesView = ({ sysConfig, onSaveConfig, onRefresh, themeClass }) => {
-            const isDark = themeClass.includes('night');
+        const ConfiguracoesView = ({ sysConfig, onSaveConfig, onRefresh }) => {
             const [setores, setSetores] = useState(sysConfig.setores || []);
             const [habs, setHabs] = useState(sysConfig.habilidades || []);
             const [postos, setPostos] = useState(sysConfig.postos || []); 
@@ -243,38 +235,36 @@
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* SETORES */}
-                        <div className={`clay-card p-6 ${isDark?'':'bg-white'}`}>
+                        <div className="clay-card p-6">
                             <h3 className="font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-buildings text-primary text-xl"></i> Departamentos</h3>
                             <div className="flex gap-2 mb-4">
-                                <input type="text" value={newSetor} onChange={e=>setNewSetor(e.target.value)} placeholder="Ex: ENFERMAGEM" className="flex-1 p-3 rounded-lg text-sm font-bold border outline-none dark:bg-slate-800 dark:border-slate-700" />
-                                <button onClick={()=>addItem('setor')} className="bg-slate-800 dark:bg-primary text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button>
+                                <input type="text" value={newSetor} onChange={e=>setNewSetor(e.target.value)} placeholder="Ex: ENFERMAGEM" className="flex-1 p-3 rounded-lg text-sm font-bold border outline-none dark:bg-slate-800 dark:border-slate-700 bg-black/5 dark:bg-white/5" />
+                                <button onClick={()=>addItem('setor')} className="bg-primary text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button>
                             </div>
                             <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
                                 {setores.map((s, i) => (
-                                    <div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-3 rounded-lg text-xs font-black border dark:border-slate-700">
+                                    <div key={i} className="flex justify-between items-center bg-black/5 dark:bg-white/10 p-3 rounded-lg text-xs font-black">
                                         <span>{s}</span><button onClick={()=>removeItem('setor', i)} className="text-red-500 hover:scale-110"><i className="ph-bold ph-trash"></i></button>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* POSTOS DE TRABALHO */}
-                        <div className={`clay-card p-6 ${isDark?'':'bg-white'}`}>
+                        <div className="clay-card p-6">
                             <h3 className="font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-door text-secondary text-xl"></i> Mapas de Salas (Postos)</h3>
                             <div className="space-y-2 mb-4">
-                                <input type="text" value={newPostoNome} onChange={e=>setNewPostoNome(e.target.value)} placeholder="Ex: Consultório 01" className="w-full p-3 rounded-lg text-sm font-bold border outline-none dark:bg-slate-800 dark:border-slate-700" />
+                                <input type="text" value={newPostoNome} onChange={e=>setNewPostoNome(e.target.value)} placeholder="Ex: Consultório 01" className="w-full p-3 rounded-lg text-sm font-bold border outline-none dark:bg-slate-800 dark:border-slate-700 bg-black/5 dark:bg-white/5" />
                                 <div className="flex gap-2">
-                                    <select value={newPostoSetor} onChange={e=>setNewPostoSetor(e.target.value)} className="flex-1 p-3 rounded-lg text-xs font-bold border outline-none dark:bg-slate-800 dark:border-slate-700">
+                                    <select value={newPostoSetor} onChange={e=>setNewPostoSetor(e.target.value)} className="flex-1 p-3 rounded-lg text-xs font-bold border outline-none dark:bg-slate-800 dark:border-slate-700 bg-black/5 dark:bg-white/5">
                                         <option value="">Ligar ao Departamento...</option>
                                         {setores.map((s,i)=><option key={i} value={s}>{s}</option>)}
                                     </select>
-                                    <button onClick={()=>addItem('posto')} className="bg-slate-800 dark:bg-secondary text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button>
+                                    <button onClick={()=>addItem('posto')} className="bg-secondary text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button>
                                 </div>
                             </div>
                             <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
                                 {postos.map((p, i) => (
-                                    <div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-3 rounded-lg text-xs border dark:border-slate-700">
+                                    <div key={i} className="flex justify-between items-center bg-black/5 dark:bg-white/10 p-3 rounded-lg text-xs">
                                         <div><p className="font-black">{p.nome}</p><p className="text-[9px] opacity-60 uppercase">{p.setor}</p></div>
                                         <button onClick={()=>removeItem('posto', i)} className="text-red-500 hover:scale-110"><i className="ph-bold ph-trash"></i></button>
                                     </div>
@@ -282,16 +272,15 @@
                             </div>
                         </div>
 
-                        {/* HABILIDADES */}
-                        <div className={`clay-card p-6 ${isDark?'':'bg-white'}`}>
+                        <div className="clay-card p-6">
                             <h3 className="font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-accent text-xl"></i> Competências</h3>
                             <div className="flex gap-2 mb-4">
-                                <input type="text" value={newHab} onChange={e=>setNewHab(e.target.value)} placeholder="Ex: Triagem Adulto" className="flex-1 p-3 rounded-lg text-sm font-bold border outline-none dark:bg-slate-800 dark:border-slate-700" />
-                                <button onClick={()=>addItem('hab')} className="bg-slate-800 dark:bg-accent text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button>
+                                <input type="text" value={newHab} onChange={e=>setNewHab(e.target.value)} placeholder="Ex: Coleta Infantil" className="flex-1 p-3 rounded-lg text-sm font-bold border outline-none dark:bg-slate-800 dark:border-slate-700 bg-black/5 dark:bg-white/5" />
+                                <button onClick={()=>addItem('hab')} className="bg-accent text-white px-4 rounded-lg font-black"><i className="ph-bold ph-plus"></i></button>
                             </div>
                             <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
                                 {habs.map((h, i) => (
-                                    <div key={i} className="bg-slate-50 border dark:border-slate-700 dark:bg-slate-800 px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-2">
+                                    <div key={i} className="bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-2">
                                         {h} <button onClick={()=>removeItem('hab', i)} className="text-red-500"><i className="ph-bold ph-x"></i></button>
                                     </div>
                                 ))}
@@ -303,13 +292,12 @@
         };
 
         // ==========================================
-        // ABA 2: EQUIPE (CADASTRO COM FOTO E DESIGN LIMPO)
+        // ABA 2: EQUIPE 
         // ==========================================
-        const EquipeView = ({ data, sysConfig, onSave, onDelete, onRefresh, themeClass }) => {
+        const EquipeView = ({ data, sysConfig, onSave, onDelete, onRefresh }) => {
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [formData, setFormData] = useState({});
             const [search, setSearch] = useState('');
-            const isDark = themeClass.includes('night');
 
             const setoresSis = sysConfig.setores || [];
             const habsSistema = sysConfig.habilidades || [];
@@ -355,8 +343,8 @@
                         </div>
                         <div className="flex gap-2 w-full md:w-auto">
                             <div className="relative flex-1 md:w-72">
-                                <i className="ph-bold ph-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-                                <input type="text" placeholder="Pesquisar..." value={search} onChange={e=>setSearch(e.target.value)} className={`pl-10 pr-4 py-3 rounded-xl font-bold outline-none w-full border ${isDark?'bg-slate-800 border-slate-700':'bg-white border-slate-200'}`} />
+                                <i className="ph-bold ph-magnifying-glass absolute left-4 top-3.5 opacity-50"></i>
+                                <input type="text" placeholder="Pesquisar..." value={search} onChange={e=>setSearch(e.target.value)} className="pl-10 pr-4 py-3 rounded-xl font-bold outline-none w-full bg-white/50 dark:bg-black/20 border border-black/10 dark:border-white/10" />
                             </div>
                             <button onClick={()=>openModal()} className="bg-primary text-white px-6 rounded-xl font-black shadow-lg hover:scale-105 transition flex items-center gap-2"><i className="ph-bold ph-plus"></i> Novo</button>
                         </div>
@@ -364,7 +352,7 @@
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {filtrados.map((prof, i) => (
-                            <div key={i} onClick={()=>openModal(prof)} className={`clay-card p-6 flex flex-col items-center text-center relative group overflow-hidden ${isDark?'':'bg-white'}`}>
+                            <div key={i} onClick={()=>openModal(prof)} className="clay-card p-6 flex flex-col items-center text-center relative group overflow-hidden">
                                 <div className="absolute top-0 inset-x-0 h-16 opacity-20" style={{backgroundColor: prof.Cor || '#0ea5e9'}}></div>
                                 
                                 {prof.FotoURL ? (
@@ -377,10 +365,10 @@
                                 
                                 <h3 className="font-black text-lg leading-tight z-10 truncate w-full px-2">{safeString(prof.Nome)}</h3>
                                 <p className="text-[10px] font-black mt-1 uppercase tracking-widest opacity-60 z-10 truncate">{safeString(prof.Cargo)}</p>
-                                <span className="text-[8px] font-black uppercase bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded mt-2 border dark:border-slate-700">{prof.Setor || 'Sem Setor'}</span>
+                                <span className="text-[8px] font-black uppercase bg-black/5 dark:bg-white/10 px-2 py-1 rounded mt-2 border border-black/10 dark:border-white/10">{prof.Setor || 'Sem Setor'}</span>
                                 
                                 <div className="mt-4 flex flex-wrap justify-center gap-1 opacity-70">
-                                    {(prof.Habilidades||[]).slice(0,2).map((h,j)=><span key={j} className="text-[8px] font-bold bg-slate-50 border dark:bg-slate-800 dark:border-slate-700 px-1.5 py-0.5 rounded">{h}</span>)}
+                                    {(prof.Habilidades||[]).slice(0,2).map((h,j)=><span key={j} className="text-[8px] font-bold bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded">{h}</span>)}
                                 </div>
                                 
                                 <div className="absolute top-4 right-4 opacity-100 lg:opacity-0 group-hover:opacity-100 flex gap-2 z-20">
@@ -388,56 +376,52 @@
                                 </div>
                             </div>
                         ))}
-                        {filtrados.length === 0 && <div className="col-span-full text-center p-16 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-[2rem] font-bold opacity-50">Nenhum profissional localizado.</div>}
                     </div>
 
                     {isModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in" onClick={()=>setIsModalOpen(false)}>
-                            <div className={`${isDark ? 'bg-slate-900 border border-slate-700 text-white' : 'bg-white text-slate-800'} w-full max-w-4xl rounded-[2rem] p-0 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]`} onClick={e=>e.stopPropagation()}>
-                                <div className={`p-6 border-b flex justify-between items-center ${isDark?'border-slate-800 bg-slate-800':'border-slate-100 bg-slate-50'}`}>
+                            <div className="clay-card w-full max-w-4xl p-0 overflow-hidden flex flex-col max-h-[90vh]" onClick={e=>e.stopPropagation()}>
+                                <div className="p-6 border-b border-black/10 dark:border-white/10 flex justify-between items-center bg-black/5 dark:bg-white/5">
                                     <h3 className="text-xl font-black flex items-center gap-3"><div className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-md"><i className="ph-fill ph-user-plus"></i></div> {formData.ID ? 'Ficha do Profissional' : 'Novo Cadastro'}</h3>
-                                    <button onClick={()=>setIsModalOpen(false)} className="w-8 h-8 bg-white dark:bg-slate-700 rounded-full shadow-sm hover:bg-red-500 hover:text-white transition flex items-center justify-center"><i className="ph-bold ph-x"></i></button>
+                                    <button onClick={()=>setIsModalOpen(false)} className="w-8 h-8 bg-black/10 dark:bg-white/10 rounded-full hover:bg-red-500 hover:text-white transition flex items-center justify-center"><i className="ph-bold ph-x"></i></button>
                                 </div>
                                 
                                 <form onSubmit={handleSave} className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-8">
                                     
-                                    {/* SEÇÃO 1: Identificação */}
-                                    <fieldset className="border border-slate-200 dark:border-slate-700 rounded-2xl p-6 relative pt-8">
+                                    <fieldset className="border border-black/10 dark:border-white/10 rounded-2xl p-6 relative pt-8">
                                         <legend className="absolute -top-3 left-4 bg-primary text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow">Identificação Básica</legend>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="md:col-span-2">
                                                 <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-1">Nome Completo</label>
-                                                <input type="text" value={safeString(formData.Nome)} onChange={e=>setFormData({...formData, Nome: e.target.value})} className={`w-full p-3 mt-1 rounded-xl font-bold outline-none border ${isDark?'bg-slate-800 border-slate-700 focus:border-primary':'bg-slate-50 border-slate-200 focus:border-primary'}`} required placeholder="Ex: Dr. Bruno Almeida" />
+                                                <input type="text" value={safeString(formData.Nome)} onChange={e=>setFormData({...formData, Nome: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:border-primary" required />
                                             </div>
                                             <div className="md:col-span-2">
                                                 <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-1">Link da Foto (Google Drive / URL)</label>
-                                                <input type="text" value={safeString(formData.FotoURL)} onChange={e=>setFormData({...formData, FotoURL: e.target.value})} className={`w-full p-3 mt-1 rounded-xl font-bold outline-none border ${isDark?'bg-slate-800 border-slate-700':'bg-slate-50 border-slate-200'}`} placeholder="Cole o link da imagem para o avatar..." />
+                                                <input type="text" value={safeString(formData.FotoURL)} onChange={e=>setFormData({...formData, FotoURL: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5" placeholder="Cole o link da imagem..." />
                                             </div>
                                             <div>
                                                 <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-1">Cargo / Profissão</label>
-                                                <input type="text" value={safeString(formData.Cargo)} onChange={e=>setFormData({...formData, Cargo: e.target.value})} className={`w-full p-3 mt-1 rounded-xl font-bold outline-none border ${isDark?'bg-slate-800 border-slate-700':'bg-slate-50 border-slate-200'}`} required />
+                                                <input type="text" value={safeString(formData.Cargo)} onChange={e=>setFormData({...formData, Cargo: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5" required />
                                             </div>
                                             <div>
                                                 <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-1">Setor Alocado</label>
-                                                <select value={safeString(formData.Setor)} onChange={e=>setFormData({...formData, Setor: e.target.value})} className={`w-full p-3 mt-1 rounded-xl font-bold outline-none border ${isDark?'bg-slate-800 border-slate-700':'bg-slate-50 border-slate-200'}`}>
+                                                <select value={safeString(formData.Setor)} onChange={e=>setFormData({...formData, Setor: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
                                                     <option value="">Selecione...</option>
                                                     {setoresSis.map(s => <option key={s} value={s}>{s}</option>)}
                                                 </select>
-                                                {setoresSis.length===0 && <p className="text-[9px] text-red-500 mt-1">* Cadastre setores na aba Ajustes.</p>}
                                             </div>
                                             <div>
                                                 <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-1">Cor no Calendário</label>
-                                                <input type="color" value={safeString(formData.Cor || '#0ea5e9')} onChange={e=>setFormData({...formData, Cor: e.target.value})} className={`w-full h-12 p-1 mt-1 rounded-xl cursor-pointer border ${isDark?'border-slate-700':'border-slate-200'}`} />
+                                                <input type="color" value={safeString(formData.Cor || '#0ea5e9')} onChange={e=>setFormData({...formData, Cor: e.target.value})} className="w-full h-12 p-1 mt-1 rounded-xl cursor-pointer border border-black/10 dark:border-white/10" />
                                             </div>
                                         </div>
                                     </fieldset>
 
-                                    {/* SEÇÃO 2: Regras e Competências */}
-                                    <fieldset className="border border-slate-200 dark:border-slate-700 rounded-2xl p-6 relative pt-8">
+                                    <fieldset className="border border-black/10 dark:border-white/10 rounded-2xl p-6 relative pt-8">
                                         <legend className="absolute -top-3 left-4 bg-secondary text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow">Regras de Operação</legend>
                                         <div className="mb-4">
                                             <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-1">Tempo de Intervalo Permitido</label>
-                                            <select value={safeString(formData.TempoIntervalo || '15')} onChange={e=>setFormData({...formData, TempoIntervalo: e.target.value})} className={`w-full p-3 mt-1 rounded-xl font-bold outline-none border ${isDark?'bg-slate-800 border-slate-700':'bg-slate-50 border-slate-200'}`}>
+                                            <select value={safeString(formData.TempoIntervalo || '15')} onChange={e=>setFormData({...formData, TempoIntervalo: e.target.value})} className="w-full p-3 mt-1 rounded-xl font-bold outline-none border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5">
                                                 <option value="15">15 Minutos</option>
                                                 <option value="30">30 Minutos</option>
                                                 <option value="60">1 Hora</option>
@@ -445,34 +429,31 @@
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-1 block mb-2">Habilidades (Crucial para Coberturas)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-1 block mb-2">Habilidades (Para Substituição)</label>
                                             <div className="flex flex-wrap gap-2">
                                                 {habsSistema.map(h => {
                                                     const ativo = (formData.Habilidades||[]).includes(h);
-                                                    return <button type="button" key={h} onClick={()=>toggleHab(h)} className={`px-4 py-2 rounded-lg text-[10px] font-bold transition border shadow-sm ${ativo ? 'bg-primary border-primary text-white' : isDark?'bg-slate-800 border-slate-700 text-slate-300':'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>{h}</button>;
+                                                    return <button type="button" key={h} onClick={()=>toggleHab(h)} className={`px-4 py-2 rounded-lg text-[10px] font-bold transition border shadow-sm ${ativo ? 'bg-primary border-primary text-white' : 'bg-black/5 dark:bg-white/5 border-transparent opacity-60 hover:opacity-100'}`}>{h}</button>;
                                                 })}
-                                                {habsSistema.length === 0 && <p className="text-[10px] opacity-50 italic">Nenhuma habilidade cadastrada na aba Ajustes.</p>}
                                             </div>
                                         </div>
                                     </fieldset>
 
-                                    {/* SEÇÃO 3: Jornada */}
-                                    <fieldset className="border border-slate-200 dark:border-slate-700 rounded-2xl p-6 relative pt-8">
-                                        <legend className="absolute -top-3 left-4 bg-slate-800 dark:bg-slate-100 dark:text-slate-900 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow">Jornada de Trabalho</legend>
-                                        <p className="text-xs font-bold opacity-60 mb-4">Selecione os dias e defina os horários padrões deste colaborador.</p>
+                                    <fieldset className="border border-black/10 dark:border-white/10 rounded-2xl p-6 relative pt-8">
+                                        <legend className="absolute -top-3 left-4 bg-slate-800 dark:bg-slate-100 dark:text-slate-900 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow">Jornada de Trabalho Padrão</legend>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             {diasSemana.map(d => {
                                                 const ativo = formData.DiasTrabalho && formData.DiasTrabalho[d];
                                                 return (
-                                                    <div key={d} className={`flex items-center gap-3 p-3 rounded-xl border transition ${ativo ? (isDark?'border-primary bg-primary/10':'border-primary bg-blue-50') : (isDark?'border-slate-700 bg-slate-800':'border-slate-100 bg-slate-50')}`}>
-                                                        <button type="button" onClick={()=>toggleDia(d)} className={`w-12 h-12 rounded-lg font-black text-xs shrink-0 shadow-sm ${ativo ? 'bg-primary text-white' : isDark?'bg-slate-700 text-slate-400':'bg-white border border-slate-200 text-slate-500'}`}>{d}</button>
+                                                    <div key={d} className={`flex items-center gap-3 p-3 rounded-xl border transition ${ativo ? 'border-primary bg-primary/10' : 'border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5'}`}>
+                                                        <button type="button" onClick={()=>toggleDia(d)} className={`w-12 h-12 rounded-lg font-black text-xs shrink-0 shadow-sm transition ${ativo ? 'bg-primary text-white' : 'bg-white/50 dark:bg-black/20 opacity-50'}`}>{d}</button>
                                                         {ativo && (
                                                             <div className="flex flex-1 flex-col gap-1 animate-fade-in">
                                                                 <div className="flex items-center justify-between text-[10px] font-black opacity-50 uppercase"><span>Entra</span><span>Sai</span></div>
                                                                 <div className="flex items-center gap-1">
-                                                                    <input type="time" value={formData.DiasTrabalho[d].inicio} onChange={(e)=>updateDiaHora(d, 'inicio', e.target.value)} className={`w-full p-2 rounded-lg font-bold border outline-none text-xs ${isDark?'bg-slate-900 border-slate-700':'bg-white border-slate-200'}`} />
+                                                                    <input type="time" value={formData.DiasTrabalho[d].inicio} onChange={(e)=>updateDiaHora(d, 'inicio', e.target.value)} className="w-full p-2 rounded-lg font-bold border border-black/10 dark:border-white/10 bg-transparent outline-none text-xs" />
                                                                     <span className="opacity-50 font-bold">-</span>
-                                                                    <input type="time" value={formData.DiasTrabalho[d].fim} onChange={(e)=>updateDiaHora(d, 'fim', e.target.value)} className={`w-full p-2 rounded-lg font-bold border outline-none text-xs ${isDark?'bg-slate-900 border-slate-700':'bg-white border-slate-200'}`} />
+                                                                    <input type="time" value={formData.DiasTrabalho[d].fim} onChange={(e)=>updateDiaHora(d, 'fim', e.target.value)} className="w-full p-2 rounded-lg font-bold border border-black/10 dark:border-white/10 bg-transparent outline-none text-xs" />
                                                                 </div>
                                                             </div>
                                                         )}
@@ -483,8 +464,8 @@
                                     </fieldset>
 
                                 </form>
-                                <div className={`p-6 border-t flex justify-end gap-3 ${isDark?'border-slate-800 bg-slate-800':'border-slate-100 bg-slate-50'}`}>
-                                    <button type="button" onClick={()=>setIsModalOpen(false)} className="px-6 py-3.5 font-bold opacity-70 hover:opacity-100 bg-black/5 dark:bg-white/5 rounded-xl">Cancelar Edição</button>
+                                <div className="p-6 border-t border-black/10 dark:border-white/10 flex justify-end gap-3 bg-black/5 dark:bg-white/5">
+                                    <button type="button" onClick={()=>setIsModalOpen(false)} className="px-6 py-3.5 font-bold opacity-70 hover:opacity-100 rounded-xl">Cancelar Edição</button>
                                     <button onClick={handleSave} className="bg-primary text-white px-10 py-3.5 rounded-xl font-black shadow-lg hover:scale-105 transition flex items-center gap-2"><i className="ph-bold ph-floppy-disk text-lg"></i> Salvar Ficha</button>
                                 </div>
                             </div>
@@ -495,19 +476,18 @@
         };
 
         // ==========================================
-        // ABA 3: MAPA DO PLANTÃO (HOJE) - MANTIDO INTACTO DO ANTERIOR, FUNCIONA PERFEITO
+        // ABA 3: MAPA DO PLANTÃO (HOJE) COM ESCOLHA DE SUPERVISOR
         // ==========================================
-        const PainelHojeView = ({ profissionais, escalas, config, user, onSave, onRefresh, themeClass }) => {
-            const isDark = themeClass.includes('night');
-            const panelClass = isDark ? 'glass-panel-dark' : 'glass-panel';
+        const PainelHojeView = ({ profissionais, escalas, config, user, onSave, onRefresh }) => {
             const isAdmin = user.nivel === 'Admin' || user.nivel === 'Supervisor';
             
             const [now, setNow] = useState(Date.now());
             const [modalAction, setModalAction] = useState(null); 
+            const [isAssumindo, setIsAssumindo] = useState(false); // Nova flag para escolha de supervisor
             
             useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(timer); }, []);
 
-            const supervisorAtual = config?.supervisorAtual || 'Aguardando';
+            const supervisorAtual = config?.supervisorAtual || 'Nenhum Assumiu';
             const postosSistema = config?.postos || []; 
             const setoresAtivos = Array.from(new Set(postosSistema.map(p => p.setor).filter(Boolean)));
             const motivosAusencia = config?.ausencias || ['Faltou', 'Atestado'];
@@ -515,7 +495,11 @@
             const todayStr = new Date().toLocaleDateString('pt-BR');
             const escalasHoje = escalas.filter(e => safeString(e.Data) === todayStr);
 
-            const assumirPlantao = async () => { await api.saveRecord('CONFIGURACOES', { ID: 'plantao', supervisorAtual: user.nome }); onRefresh(); };
+            const assumirPlantao = async (nome) => {
+                await api.saveRecord('CONFIGURACOES', { ID: 'plantao', supervisorAtual: nome });
+                setIsAssumindo(false);
+                onRefresh();
+            };
 
             const handleStatusSimples = async (escala, novoStatus) => {
                 let update = { ...escala, Status: novoStatus };
@@ -561,15 +545,32 @@
 
             return (
                 <div className="animate-fade-in space-y-10 relative z-10 max-w-7xl mx-auto">
-                    <div className={`${panelClass} p-6 rounded-[2rem] border-l-4 border-l-primary flex flex-col md:flex-row justify-between items-center gap-4 shadow-lg`}>
+                    {/* CASA DE VIDRO COM ESCOLHA DE SUPERVISOR */}
+                    <div className="clay-card p-6 rounded-[2rem] border-l-4 border-l-primary flex flex-col md:flex-row justify-between items-center gap-4 shadow-lg">
                         <div className="flex items-center gap-4">
                             <div className="w-16 h-16 bg-primary/20 text-primary rounded-2xl flex items-center justify-center text-3xl"><i className="ph-fill ph-office-chair"></i></div>
-                            <div><p className="text-[10px] uppercase tracking-widest font-bold opacity-70">Supervisão (Casa de Vidro)</p><h3 className="font-black text-2xl leading-none">No Comando: {supervisorAtual}</h3></div>
+                            <div><p className="text-[10px] uppercase tracking-widest font-bold opacity-70">Supervisão (Casa de Vidro)</p><h3 className="font-black text-2xl leading-none">No Comando: <span className="text-primary">{supervisorAtual}</span></h3></div>
                         </div>
-                        {isAdmin && <button onClick={assumirPlantao} className="bg-slate-800 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-xl font-black shadow-md hover:scale-105 transition">Assumir Plantão</button>}
+                        {isAdmin && (
+                            isAssumindo ? (
+                                <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto animate-fade-in">
+                                    <select id="superSelect" className="p-3 rounded-xl bg-black/5 dark:bg-white/10 font-bold outline-none border border-transparent focus:border-primary">
+                                        <option value="">Quem está assumindo?</option>
+                                        <option value={user.nome}>{user.nome} (Eu)</option>
+                                        {profissionais.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+                                    </select>
+                                    <div className="flex gap-2">
+                                        <button onClick={()=>{const v = document.getElementById('superSelect').value; if(v) assumirPlantao(v);}} className="bg-primary text-white px-6 py-3 rounded-xl font-black shadow-md hover:scale-105 transition">Confirmar</button>
+                                        <button onClick={()=>setIsAssumindo(false)} className="bg-red-50 text-red-500 dark:bg-red-900/20 px-4 py-3 rounded-xl font-black hover:scale-105 transition"><i className="ph-bold ph-x"></i></button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <button onClick={()=>setIsAssumindo(true)} className="w-full md:w-auto bg-slate-800 dark:bg-white text-white dark:text-slate-900 px-8 py-3.5 rounded-xl font-black shadow-md hover:scale-105 transition"><i className="ph-bold ph-hand-pointing"></i> Assumir Plantão</button>
+                            )
+                        )}
                     </div>
 
-                    {setoresAtivos.length === 0 && <div className="p-10 text-center clay-card opacity-70 font-bold max-w-lg mx-auto">Vá em "Ajustes" e cadastre seus Setores e Postos para gerar o mapa do dia.</div>}
+                    {setoresAtivos.length === 0 && <div className="p-10 text-center clay-card opacity-70 font-bold max-w-lg mx-auto">Vá em "Ajustes" e cadastre seus Setores e Postos.</div>}
 
                     {setoresAtivos.map(setor => {
                         const postosDoSetor = postosSistema.filter(p => p.setor === setor);
@@ -581,14 +582,14 @@
                                         const sala = postoObj.nome;
                                         const ocupantes = escalasHoje.filter(e => (e.Sala === sala && !e.EmApoio) || (e.EmApoio && e.SalaApoio === sala));
                                         const isLivre = ocupantes.length === 0;
-                                        const colorMap = ['border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800', 'border-accent/30 bg-accent/10 dark:bg-accent/20 dark:border-accent/50', 'border-purple-200 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-800', 'border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800'];
+                                        const colorMap = ['border-blue-400 bg-blue-50 dark:bg-blue-900/20', 'border-accent bg-accent/10 dark:bg-accent/20', 'border-purple-400 bg-purple-50 dark:bg-purple-900/20', 'border-amber-400 bg-amber-50 dark:bg-amber-900/20'];
                                         const cardTheme = colorMap[i % colorMap.length];
 
                                         return (
-                                            <div key={i} className={`clay-card border-2 flex flex-col p-1 min-h-[150px] relative ${isLivre ? 'opacity-70 hover:opacity-100 border-dashed' : 'border-transparent'}`}>
-                                                <div className={`p-3 bg-slate-100 dark:bg-slate-800 rounded-t-xl font-black text-[11px] uppercase tracking-widest flex justify-between items-center ${cardTheme}`}>
+                                            <div key={i} className={`clay-card flex flex-col p-1 min-h-[150px] relative border-l-4 ${cardTheme} ${isLivre ? 'opacity-70 hover:opacity-100' : ''}`}>
+                                                <div className="p-3 bg-black/5 dark:bg-white/5 rounded-t-xl font-black text-[11px] uppercase tracking-widest flex justify-between items-center">
                                                     <span className="truncate">{sala}</span>
-                                                    {isAdmin && <button onClick={()=>setModalAction({tipo: 'alocar', sala})} className="hover:scale-125 transition"><i className="ph-bold ph-plus-circle text-lg"></i></button>}
+                                                    {isAdmin && <button onClick={()=>setModalAction({tipo: 'alocar', sala})} className="hover:scale-125 transition opacity-50 hover:opacity-100"><i className="ph-bold ph-plus-circle text-lg"></i></button>}
                                                 </div>
                                                 <div className="flex-1 p-2 space-y-2">
                                                     {isLivre ? (
@@ -600,12 +601,12 @@
                                                             const isIntervalo = occ.Status === 'INTERVALO';
                                                             const isAusente = occ.Status === 'AUSENTE';
                                                             const isApoio = occ.EmApoio && occ.SalaApoio === sala;
-                                                            let cardBg = isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm';
-                                                            if (isIntervalo) cardBg = 'bg-orange-50 border-orange-200';
-                                                            if (isAusente) cardBg = 'bg-red-50 border-red-200 opacity-70';
+                                                            let cardBg = 'bg-black/5 dark:bg-white/5';
+                                                            if (isIntervalo) cardBg = 'bg-orange-50 border border-orange-200 dark:bg-orange-900/20 dark:border-orange-800';
+                                                            if (isAusente) cardBg = 'bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70';
 
                                                             return (
-                                                                <div key={j} className={`p-2 rounded-xl border relative transition group ${cardBg}`}>
+                                                                <div key={j} className={`p-2 rounded-xl relative transition group ${cardBg}`}>
                                                                     {isIntervalo && <div className="absolute -top-2 -right-2 w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs animate-bounce-slight shadow-lg z-10">🥪</div>}
                                                                     <div className="flex items-center gap-2 mb-2">
                                                                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{backgroundColor: occ.Cor || '#000'}}>{occ.Nome_Profissional.charAt(0)}</div>
@@ -615,7 +616,8 @@
                                                                         </div>
                                                                     </div>
                                                                     <div className="flex justify-between items-center mt-2 border-t border-black/10 dark:border-white/10 pt-2">
-                                                                        {isIntervalo ? renderTimer(occ) : isAusente ? <span className="text-[8px] font-black text-red-600 bg-red-100 px-1.5 py-0.5 rounded truncate">{occ.MotivoAusencia||'Ausente'}</span> : <span className="text-[8px] font-black text-accent bg-accent/10 px-1.5 py-0.5 rounded">Operando</span>}
+                                                                        {isIntervalo ? renderTimer(occ) : isAusente ? <span className="text-[8px] font-black text-red-600 bg-red-100 px-1.5 py-0.5 rounded truncate">{occ.MotivoAusencia||'Ausente'}</span> : <span className="text-[8px] font-black text-green-600 bg-green-100 px-1.5 py-0.5 rounded">Operando</span>}
+                                                                        
                                                                         {isAdmin && !isAusente && (
                                                                             <div className="flex gap-1">
                                                                                 {!isIntervalo && <button onClick={()=>handleStatusSimples(occ, 'INTERVALO')} className="w-6 h-6 bg-orange-100 text-orange-600 rounded flex justify-center items-center hover:bg-orange-200" title="Intervalo"><i className="ph-bold ph-coffee text-[10px]"></i></button>}
@@ -623,7 +625,7 @@
                                                                                 <button onClick={()=>setModalAction({tipo:'ausencia', escala: occ})} className="w-6 h-6 bg-red-100 text-red-600 rounded flex justify-center items-center hover:bg-red-200" title="Ausente"><i className="ph-bold ph-warning text-[10px]"></i></button>
                                                                                 {!isApoio && <button onClick={()=>setModalAction({tipo:'apoio', escala: occ})} className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded flex justify-center items-center hover:bg-indigo-200" title="Transferir"><i className="ph-bold ph-arrows-left-right text-[10px]"></i></button>}
                                                                                 {isApoio && <button onClick={async()=>{await api.saveRecord('ESCALAS',{...occ, EmApoio: false, SalaApoio: null, Status:'NO POSTO'},true); onRefresh();}} className="text-[8px] bg-slate-800 text-white px-2 rounded hover:bg-slate-900">Voltar</button>}
-                                                                                <button onClick={async()=>{if(confirm('Remover?')){await api.deleteRecord('ESCALAS', occ.ID); onRefresh();}}} className="w-6 h-6 bg-slate-100 text-slate-400 rounded flex justify-center items-center hover:bg-red-100 hover:text-red-500"><i className="ph-bold ph-x"></i></button>
+                                                                                <button onClick={async()=>{if(confirm('Remover?')){await api.deleteRecord('ESCALAS', occ.ID); onRefresh();}}} className="w-6 h-6 bg-black/10 dark:bg-white/10 rounded flex justify-center items-center hover:bg-red-500 hover:text-white"><i className="ph-bold ph-x"></i></button>
                                                                             </div>
                                                                         )}
                                                                         {isAdmin && isAusente && <button onClick={()=>setModalAction({tipo:'substituto', escala: occ})} className="text-[8px] font-black bg-primary text-white px-2 py-1 rounded shadow hover:bg-blue-600">Cobrir</button>}
@@ -641,14 +643,18 @@
                         )
                     })}
 
+                    {/* MODAIS DO MAPA */}
                     {modalAction && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setModalAction(null)}>
-                            <div className={`${isDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-800'} w-full max-w-md rounded-[2rem] p-8 shadow-2xl animate-pop-in border border-white/20`} onClick={e=>e.stopPropagation()}>
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in" onClick={()=>setModalAction(null)}>
+                            <div className="clay-card w-full max-w-md p-8 animate-pop-in" onClick={e=>e.stopPropagation()}>
                                 {modalAction.tipo === 'alocar' && (
                                     <form onSubmit={handleAcaoModal} className="space-y-4">
                                         <h3 className="text-xl font-black mb-4"><i className="ph-fill ph-plus-circle text-primary"></i> Alocar na {modalAction.sala}</h3>
-                                        <div><select name="profissional" className="w-full p-4 rounded-xl border font-bold outline-none text-slate-800" required><option value="">Escolha o profissional livre...</option>{profissionais.filter(p => !escalasHoje.some(e => e.Nome_Profissional === p.Nome)).map(p => <option key={p.ID} value={p.ID}>{p.Nome} ({p.Cargo})</option>)}</select></div>
-                                        <div><input type="text" name="horario" placeholder="Horário (Ex: 08:00 às 18:00)" defaultValue="08:00 às 18:00" className="w-full p-4 rounded-xl border font-bold outline-none text-slate-800" required /></div>
+                                        <select name="profissional" className="w-full p-4 rounded-xl border border-black/10 bg-black/5 dark:bg-white/5 font-bold outline-none" required>
+                                            <option value="">Escolha o profissional livre...</option>
+                                            {profissionais.filter(p => !escalasHoje.some(e => e.Nome_Profissional === p.Nome)).map(p => <option key={p.ID} value={p.ID}>{p.Nome} ({p.Cargo})</option>)}
+                                        </select>
+                                        <input type="text" name="horario" placeholder="Horário (Ex: 08:00 às 18:00)" defaultValue="08:00 às 18:00" className="w-full p-4 rounded-xl border border-black/10 bg-black/5 dark:bg-white/5 font-bold outline-none" required />
                                         <button type="submit" className="w-full py-4 bg-primary text-white font-black rounded-xl">Confirmar Alocação</button>
                                     </form>
                                 )}
@@ -656,29 +662,34 @@
                                     <form onSubmit={handleAcaoModal} className="space-y-4">
                                         <h3 className="text-xl font-black mb-2 text-red-500">Marcar Ausência</h3>
                                         <p className="text-xs font-bold opacity-70 mb-4">{modalAction.escala.Nome_Profissional}</p>
-                                        <select name="motivo" className="w-full p-4 rounded-xl border font-bold outline-none text-slate-800" required>{motivosAusencia.map(m => <option key={m} value={m}>{m}</option>)}</select>
-                                        <button type="submit" className="w-full py-4 bg-red-500 text-white font-black rounded-xl">Confirmar</button>
+                                        <select name="motivo" className="w-full p-4 rounded-xl border border-black/10 bg-black/5 dark:bg-white/5 font-bold outline-none" required>
+                                            {motivosAusencia.map(m => <option key={m} value={m}>{m}</option>)}
+                                        </select>
+                                        <button type="submit" className="w-full py-4 bg-red-500 text-white font-black rounded-xl">Confirmar Ausência</button>
                                     </form>
                                 )}
                                 {modalAction.tipo === 'apoio' && (
                                     <form onSubmit={handleAcaoModal} className="space-y-4">
                                         <h3 className="text-xl font-black mb-2 text-indigo-500">Transferir (Apoio)</h3>
                                         <p className="text-xs font-bold opacity-70 mb-4">Mover {modalAction.escala.Nome_Profissional} temporariamente.</p>
-                                        <select name="novaSala" className="w-full p-4 rounded-xl border font-bold outline-none text-slate-800" required>{postosSistema.map(p=>p.nome).filter(s=>s!==modalAction.escala.Sala).map(s => <option key={s} value={s}>{s}</option>)}</select>
+                                        <select name="novaSala" className="w-full p-4 rounded-xl border border-black/10 bg-black/5 dark:bg-white/5 font-bold outline-none" required>
+                                            {postosSistema.map(p=>p.nome).filter(s=>s!==modalAction.escala.Sala).map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
                                         <button type="submit" className="w-full py-4 bg-indigo-600 text-white font-black rounded-xl">Mover Agora</button>
                                     </form>
                                 )}
                                 {modalAction.tipo === 'substituto' && (
                                     <div>
-                                        <h3 className="text-xl font-black mb-2 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-primary"></i> Cobertura Inteligente</h3>
+                                        <h3 className="text-xl font-black mb-2 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-blue-500"></i> Sugestão de Cobertura</h3>
                                         <p className="text-[10px] font-black uppercase opacity-50 mb-4">Competências: {(modalAction.escala.Habilidades||[]).join(', ')||'Nenhuma'}</p>
                                         <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
                                             {encontrarSubstitutos(modalAction.escala).map(sub => (
-                                                <div key={sub.ID} className="p-3 border rounded-xl flex justify-between items-center text-slate-800 bg-white">
+                                                <div key={sub.ID} className="p-3 border border-black/10 bg-black/5 dark:bg-white/5 rounded-xl flex justify-between items-center">
                                                     <div><p className="font-black text-sm">{sub.Nome}</p><p className="text-[8px] font-bold opacity-50 uppercase">{sub.Cargo}</p></div>
-                                                    <button onClick={async()=>{ await api.saveRecord('ESCALAS', {...modalAction.escala, ID: '', Nome_Profissional: sub.Nome, Status: 'NO POSTO', Cor: sub.Cor}, false); setModalAction(null); onRefresh(); }} className="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Acionar</button>
+                                                    <button onClick={async()=>{ await api.saveRecord('ESCALAS', {...modalAction.escala, ID: '', Nome_Profissional: sub.Nome, Status: 'NO POSTO', Cor: sub.Cor}, false); setModalAction(null); onRefresh(); }} className="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:scale-105 transition">Acionar</button>
                                                 </div>
                                             ))}
+                                            {encontrarSubstitutos(modalAction.escala).length === 0 && <p className="text-xs text-center font-bold opacity-50 py-4 border-2 border-dashed rounded-xl">Nenhum profissional livre com estas competências.</p>}
                                         </div>
                                     </div>
                                 )}
@@ -691,12 +702,10 @@
         };
 
         // ==========================================
-        // ABA 4: MINHA ESCALA (TIMELINE INSPIRADA NO FIGMA)
+        // ABA 4: MINHA ESCALA (TIMELINE DO FIGMA)
         // ==========================================
-        const CalendarioView = ({ profissionais, escalas, user, themeClass }) => {
-            const isDark = themeClass.includes('night');
+        const CalendarioView = ({ profissionais, escalas, user }) => {
             const isAdmin = user.nivel === 'Admin' || user.nivel === 'Supervisor';
-            
             const [selectedProf, setSelectedProf] = useState(isAdmin ? '' : user.nome);
             const [mesAtual, setMesAtual] = useState(new Date());
 
@@ -712,15 +721,15 @@
 
             return (
                 <div className="animate-fade-in max-w-4xl mx-auto space-y-6 relative z-10 pb-10">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-700">
+                    <div className="clay-card p-6 flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="flex items-center gap-4">
-                            <button onClick={()=>setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1))} className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-full flex justify-center items-center hover:scale-110 transition"><i className="ph-bold ph-caret-left"></i></button>
+                            <button onClick={()=>setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1))} className="w-10 h-10 bg-black/5 dark:bg-white/10 rounded-full flex justify-center items-center hover:scale-110 transition"><i className="ph-bold ph-caret-left"></i></button>
                             <h2 className="text-xl font-black uppercase tracking-widest w-40 text-center">{mesAtual.toLocaleString('pt-BR', {month:'long', year:'numeric'})}</h2>
-                            <button onClick={()=>setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1))} className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-full flex justify-center items-center hover:scale-110 transition"><i className="ph-bold ph-caret-right"></i></button>
+                            <button onClick={()=>setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1))} className="w-10 h-10 bg-black/5 dark:bg-white/10 rounded-full flex justify-center items-center hover:scale-110 transition"><i className="ph-bold ph-caret-right"></i></button>
                         </div>
                         
                         {isAdmin ? (
-                            <select value={selectedProf} onChange={e=>setSelectedProf(e.target.value)} className="p-3 rounded-xl border outline-none font-bold text-sm bg-slate-50 dark:bg-slate-900 dark:border-slate-700 text-slate-800 dark:text-white w-full md:w-64">
+                            <select value={selectedProf} onChange={e=>setSelectedProf(e.target.value)} className="p-3 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 font-bold text-sm w-full md:w-64 outline-none">
                                 <option value="">Selecionar Profissional...</option>
                                 {profissionais.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
                             </select>
@@ -730,51 +739,52 @@
                     </div>
 
                     {!selectedProf ? (
-                        <div className="p-10 text-center clay-card opacity-60 font-bold">Selecione um profissional para ver a linha do tempo mensal.</div>
+                        <div className="p-10 text-center clay-card opacity-60 font-bold">Selecione um profissional para gerar a linha do tempo.</div>
                     ) : (
-                        <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-6 shadow-sm border border-slate-200 dark:border-slate-700 relative overflow-hidden">
-                            <h3 className="font-black text-slate-400 uppercase tracking-widest text-xs mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Linha do Tempo de Plantões</h3>
+                        <div className="clay-card p-8 relative overflow-hidden">
+                            <h3 className="font-black opacity-50 uppercase tracking-widest text-xs mb-8 border-b border-black/10 dark:border-white/10 pb-4">Histórico e Linha do Tempo</h3>
                             
                             <div className="relative">
                                 <div className="timeline-line"></div>
                                 
-                                <div className="space-y-6">
+                                <div className="space-y-8">
                                     {dias.map((d, i) => {
                                         const escalasDoDia = escalas.filter(e => e.Nome_Profissional === selectedProf && e.Data === d.dataStr);
                                         const diaPadrao = profData?.DiasTrabalho?.[d.diaSemana];
+                                        const isDataEspecifica = (profData?.DatasEspecificas || []).includes(d.dataStr);
 
-                                        if (escalasDoDia.length === 0 && !diaPadrao) return null;
+                                        if (escalasDoDia.length === 0 && !diaPadrao && !isDataEspecifica) return null;
 
                                         const isToday = d.dataStr === new Date().toLocaleDateString('pt-BR');
 
                                         return (
                                             <div key={i} className="flex relative z-10 animate-fade-in group">
                                                 <div className="w-16 shrink-0 flex flex-col items-center pt-2">
-                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shadow-md z-10 transition-transform group-hover:scale-110 ${isToday ? 'bg-primary text-white ring-4 ring-blue-200' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'}`}>
+                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shadow-md z-10 transition-transform group-hover:scale-110 ${isToday ? 'bg-primary text-white ring-4 ring-blue-200' : isDataEspecifica ? 'bg-secondary text-white' : 'bg-black/10 dark:bg-white/10'}`}>
                                                         {d.data.getDate()}
                                                     </div>
                                                     <span className={`text-[9px] font-black uppercase mt-1 ${isToday?'text-primary':'opacity-50'}`}>{d.diaSemana}</span>
                                                 </div>
                                                 
                                                 <div className="flex-1 pl-4">
-                                                    <div className={`p-5 rounded-2xl border transition-all ${isToday ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 shadow-md' : 'bg-slate-50 border-slate-100 hover:border-slate-300 dark:bg-slate-900/50 dark:border-slate-700 dark:hover:border-slate-600'}`}>
+                                                    <div className={`p-5 rounded-[1.5rem] border transition-all ${isToday ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 shadow-md' : 'bg-black/5 dark:bg-white/5 border-transparent hover:border-black/10 dark:hover:border-white/10'}`}>
                                                         
                                                         {escalasDoDia.length > 0 ? (
                                                             escalasDoDia.map((esc, j) => (
-                                                                <div key={j} className="mb-2 last:mb-0">
+                                                                <div key={j} className="mb-3 last:mb-0">
                                                                     <div className="flex items-center gap-2 mb-1">
                                                                         <span className="w-2 h-2 rounded-full bg-accent"></span>
                                                                         <h4 className="font-black text-sm">{esc.Sala} {esc.EmApoio ? '(Apoio)' : ''}</h4>
                                                                     </div>
                                                                     <p className="text-xs font-bold opacity-60 ml-4"><i className="ph-fill ph-clock"></i> {esc.Horario}</p>
-                                                                    {esc.ObsDia && <p className="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded w-max mt-2 ml-4"><i className="ph-bold ph-info"></i> {esc.ObsDia}</p>}
+                                                                    {esc.ObsDia && <p className="text-[10px] font-bold text-orange-600 bg-orange-50 dark:bg-orange-900/30 dark:text-orange-400 px-3 py-1.5 rounded-lg w-max mt-2 ml-4 shadow-sm border border-orange-100 dark:border-orange-800"><i className="ph-bold ph-info"></i> Histórico: {esc.ObsDia}</p>}
                                                                 </div>
                                                             ))
                                                         ) : (
                                                             <div>
                                                                 <div className="flex items-center gap-2 mb-1">
-                                                                    <span className="w-2 h-2 rounded-full bg-slate-400"></span>
-                                                                    <h4 className="font-black text-sm opacity-80">Turno Padrão</h4>
+                                                                    <span className={`w-2 h-2 rounded-full ${isDataEspecifica?'bg-secondary':'opacity-40 bg-current'}`}></span>
+                                                                    <h4 className="font-black text-sm opacity-80">{isDataEspecifica ? 'Escala Específica' : 'Turno Padrão'}</h4>
                                                                 </div>
                                                                 {diaPadrao && <p className="text-xs font-bold opacity-60 ml-4"><i className="ph-fill ph-clock"></i> {diaPadrao.inicio} às {diaPadrao.fim}</p>}
                                                             </div>
@@ -784,7 +794,7 @@
                                             </div>
                                         );
                                     })}
-                                    {dias.filter(d => escalas.some(e=>e.Nome_Profissional===selectedProf&&e.Data===d.dataStr) || profData?.DiasTrabalho?.[d.diaSemana]).length === 0 && (
+                                    {dias.filter(d => escalas.some(e=>e.Nome_Profissional===selectedProf&&e.Data===d.dataStr) || profData?.DiasTrabalho?.[d.diaSemana] || (profData?.DatasEspecificas||[]).includes(d.dataStr)).length === 0 && (
                                         <p className="pl-16 text-xs font-bold opacity-50">Nenhuma escala prevista para este mês.</p>
                                     )}
                                 </div>
@@ -803,9 +813,9 @@
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('HOJE');
             const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
             const [dataCentral, setDataCentral] = useState({ PROFISSIONAIS: [], ESCALAS: [], CONFIGURACOES: {} });
 
+            // Efeito Nebulosa (Tempo real)
             const [themeClass, setThemeClass] = useState('theme-morning');
             useEffect(() => {
                 const updateTheme = () => {
@@ -819,7 +829,7 @@
                 return () => clearInterval(i);
             }, []);
 
-            useEffect(() => { document.body.className = `${themeClass} font-sans min-h-screen relative overflow-x-hidden`; }, [themeClass]);
+            useEffect(() => { document.body.className = `${themeClass} min-h-screen relative overflow-x-hidden`; }, [themeClass]);
 
             const fetchBanco = async () => {
                 try {
@@ -828,7 +838,6 @@
                     const cnf = await api.fetch('CONFIGURACOES');
                     const sysConfig = cnf.find(c => c.ID === 'parametros') || {};
                     const plantaoConfig = cnf.find(c => c.ID === 'plantao') || {};
-                    
                     setDataCentral({ PROFISSIONAIS: profs || [], ESCALAS: esc || [], CONFIGURACOES: {...sysConfig, ...plantaoConfig} });
                 } catch(e) { console.error("Erro banco", e); }
             };
@@ -843,31 +852,47 @@
                         
                         setUser({ email: u.email, nome: u.email.split('@')[0], nivel: role });
                         await fetchBanco();
-                    } else {
-                        setUser(null);
-                    }
+                    } else { setUser(null); }
                     setLoading(false);
                 });
                 return () => unsub();
             }, []);
+
+            const handleLogin = async (e) => {
+                e.preventDefault(); setLoading(true);
+                try { await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); } 
+                catch(err) { alert('Erro de login!'); setLoading(false); }
+            };
 
             if (loading) return <div className={`min-h-screen flex items-center justify-center ${themeClass}`}><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin relative z-50"></div></div>;
 
             if (!user) {
                 return (
                     <div className={`min-h-screen flex items-center justify-center p-4 relative ${themeClass}`}>
+                        <div className="nebula-bg">
+                            <div className="nebula-blob blob1"></div>
+                            <div className="nebula-blob blob2"></div>
+                            <div className="nebula-blob blob3"></div>
+                        </div>
                         {themeClass.includes('night') && <div className="stars"></div>}
-                        <div className={`w-full max-w-md rounded-[2rem] shadow-2xl p-8 md:p-10 animate-fade-in relative z-10 clay-card ${themeClass.includes('night')?'dark':''}`}>
+                        
+                        <div className={`w-full max-w-md clay-card p-8 md:p-10 animate-fade-in relative z-10`}>
                             <div className="w-20 h-20 bg-primary/10 text-primary rounded-3xl flex justify-center items-center mx-auto mb-6 shadow-inner">
                                 <i className="ph-fill ph-calendar-check text-5xl"></i>
                             </div>
                             <h1 className="text-3xl font-black text-center mb-2">Escalas SV Pro</h1>
                             <p className="text-center font-bold mb-8 opacity-60">Gestão Inteligente de Plantões</p>
                             
-                            <form onSubmit={async(e)=>{e.preventDefault(); setLoading(true); try{await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value);}catch(err){alert('Erro de login!');setLoading(false);} }} className="space-y-4">
-                                <input name="email" type="email" placeholder="E-mail" className="w-full p-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required />
-                                <input name="password" type="password" placeholder="Senha" className="w-full p-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required />
-                                <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-2xl shadow-lg hover:-translate-y-1 transition text-lg mt-4">Acessar Plantão</button>
+                            <form onSubmit={handleLogin} className="space-y-4">
+                                <div className="relative">
+                                    <i className="ph-fill ph-user absolute left-5 top-4.5 opacity-50 text-lg"></i>
+                                    <input name="email" type="email" placeholder="E-mail" className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required />
+                                </div>
+                                <div className="relative">
+                                    <i className="ph-fill ph-lock-key absolute left-5 top-4.5 opacity-50 text-lg"></i>
+                                    <input name="password" type="password" placeholder="Senha" className="w-full pl-12 pr-4 py-4 rounded-2xl outline-none font-bold bg-black/5 dark:bg-white/10 border border-transparent focus:border-primary" required />
+                                </div>
+                                <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-2xl shadow-lg hover:-translate-y-1 transition text-lg mt-4">Acessar</button>
                             </form>
                         </div>
                     </div>
@@ -879,16 +904,21 @@
 
             return (
                 <div className="min-h-screen flex flex-col md:flex-row pb-20 md:pb-0 relative">
+                    <div className="nebula-bg">
+                        <div className="nebula-blob blob1"></div>
+                        <div className="nebula-blob blob2"></div>
+                        <div className="nebula-blob blob3"></div>
+                    </div>
                     {isDark && <div className="stars"></div>}
                     
                     {/* SIDEBAR PC COLAPSÁVEL */}
-                    <aside className={`hidden md:flex flex-col h-screen fixed z-30 shadow-2xl border-r transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-24' : 'w-72'} ${isDark ? 'bg-slate-900/80 border-slate-700/50 backdrop-blur-xl' : 'bg-white/80 border-white/50 backdrop-blur-xl'}`}>
+                    <aside className={`hidden md:flex flex-col h-screen fixed z-30 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-24' : 'w-72'} ${isDark ? 'bg-slate-900/60 border-r border-white/5 backdrop-blur-2xl' : 'bg-white/60 border-r border-black/5 backdrop-blur-2xl'}`}>
                         <div className="p-6 border-b border-inherit flex items-center justify-between">
                             <div className="flex items-center gap-4 overflow-hidden">
                                 <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center shadow-md shrink-0"><i className="ph-fill ph-heartbeat text-2xl animate-pulse"></i></div>
                                 {!isSidebarCollapsed && <div><h2 className="font-black text-xl leading-none whitespace-nowrap">Escalas SV</h2><p className="text-[10px] uppercase tracking-widest opacity-60 font-bold">Portal Médico</p></div>}
                             </div>
-                            <button onClick={()=>setIsSidebarCollapsed(!isSidebarCollapsed)} className="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition hidden md:flex shrink-0">
+                            <button onClick={()=>setIsSidebarCollapsed(!isSidebarCollapsed)} className="w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition shrink-0">
                                 <i className={`ph-bold ${isSidebarCollapsed ? 'ph-caret-right' : 'ph-caret-left'}`}></i>
                             </button>
                         </div>
@@ -912,25 +942,23 @@
                     </aside>
 
                     {/* BOTTOM NAV MOBILE */}
-                    <nav className={`md:hidden fixed bottom-0 inset-x-0 border-t z-50 flex justify-around p-3 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl ${isDark?'bg-slate-900/90 border-slate-800':'bg-white/90 border-slate-200'}`}>
+                    <nav className={`md:hidden fixed bottom-0 inset-x-0 border-t z-50 flex justify-around p-3 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl ${isDark?'bg-slate-900/80 border-white/5':'bg-white/80 border-black/5'}`}>
                         <button onClick={()=>setActiveTab('HOJE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-16 ${activeTab === 'HOJE' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'HOJE' ? 'ph-fill' : 'ph'} ph-kanban text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Hoje</span></button>
                         <button onClick={()=>setActiveTab('CALENDARIO')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-16 ${activeTab === 'CALENDARIO' ? 'text-primary' : 'opacity-40'}`}><i className={`${activeTab === 'CALENDARIO' ? 'ph-fill' : 'ph'} ph-calendar-blank text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Escala</span></button>
                         {isAdmin && <button onClick={()=>setActiveTab('EQUIPE')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-16 ${activeTab === 'EQUIPE' ? (isDark?'text-white':'text-slate-800') : 'opacity-40'}`}><i className={`${activeTab === 'EQUIPE' ? 'ph-fill' : 'ph'} ph-users text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Equipe</span></button>}
                         {isAdmin && <button onClick={()=>setActiveTab('CONFIG')} className={`flex flex-col items-center gap-1 p-2 rounded-xl transition w-16 ${activeTab === 'CONFIG' ? 'text-accent' : 'opacity-40'}`}><i className={`${activeTab === 'CONFIG' ? 'ph-fill' : 'ph'} ph-gear text-2xl`}></i><span className="text-[9px] font-black uppercase tracking-wider">Ajustes</span></button>}
                     </nav>
 
-                    {/* CONTEÚDO PRINCIPAL CENTRALIZADO E ADAPTÁVEL */}
+                    {/* CONTEÚDO PRINCIPAL */}
                     <main className={`flex-1 transition-all duration-300 p-4 md:p-10 relative z-10 w-full overflow-x-hidden ${isSidebarCollapsed ? 'md:ml-24' : 'md:ml-72'}`}>
-                        
-                        <div className="md:hidden flex justify-between items-center mb-6 p-4 rounded-2xl shadow-sm border border-inherit glass-panel">
+                        <div className="md:hidden flex justify-between items-center mb-6 p-4 rounded-2xl shadow-sm border border-inherit clay-card">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center shadow-md"><i className="ph-fill ph-calendar-check text-xl"></i></div>
                                 <div><h1 className="font-black leading-none">Escalas SV</h1><p className="text-[10px] uppercase font-bold opacity-50">Olá, {user.nome.split(' ')[0]}</p></div>
                             </div>
                         </div>
 
-                        {/* Top Header visível só no mapa e calendário pra ficar limpo */}
-                        {(activeTab === 'HOJE' || activeTab === 'CALENDARIO') && <div className="max-w-7xl mx-auto"><TopHeader user={user} themeClass={themeClass} /></div>}
+                        {(activeTab === 'HOJE' || activeTab === 'CALENDARIO') && <div className="max-w-[1600px] mx-auto"><TopHeader user={user} themeClass={themeClass} /></div>}
 
                         {activeTab === 'HOJE' && <PainelHojeView profissionais={dataCentral.PROFISSIONAIS} escalas={dataCentral.ESCALAS} config={dataCentral.CONFIGURACOES} user={user} onSave={api.saveRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
                         {activeTab === 'EQUIPE' && isAdmin && <EquipeView data={dataCentral.PROFISSIONAIS} sysConfig={dataCentral.CONFIGURACOES} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={fetchBanco} themeClass={themeClass} />}
@@ -946,3 +974,4 @@
     </script>
 </body>
 </html>
+
