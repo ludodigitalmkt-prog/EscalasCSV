@@ -74,7 +74,7 @@
     </style>
 
     <script>
-        const VERSAO_ATUAL = "20.0.0"; 
+        const VERSAO_ATUAL = "20.1.0"; 
         if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) {
             localStorage.clear(); sessionStorage.clear();
             localStorage.setItem('escalas_versao', VERSAO_ATUAL);
@@ -134,7 +134,7 @@
         const safeString = (val) => val === null || val === undefined ? '' : String(val);
 
         // ==========================================
-        // COMPONENTES VISUAIS BASE
+        // COMPONENTES VISUAIS BASE E RELÓGIO (O QUE FALTAVA)
         // ==========================================
         class ErrorBoundary extends Component {
             constructor(props) { super(props); this.state = { hasError: false, errStr: '' }; }
@@ -154,6 +154,39 @@
                 return this.props.children; 
             }
         }
+
+        const TopHeader = ({ user }) => {
+            const [time, setTime] = useState(new Date());
+            useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(timer); }, []);
+            
+            const h = time.getHours();
+            let period = 'Bom dia'; let icon = 'ph-sun'; 
+            let msgs = ["A saúde em primeiro lugar.", "Faça a diferença hoje!", "Um excelente turno!"];
+            
+            if (h >= 12 && h < 18) { period = 'Boa tarde'; icon = 'ph-cloud-sun'; msgs = ["Mantenha o foco!", "O cuidado continua."]; } 
+            else if (h >= 18 || h < 6) { period = 'Boa noite'; icon = 'ph-moon-stars'; msgs = ["A noite também salva vidas.", "Bom descanso aos que saem."]; }
+            
+            const randomMsg = msgs[time.getDate() % msgs.length]; 
+            const userName = user && user.nome ? user.nome.split(' ')[0] : 'Equipe';
+
+            return (
+                <div className={`p-6 rounded-[2rem] shadow-sm mb-8 flex justify-between items-center ${h >= 18 || h < 6 ? 'glass-panel-dark' : 'glass-panel'}`}>
+                    <div className="flex items-center gap-4">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl ${h >= 18 || h < 6 ? 'bg-white/10' : 'bg-white/50 shadow-inner'}`}>
+                            <i className={`ph-fill ${icon} animate-pulse-slow`}></i>
+                        </div>
+                        <div>
+                            <h2 className="text-3xl font-black leading-none">{time.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</h2>
+                            <p className="text-[10px] font-bold uppercase tracking-widest opacity-70 mt-1">{period}, {userName}</p>
+                        </div>
+                    </div>
+                    <div className="hidden md:block text-right">
+                        <p className="text-sm font-bold opacity-90">{randomMsg}</p>
+                        <p className="text-[10px] uppercase tracking-widest opacity-50">Portal de Escalas SV</p>
+                    </div>
+                </div>
+            );
+        };
 
         // ==========================================
         // MODULO 1: CONFIGURAÇÕES E PARÂMETROS
@@ -220,7 +253,6 @@
             const [search, setSearch] = useState('');
             const isDark = themeClass.includes('night');
 
-            // Habilidades do Sistema
             const habsSistema = sysConfig.habilidades || [];
 
             const openModal = (item = null) => {
@@ -236,7 +268,7 @@
             };
 
             const addData = (e) => {
-                const novaData = e.target.value; // YYYY-MM-DD
+                const novaData = e.target.value; 
                 if(!novaData) return;
                 const formatada = novaData.split('-').reverse().join('/');
                 const datas = formData.DatasEspecificas || [];
@@ -364,6 +396,7 @@
         // ==========================================
         const PainelHojeView = ({ profissionais, escalas, config, user, onSave, onRefresh, themeClass }) => {
             const isDark = themeClass.includes('night');
+            const panelClass = isDark ? 'glass-panel-dark' : 'glass-panel';
             const isAdmin = user.nivel === 'Admin' || user.nivel === 'Supervisor';
             
             const [now, setNow] = useState(Date.now());
@@ -372,12 +405,11 @@
             useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(timer); }, []);
 
             const supervisorAtual = config?.supervisorAtual || 'Aguardando';
-            const salasSistema = config?.salas || ['Recepção', 'Consultório 1', 'Triagem'];
+            const salasSistema = config?.salas || ['Recepção Principal', 'Triagem 01', 'Consultório Médico'];
             const motivosAusencia = config?.ausencias || ['Faltou', 'Atestado'];
 
             const todayStr = new Date().toLocaleDateString('pt-BR');
-            // Mocking a few scales if empty just for testing the UI. In production, relies on what is saved.
-            const escalasHoje = escalas.filter(e => e.Data === todayStr);
+            const escalasHoje = escalas.filter(e => safeString(e.Data) === todayStr);
 
             const assumirPlantao = async () => {
                 await api.saveRecord('CONFIGURACOES', { ID: 'plantao', supervisorAtual: user.nome }, true);
@@ -408,7 +440,6 @@
                 return <span className="bg-blue-500 text-white px-2 py-1 rounded text-[9px] font-black uppercase flex items-center gap-1"><i className="ph-bold ph-timer"></i> {restante}m</span>;
             };
 
-            // Filtragem de Habilidades (Substituição)
             const encontrarSubstitutos = (escala) => {
                 const habsNecessarias = escala.Habilidades || [];
                 const ocupados = escalasHoje.map(e => e.Nome_Profissional);
@@ -419,7 +450,6 @@
                 return livres;
             };
 
-            // Submeter Modais
             const handleAcaoModal = async (e) => {
                 e.preventDefault();
                 if (modalAction.tipo === 'alocar') {
@@ -458,14 +488,18 @@
                         </div>
                     </div>
 
-                    {/* MAPA DE SALAS (UI Baseada no Mockup do Figma) */}
+                    <div className="flex justify-between items-end mb-4 px-2">
+                        <div>
+                            <h2 className="text-2xl font-black">Mapa de Postos</h2>
+                            <p className="text-xs font-bold opacity-60">Status em tempo real do dia {todayStr}</p>
+                        </div>
+                    </div>
+
+                    {/* MAPA DE SALAS */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                         {salasSistema.map((sala, i) => {
-                            // Encontra quem tá nessa sala original OU quem tá de apoio nela
                             const ocupantes = escalasHoje.filter(e => (e.Sala === sala && !e.EmApoio) || (e.EmApoio && e.SalaApoio === sala));
                             const isLivre = ocupantes.length === 0;
-
-                            // Lógica de Cores dos Cards (Baseado no Mockup: Recepca = azul, Sala Exames = verde, etc)
                             const colorMap = ['border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800', 'border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800', 'border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800', 'border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800', 'border-purple-200 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-800'];
                             const cardTheme = colorMap[i % colorMap.length];
 
@@ -485,21 +519,26 @@
                                                 const isAusente = occ.Status === 'AUSENTE';
                                                 const isApoio = occ.EmApoio && occ.SalaApoio === sala;
                                                 
+                                                let cardBg = isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm';
+                                                if (isIntervalo) cardBg = 'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800';
+                                                if (isAusente) cardBg = 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70';
+
                                                 return (
-                                                    <div key={j} className={`p-2 rounded-xl border relative shadow-sm ${isAusente ? 'bg-red-50 border-red-200 opacity-60' : isIntervalo ? 'bg-orange-50 border-orange-200' : isDark?'bg-slate-800 border-slate-700':'bg-white border-slate-100'}`}>
+                                                    <div key={j} className={`p-2 rounded-xl border relative shadow-sm ${cardBg} transition group`}>
+                                                        {isIntervalo && <div className="absolute -top-3 -right-3 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm animate-bounce-slight shadow-lg z-10">🥪</div>}
+                                                        
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{backgroundColor: occ.Cor || '#000'}}>{occ.Nome_Profissional.charAt(0)}</div>
-                                                            <div className="truncate">
+                                                            <div className="truncate flex-1">
                                                                 <p className={`text-[10px] font-black truncate leading-tight ${isAusente?'line-through':''}`}>{occ.Nome_Profissional.split(' ')[0]} {occ.Nome_Profissional.split(' ')[1]||''}</p>
                                                                 <p className="text-[8px] font-bold opacity-60 truncate">{occ.Cargo} {isApoio ? '(Apoio)' : ''}</p>
                                                             </div>
+                                                            {isAdmin && <button onClick={async()=>{if(confirm('Remover profissional deste posto?')){await api.deleteRecord('ESCALAS', occ.ID); onRefresh();}}} className="opacity-0 group-hover:opacity-100 text-red-500 hover:scale-110 transition"><i className="ph-fill ph-x-circle"></i></button>}
                                                         </div>
                                                         
-                                                        {/* Status Tag */}
                                                         <div className="flex justify-between items-center mt-1">
                                                             {isIntervalo ? renderTimer(occ) : isAusente ? <span className="text-[8px] font-black text-red-600 bg-red-100 px-1.5 py-0.5 rounded truncate">{occ.MotivoAusencia||'Ausente'}</span> : <span className="text-[8px] font-black text-green-600 bg-green-100 px-1.5 py-0.5 rounded">Operando</span>}
                                                             
-                                                            {/* Mini Menu Ações */}
                                                             {isAdmin && !isAusente && (
                                                                 <div className="flex gap-1">
                                                                     {!isIntervalo && <button onClick={()=>handleStatusSimples(occ, 'INTERVALO')} className="w-5 h-5 bg-orange-100 text-orange-600 rounded flex justify-center items-center hover:bg-orange-200"><i className="ph-bold ph-coffee text-[10px]"></i></button>}
