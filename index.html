@@ -31,7 +31,7 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .timeline-line::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e2e8f0;z-index:0;}.dark .timeline-line::before{background:#334155;}
 </style>
 <script>
-    const VERSAO_ATUAL = "36.0.0"; // Versão atualizada para forçar limpeza de cache e exibir todo mundo empilhado
+    const VERSAO_ATUAL = "37.0.0"; // Versão com pastas na equipe, botões no builder e ordem alfabética
     if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); }
 </script>
 </head>
@@ -53,6 +53,11 @@ const safeStr = (v) => v==null?'':String(v);
 const fmtImg = (u) => { let s=safeStr(u).trim(); if(!s)return''; let m=s.match(/\/d\/([a-zA-Z0-9_-]+)/)||s.match(/id=([a-zA-Z0-9_-]+)/); return m?`https://drive.google.com/uc?export=view&id=${m[1]}`:s; };
 
 const getStrDt = (d) => { if(!d) return ''; return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); };
+
+// Helper para Ordenar Alfabeticamente
+const ordenarPorNome = (lista) => {
+    return [...lista].sort((a, b) => safeStr(a.Nome).localeCompare(safeStr(b.Nome)));
+};
 
 const checkIsMe = (nomeProfissional, userEmail) => {
     if(!nomeProfissional || !userEmail) return false;
@@ -177,31 +182,88 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
 
 // ================== ABA 2: EQUIPE ==================
 const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
+    // viewMode controla se estamos vendo as pastas ('MENU') ou a lista ('Colaborador' ou 'Médico')
+    const [viewMode, setViewMode] = useState('MENU'); 
     const [modal, setModal] = useState(false); const [fd, setFd] = useState({}); const [busca, setBusca] = useState('');
     const u = cfg?.unidades||[]; const s = cfg?.setores||[]; const h = cfg?.habilidades||[]; const a = cfg?.ausencias||[];
 
-    const openModal = (i=null) => { setFd(i ? {...i} : { Nome:'', Cargo:'', Tipo:'Colaborador', UnidadeBase:'', Setor:'', Habilidades:[], Cor:'#0ea5e9', CRM:'', CodUnimed:'', URA:'', CBO:'', OutroDoc:'', Segmento:'', isGestor: false, StatusGeral:'Ativo' }); setModal(true); };
+    const openModal = (i=null) => { 
+        setFd(i ? {...i} : { 
+            Nome:'', Cargo:'', 
+            Tipo: viewMode !== 'MENU' ? viewMode : 'Colaborador', // Já puxa o tipo da pasta que a pessoa está
+            UnidadeBase:'', Setor:'', Habilidades:[], Cor:'#0ea5e9', CRM:'', CodUnimed:'', URA:'', CBO:'', OutroDoc:'', Segmento:'', isGestor: false, StatusGeral:'Ativo',
+            TipoContrato: '', // NOVO CAMPO
+            ObservacoesGerais: '' // NOVO CAMPO
+        }); 
+        setModal(true); 
+    };
+    
     const toggleHab = (hab) => { let arr = fd.Habilidades||[]; setFd({...fd, Habilidades: arr.includes(hab)?arr.filter(x=>x!==hab):[...arr, hab]}); };
     const save = async (e) => { e.preventDefault(); await onSave('PROFISSIONAIS', fd); setModal(false); onRefresh(); };
 
-    const filtrados = data.filter(p => safeStr(p.Nome).toLowerCase().includes(busca.toLowerCase()));
+    // Filtra pelo tipo da pasta aberta, filtra pela busca, e ORDENA A-Z
+    const filtrados = ordenarPorNome(data)
+        .filter(p => viewMode === 'MENU' ? true : p.Tipo === viewMode)
+        .filter(p => safeStr(p.Nome).toLowerCase().includes(busca.toLowerCase()));
 
     return (
         <div className="animate-fade-in space-y-6 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center"><h2 className="text-2xl font-black">Corpo Clínico & Equipe</h2><div className="flex gap-2"><input type="text" placeholder="Buscar..." value={busca} onChange={e=>setBusca(e.target.value)} className="p-2 rounded-lg border dark:border-slate-700 outline-none text-sm bg-transparent text-slate-800 dark:text-white" /><button onClick={()=>openModal()} className="bg-primary text-white px-4 rounded-lg font-bold">Novo</button></div></div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                {filtrados.map((p, i) => (
-                    <div key={i} onClick={()=>openModal(p)} className="clean-card p-5 flex flex-col items-center text-center relative cursor-pointer group">
-                        {p.StatusGeral && p.StatusGeral !== 'Ativo' && <span className="absolute top-2 left-2 bg-red-100 text-red-600 text-[8px] font-black px-2 py-1 rounded">{p.StatusGeral}</span>}
-                        {p.FotoURL ? <img src={fmtImg(p.FotoURL)} className="w-14 h-14 rounded-full object-cover shadow mb-2" /> : <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black text-white shadow mb-2" style={{backgroundColor:p.Cor||'#0ea5e9'}}>{safeStr(p.Nome)[0]}</div>}
-                        <h3 className="font-black text-sm truncate w-full leading-tight text-slate-800 dark:text-white">{p.Nome}</h3>
-                        <p className="text-[9px] font-bold opacity-60 uppercase mt-0.5">{p.Tipo === 'Médico' ? `CRM: ${p.CRM||'N/A'}` : p.Cargo}</p>
-                        <p className="text-[8px] font-black bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded mt-1 truncate max-w-full text-slate-700 dark:text-slate-300">{p.UnidadeBase||'S/ Unid'} • {p.Setor||'S/ Setor'}</p>
-                        {p.isGestor && <span className="mt-2 text-[8px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">Autorizado Supervisão</span>}
-                        <button onClick={(e)=>{e.stopPropagation();if(confirm('Excluir?')){onDelete('PROFISSIONAIS',p.ID);onRefresh();}}} className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 bg-red-50 dark:bg-red-900/30 p-1 rounded transition"><i className="ph-fill ph-trash"></i></button>
+            
+            {/* TELA DE MENU (PASTAS) */}
+            {viewMode === 'MENU' && (
+                <div>
+                    <h2 className="text-2xl font-black mb-6">Gestão de Pessoas</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-primary hover:shadow-lg transition-all">
+                            <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-users-three"></i></div>
+                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Colaboradores</h3>
+                            <p className="text-xs font-bold opacity-60 mt-2 text-center">Recepcionistas, Administrativo, Apoio</p>
+                        </div>
+                        <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-red-500 hover:shadow-lg transition-all">
+                            <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-stethoscope"></i></div>
+                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Corpo Clínico</h3>
+                            <p className="text-xs font-bold opacity-60 mt-2 text-center">Médicos, Plantonistas, Especialistas</p>
+                        </div>
                     </div>
-                ))}
-            </div>
+                </div>
+            )}
+
+            {/* TELA DE LISTA (DENTRO DA PASTA) */}
+            {viewMode !== 'MENU' && (
+                <div className="animate-fade-in">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
+                        <div className="flex items-center gap-4">
+                            <button onClick={()=>{setViewMode('MENU'); setBusca('');}} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button>
+                            <div>
+                                <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Visualizando Equipe</p>
+                                <h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Corpo Clínico (Médicos)' : 'Colaboradores'}</h2>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 w-full md:w-auto">
+                            <input type="text" placeholder="Buscar por nome..." value={busca} onChange={e=>setBusca(e.target.value)} className="p-2.5 rounded-xl border dark:border-slate-700 outline-none text-sm bg-transparent text-slate-800 dark:text-white flex-1 md:w-64 font-bold" />
+                            <button onClick={()=>openModal()} className="bg-primary text-white px-5 rounded-xl font-bold hover:bg-blue-600 transition shadow-sm"><i className="ph-bold ph-plus"></i> Novo</button>
+                        </div>
+                    </div>
+
+                    {filtrados.length === 0 ? (
+                        <div className="p-10 text-center border-2 border-dashed rounded-2xl opacity-50 font-bold">Nenhuma pessoa encontrada nesta categoria.</div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {filtrados.map((p, i) => (
+                                <div key={i} onClick={()=>openModal(p)} className="clean-card p-5 flex flex-col items-center text-center relative cursor-pointer group">
+                                    {p.StatusGeral && p.StatusGeral !== 'Ativo' && <span className="absolute top-2 left-2 bg-red-100 text-red-600 text-[8px] font-black px-2 py-1 rounded">{p.StatusGeral}</span>}
+                                    {p.FotoURL ? <img src={fmtImg(p.FotoURL)} className="w-14 h-14 rounded-full object-cover shadow mb-2" /> : <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black text-white shadow mb-2" style={{backgroundColor:p.Cor||'#0ea5e9'}}>{safeStr(p.Nome)[0]}</div>}
+                                    <h3 className="font-black text-sm truncate w-full leading-tight text-slate-800 dark:text-white">{p.Nome}</h3>
+                                    <p className="text-[9px] font-bold opacity-60 uppercase mt-0.5">{p.Tipo === 'Médico' ? `CRM: ${p.CRM||'N/A'}` : p.Cargo}</p>
+                                    <p className="text-[8px] font-black bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded mt-1 truncate max-w-full text-slate-700 dark:text-slate-300">{p.UnidadeBase||'S/ Unid'} • {p.Setor||'S/ Setor'}</p>
+                                    {p.isGestor && <span className="mt-2 text-[8px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">Autorizado Supervisão</span>}
+                                    <button onClick={(e)=>{e.stopPropagation();if(confirm('Excluir?')){onDelete('PROFISSIONAIS',p.ID);onRefresh();}}} className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 bg-red-50 dark:bg-red-900/30 p-1 rounded transition"><i className="ph-fill ph-trash"></i></button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
 
             {modal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" onClick={()=>setModal(false)}>
@@ -238,8 +300,13 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                                 ) : (
                                     <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Cargo</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
                                 )}
+                                
+                                {/* NOVOS CAMPOS ADICIONADOS AQUI */}
+                                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Tipo de Contrato</label><input type="text" placeholder="Ex: CLT, PJ, RPA..." value={fd.TipoContrato||''} onChange={e=>setFd({...fd,TipoContrato:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" /></div>
                                 <div><label className="text-[10px] font-black uppercase opacity-60">Afastamentos / Folga Longa</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd,StatusGeral:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 text-red-500 font-bold"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{a.map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor Destacada</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-9 cursor-pointer border dark:border-slate-700 rounded p-0.5" /></div>
+                                <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Observações Gerais</label><textarea value={fd.ObservacoesGerais||''} onChange={e=>setFd({...fd,ObservacoesGerais:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" rows="2" placeholder="Anotações sobre horários, preferências, restrições..."></textarea></div>
+                                
+                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor Destacada (Calendário)</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-9 cursor-pointer border dark:border-slate-700 rounded p-0.5" /></div>
                             </div>
                             <div><label className="text-[10px] font-black uppercase opacity-60 block mb-1">Competências</label>
                                 <div className="flex flex-wrap gap-1">{h.map((x,i)=><button type="button" key={i} onClick={()=>toggleHab(x)} className={`px-2 py-1 text-[10px] rounded border ${fd.Habilidades?.includes(x)?'bg-primary text-white border-primary':'bg-transparent dark:border-slate-700'}`}>{x}</button>)}</div>
@@ -258,6 +325,9 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
     const [mode, setMode] = useState('TIMELINE'); 
     
+    // NOVO ESTADO: Controla qual grupo o Admin quer montar a escala
+    const [builderTipo, setBuilderTipo] = useState('Colaborador'); 
+
     const psts = cfg?.postos||[]; const unds = cfg?.unidades||[]; 
     const [selProf, setSelProf] = useState(''); const [selUnd, setSelUnd] = useState(''); const [selSala, setSelSala] = useState('');
     const [hIn, setHIn] = useState('08:00'); const [hOut, setHOut] = useState('18:00'); const [obs, setObs] = useState('');
@@ -299,6 +369,10 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const gridTL = buildGrid(mesAtual);
     const gridB = buildGrid(bMes);
 
+    // Listas de Profissionais Ordenadas para os Selects
+    const profsOrdenadosParaBusca = ordenarPorNome(profs);
+    const profsOrdenadosParaBuilder = ordenarPorNome(profs.filter(x => (x.StatusGeral==='Ativo'||!x.StatusGeral) && x.Tipo === builderTipo));
+
     return (
         <div className="animate-fade-in max-w-5xl mx-auto space-y-6 pb-10">
             {isAd && (
@@ -311,12 +385,18 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             {mode === 'BUILDER' ? (
                 <div className="clean-card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                        <div><label className="text-xs font-bold opacity-60">Colaborador / Médico</label><select value={selProf} onChange={e=>setSelProf(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white"><option value="">Selecione...</option>{profs.filter(x=>x.StatusGeral==='Ativo'||!x.StatusGeral).map(x=><option key={x.ID} value={x.ID}>{x.Nome}</option>)}</select></div>
+                        {/* NOVOS BOTÕES DE FILTRO PARA CRIAR ESCALA */}
+                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-2">
+                            <button onClick={()=>{setBuilderTipo('Colaborador'); setSelProf('');}} className={`flex-1 py-2 text-xs font-black uppercase rounded-lg transition ${builderTipo==='Colaborador'?'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400':'opacity-60 hover:opacity-100'}`}>Colaboradores</button>
+                            <button onClick={()=>{setBuilderTipo('Médico'); setSelProf('');}} className={`flex-1 py-2 text-xs font-black uppercase rounded-lg transition ${builderTipo==='Médico'?'bg-white dark:bg-slate-700 shadow text-red-600 dark:text-red-400':'opacity-60 hover:opacity-100'}`}>Médicos</button>
+                        </div>
+
+                        <div><label className="text-xs font-bold opacity-60">Selecione o(a) {builderTipo}</label><select value={selProf} onChange={e=>setSelProf(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold"><option value="">Abre a lista (A-Z)...</option>{profsOrdenadosParaBuilder.map(x=><option key={x.ID} value={x.ID}>{x.Nome}</option>)}</select></div>
                         <div><label className="text-xs font-bold opacity-60">Unidade (Opcional)</label><select value={selUnd} onChange={e=>setSelUnd(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white"><option value="">Selecione...</option>{unds.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
                         <div><label className="text-xs font-bold opacity-60">Posto / Sala</label><select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white"><option value="">Selecione a sala...</option>{psts.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x} {x.setor?`(${x.setor})`:''}</option>)}</select></div>
                         <div className="flex gap-2">
-                            <div className="flex-1"><label className="text-xs font-bold opacity-60">Entra</label><input type="time" value={hIn} onChange={e=>setHIn(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white" /></div>
-                            <div className="flex-1"><label className="text-xs font-bold opacity-60">Sai</label><input type="time" value={hOut} onChange={e=>setHOut(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white" /></div>
+                            <div className="flex-1"><label className="text-xs font-bold opacity-60">Entra</label><input type="time" value={hIn} onChange={e=>setHIn(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold" /></div>
+                            <div className="flex-1"><label className="text-xs font-bold opacity-60">Sai</label><input type="time" value={hOut} onChange={e=>setHOut(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold" /></div>
                         </div>
                         <div><label className="text-xs font-bold opacity-60">Anotação / Obs (Opcional)</label><input type="text" value={obs} onChange={e=>setObs(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white" placeholder="Ex: Plantão extra" /></div>
                     </div>
@@ -358,7 +438,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                 
                                 {showAuto && buscaNome && (
                                     <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
-                                        {profs.filter(p => {
+                                        {profsOrdenadosParaBusca.filter(p => {
                                             let match = true;
                                             if(filtroCat==='Médico') match = p.Tipo === 'Médico';
                                             else if(filtroCat==='Colaborador') match = p.Tipo === 'Colaborador';
@@ -490,7 +570,6 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         let currArr = [];
         let nxtArr = [];
 
-        // NOVO CÓDIGO: Permite que VÁRIAS pessoas fiquem no mesmo posto ao mesmo tempo
         for(let o of ocupantes) {
             let pts = (o.Horario||'').split(' às '); let inH = pts[0]?.trim(); let outH = pts[1]?.trim();
             if(!inH || !outH) { currArr.push(o); continue; } 
@@ -598,7 +677,6 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         );
     }
 
-    // NOVO CÓDIGO: Filtro limpador (remove espaços e ignora maiúsculas/minúsculas)
     const setoresDaUnidade = setoresSis
         .filter(s => safeStr(s.unidade).trim().toUpperCase() === safeStr(actU).trim().toUpperCase())
         .map(s => s.nome);
@@ -608,7 +686,6 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-4"><button onClick={()=>setActU(null)} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button><div><p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Unidade Ativa</p><h2 className="text-2xl font-black">{actU}</h2></div></div>
             
             {setoresDaUnidade.map(setor => {
-                // NOVO CÓDIGO: Filtro limpador para achar os postos daquele setor
                 const postosSetor = postosSis.filter(p => safeStr(p.setor).trim().toUpperCase() === safeStr(setor).trim().toUpperCase());
                 if(postosSetor.length === 0) return null; 
                 
@@ -667,7 +744,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                             <div>
                                 <h3 className="text-xl font-black mb-2 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-primary"></i> Substituir Ausência</h3>
                                 <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-                                    {profs.filter(p => p.StatusGeral === 'Ativo' && !escHjRaw.some(e => e.Nome_Profissional === p.Nome)).map(sub => (
+                                    {ordenarPorNome(profs.filter(p => p.StatusGeral === 'Ativo' && !escHjRaw.some(e => e.Nome_Profissional === p.Nome))).map(sub => (
                                         <div key={sub.ID} className="p-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-xl flex justify-between items-center">
                                             <div><p className="font-black text-sm">{sub.Nome}</p><p className="text-[8px] font-bold opacity-50 uppercase">{sub.Cargo}</p></div>
                                             <button onClick={async()=>{ await api.saveRecord('ESCALAS', {...modalAction.escala, ID: '', Nome_Profissional: sub.Nome, Status: 'NO POSTO', Cor: sub.Cor}, false); setModalAction(null); onRefresh(); }} className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:scale-105 transition">Acionar</button>
