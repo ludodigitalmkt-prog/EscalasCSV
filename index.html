@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><meta name="theme-color" content="#1E40AF"><title>Escalas PRÓ</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><meta name="theme-color" content="#1E40AF"><title>Escalas csv pró</title>
 <script>window.addEventListener('error', e => { document.body.innerHTML = `<div style="background:#fee2e2;color:#991b1b;padding:40px;text-align:center;"><h1>Erro Detectado</h1><p>${e.message} (Linha ${e.lineno})</p><button onclick="location.reload()" style="padding:10px 20px; background:#991b1b; color:white; border-radius:8px; margin-top:20px;">Recarregar</button></div>`; });</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:'#0ea5e9',secondary:'#1E40AF',accent:'#10b981'},animation:{'fade-in':'fadeIn 0.3s ease-out'},keyframes:{fadeIn:{'0%':{opacity:'0',transform:'translateY(10px)'},'100%':{opacity:'1',transform:'translateY(0)'}}}}}}</script>
@@ -17,7 +17,7 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .dark .fade-next{background:linear-gradient(180deg, rgba(30,41,59,0) 0%, rgba(15,23,42,0.8) 100%);}
 </style>
 <script>
-    const VERSAO_ATUAL = "30.1.0"; 
+    const VERSAO_ATUAL = "31.0.0"; 
     if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); }
 </script>
 </head>
@@ -38,7 +38,6 @@ const api = {
 const safeStr = (v) => v==null?'':String(v);
 const fmtImg = (u) => { let s=safeStr(u).trim(); if(!s)return''; let m=s.match(/\/d\/([a-zA-Z0-9_-]+)/)||s.match(/id=([a-zA-Z0-9_-]+)/); return m?`https://drive.google.com/uc?export=view&id=${m[1]}`:s; };
 
-// PADRONIZADOR DE DATAS (O QUE MATOU O BUG DO DASHBOARD VAZIO)
 const getStrDt = (d) => {
     if(!d) return '';
     return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
@@ -63,14 +62,13 @@ const TopHeader = ({ user, isDark, toggleDark }) => {
     );
 };
 
-// ================== ABA 1: AJUSTES (COM O FORMULÁRIO MODAL BONITO DE VOLTA) ==================
+// ================== ABA 1: AJUSTES ==================
 const AjustesView = ({ cfg, onSave, onRefresh }) => {
     const [u, setU] = useState([]); const [s, setS] = useState([]); const [p, setP] = useState([]);
     const [h, setH] = useState([]); const [a, setA] = useState([]); const [dash, setDash] = useState(true);
     const [loading, setL] = useState(false);
     
-    // O Modal Bonito do Ajustes!
-    const [mod, setMod] = useState(null); // {t:'u|s|p|h|a', act:'add|edit', idx, v1, v2}
+    const [mod, setMod] = useState(null); 
 
     useEffect(() => {
         const formatData = (arr) => (arr||[]).map(x => typeof x === 'string' ? {nome: x.toUpperCase()} : x);
@@ -93,7 +91,7 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
         e.preventDefault();
         const { t, act, idx, v1, v2 } = mod;
         let n1 = v1.trim().toUpperCase(); let n2 = v2.trim().toUpperCase();
-        if(t==='p' || t==='h' || t==='a') n1 = v1.trim(); // mantém maiúscula/minúscula para postos e habs
+        if(t==='p' || t==='h' || t==='a') n1 = v1.trim(); 
         
         if(act === 'add') {
             if(t==='u') setU([...u, {id:Date.now(), nome:n1}]);
@@ -136,19 +134,20 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
     return (
         <div className="animate-fade-in space-y-6 max-w-6xl mx-auto">
             <div className="flex justify-between items-center"><h2 className="text-2xl font-black">Ajustes & Parâmetros</h2><button onClick={salvar} disabled={loading} className="bg-primary text-white px-6 py-2 rounded-xl font-bold">{loading?'Salvando...':'Salvar Servidor'}</button></div>
+            
             <div className="clean-card p-4 flex justify-between items-center bg-blue-50/50 dark:bg-slate-800/50">
-                <div><h4 className="font-bold text-sm">Dashboard Principal</h4><p className="text-[10px] opacity-60">Exibir contagem de funcionários</p></div>
+                <div><h4 className="font-bold text-sm">Dashboard Principal</h4><p className="text-[10px] opacity-60">Exibir contagem de funcionários no mapa</p></div>
                 <button onClick={()=>setDash(!dash)} className={`w-12 h-6 rounded-full transition-colors relative ${dash?'bg-green-500':'bg-slate-300 dark:bg-slate-600'}`}><div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${dash?'translate-x-6.5 left-0':'left-0.5'}`}></div></button>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <ListRender title="1. Unidades/Prédios" arr={u} tipo="u" desc="Estruturas físicas." />
-                <ListRender title="2. Setores" arr={s} tipo="s" desc="Departamentos." />
-                <ListRender title="3. Postos/Salas" arr={p} tipo="p" desc="Locais exatos de trabalho." />
+                <ListRender title="1. Unidades/Prédios" arr={u} tipo="u" desc="Estruturas físicas (Ex: Matriz)." />
+                <ListRender title="2. Setores" arr={s} tipo="s" desc="Departamentos (Precisa de Unidade)." />
+                <ListRender title="3. Postos/Salas" arr={p} tipo="p" desc="Locais exatos (Precisa de Setor)." />
                 <ListRender title="Motivos de Afastamento" arr={a} tipo="a" desc="Férias, Licenças." />
                 <ListRender title="Competências" arr={h} tipo="h" desc="Habilidades da equipe." />
             </div>
 
-            {/* O NOVO MODAL BONITO DE AJUSTES */}
             {mod && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setMod(null)}>
                     <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
@@ -210,8 +209,8 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                                 <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Nome</label><input type="text" value={fd.Nome} onChange={e=>setFd({...fd,Nome:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
                                 <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Foto URL</label><input type="text" value={fd.FotoURL||''} onChange={e=>setFd({...fd,FotoURL:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
                                 
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Unidade de Atendimento</label><select value={fd.UnidadeBase||''} onChange={e=>setFd({...fd,UnidadeBase:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"><option value="">Selecione...</option>{u.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Setor Base</label><select value={fd.Setor||''} onChange={e=>setFd({...fd,Setor:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"><option value="">Selecione...</option>{s.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
+                                <div><label className="text-[10px] font-black uppercase opacity-60">Unidade de Atendimento</label><select value={fd.UnidadeBase||''} onChange={e=>setFd({...fd,UnidadeBase:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"><option value="">Selecione...</option>{u.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}</select></div>
+                                <div><label className="text-[10px] font-black uppercase opacity-60">Setor Base</label><select value={fd.Setor||''} onChange={e=>setFd({...fd,Setor:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"><option value="">Selecione...</option>{s.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}</select></div>
 
                                 {fd.Tipo==='Médico' ? (
                                     <div className="col-span-2 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mt-2 space-y-4">
@@ -252,7 +251,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const [mode, setMode] = useState('TIMELINE'); 
     
     // BUILDER STATE
-    const psts = cfg?.postos||[]; const unds = cfg?.unidades||[]; const sets = cfg?.setores||[];
+    const psts = cfg?.postos||[]; const unds = cfg?.unidades||[]; 
     const [selProf, setSelProf] = useState(''); const [selUnd, setSelUnd] = useState(''); const [selSala, setSelSala] = useState('');
     const [hIn, setHIn] = useState('08:00'); const [hOut, setHOut] = useState('18:00'); const [obs, setObs] = useState('');
     const [dates, setDates] = useState([]); const [dInput, setDInput] = useState('');
@@ -260,14 +259,11 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     // CALENDAR VIEW STATE
     const [calProf, setCalProf] = useState(isAd ? '' : user.nome);
     const [mesAtual, setMesAtual] = useState(new Date());
-    const [diaAtivo, setDiaAtivo] = useState(null); // dataStr do dia clicado
-
-    const setoresDaUnidade = sets.filter(s => s.unidade === selUnd).map(s=>s.nome);
-    const postosFiltrados = selUnd ? psts.filter(p => setoresDaUnidade.includes(p.setor)) : psts;
+    const [diaAtivo, setDiaAtivo] = useState(null); 
     
     const addD = () => { if(dInput && !dates.includes(dInput)){ setDates([...dates, dInput]); setDInput(''); } };
     const gerar = async () => {
-        if(!selProf || !selUnd || !selSala || dates.length===0) return alert("Preencha Profissional, Unidade, Sala e Datas!");
+        if(!selProf || !selSala || dates.length===0) return alert("Preencha Profissional, Sala e Datas!");
         const prof = profs.find(x=>x.ID===selProf || x.Nome===selProf);
         for(let d of dates){
             const dFmt = d.split('-').reverse().join('/');
@@ -295,8 +291,11 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 <div className="clean-card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                         <div><label className="text-xs font-bold opacity-60">Colaborador / Médico</label><select value={selProf} onChange={e=>setSelProf(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione...</option>{profs.filter(x=>x.StatusGeral==='Ativo'||!x.StatusGeral).map(x=><option key={x.ID} value={x.ID}>{x.Nome}</option>)}</select></div>
-                        <div><label className="text-xs font-bold opacity-60">Unidade (Prédio)</label><select value={selUnd} onChange={e=>setSelUnd(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione...</option>{unds.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
-                        <div><label className="text-xs font-bold opacity-60">Posto / Sala</label><select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione a Unidade primeiro...</option>{postosFiltrados.map((x,i)=><option key={i} value={x.nome}>{x.nome} {x.setor?`(${x.setor})`:''}</option>)}</select></div>
+                        <div><label className="text-xs font-bold opacity-60">Unidade (Prédio) (Opcional)</label><select value={selUnd} onChange={e=>setSelUnd(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Livre...</option>{unds.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
+                        
+                        {/* AQUI ESTÁ A CORREÇÃO DA TRAVA: POSTOS LIVRES SEMPRE DISPONÍVEIS */}
+                        <div><label className="text-xs font-bold opacity-60">Posto / Sala</label><select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione a sala...</option>{psts.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x} {x.setor?`(${x.setor})`:''}</option>)}</select></div>
+                        
                         <div className="flex gap-2">
                             <div className="flex-1"><label className="text-xs font-bold opacity-60">Entra</label><input type="time" value={hIn} onChange={e=>setHIn(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" /></div>
                             <div className="flex-1"><label className="text-xs font-bold opacity-60">Sai</label><input type="time" value={hOut} onChange={e=>setHOut(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" /></div>
@@ -354,7 +353,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                             {escDia.map((esc, j) => (
                                                 <div key={j} className="p-4 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden">
                                                     <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{backgroundColor: esc.Cor||'#0ea5e9'}}></div>
-                                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1 pl-1">{esc.Unidade || 'Unidade Padrão'}</p>
+                                                    {esc.Unidade && <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1 pl-1">{esc.Unidade}</p>}
                                                     <h4 className="font-black text-base pl-1">{esc.Sala} {esc.EmApoio?'(Apoio)':''}</h4>
                                                     <p className="text-sm font-bold opacity-80 mt-1 pl-1"><i className="ph-fill ph-clock"></i> {esc.Horario}</p>
                                                     {esc.ObsDia && <p className="text-xs mt-3 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 p-2 rounded ml-1"><i className="ph-bold ph-info"></i> {esc.ObsDia}</p>}
@@ -366,7 +365,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                             })() : (
                                 <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
                                     <i className="ph-fill ph-cursor-click text-4xl mb-2"></i>
-                                    <p className="text-xs font-bold">Clique em um dia com bolinha no calendário para ver os detalhes do plantão.</p>
+                                    <p className="text-xs font-bold">Clique em um dia com bolinha no calendário para ver os detalhes.</p>
                                 </div>
                             )}
                         </div>
@@ -384,14 +383,23 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const [now, setNow] = useState(Date.now()); const [actU, setActU] = useState(null);
     useEffect(() => { const t = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(t); }, []);
 
-    // BUG DE DATA MUNDIAL CORRIGIDO AQUI TBM:
     const dStr = getStrDt(new Date()); 
     const escHj = escalas.filter(e => e.Data === dStr);
-    const postosSis = cfg?.postos||[]; const setoresSis = cfg?.setores||[]; const unids = cfg?.unidades||[];
     
-    const qAtivos = escHj.length;
+    const nomesTrabHj = new Set(escHj.map(e => e.Nome_Profissional));
+    const qAtivos = nomesTrabHj.size;
     const qAfastados = profs.filter(p => p.StatusGeral && p.StatusGeral !== 'Ativo').length;
-    const qFolga = profs.length - qAtivos - qAfastados;
+    const qFolga = profs.filter(p => (!p.StatusGeral || p.StatusGeral === 'Ativo') && !nomesTrabHj.has(p.Nome)).length;
+
+    const postosSis = cfg?.postos||[]; const setoresSis = cfg?.setores||[]; const unids = cfg?.unidades||[];
+    const supervisorAtual = cfg?.supervisorAtual || 'Nenhum Assumiu';
+    const [isAssumindo, setIsAssumindo] = useState(false);
+    const [modalAction, setModalAction] = useState(null); 
+
+    const assumirPlantao = async (nome) => {
+        await api.saveRecord('CONFIGURACOES', { ID: 'plantao', supervisorAtual: nome });
+        setIsAssumindo(false); onRefresh();
+    };
 
     const setStatus = async (esc, st) => { let u={...esc, Status:st}; if(st==='INTERVALO'){ u.IntervaloInicio=Date.now(); u.IntervaloMinutos=15; } else u.IntervaloInicio=null; await api.saveRecord('ESCALAS', u); onRefresh(); };
 
@@ -407,7 +415,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         return (
             <div className="flex-1 p-2 flex flex-col justify-between space-y-2">
                 <div className={`p-2.5 rounded-xl relative border shadow-sm transition-colors ${isInt?'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800':isAus?'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70':'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
-                    <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-md" style={{background:current.Cor||'#000'}}>{current.Nome_Profissional[0]}</div><div className="truncate"><p className={`text-[11px] font-black truncate ${isAus?'line-through text-red-500':''}`}>{current.Nome_Profissional}</p><p className="text-[8px] font-bold opacity-60 truncate mt-0.5">{current.Cargo} • <i className="ph-fill ph-clock"></i> {current.Horario}</p></div></div>
+                    <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-md" style={{background:current.Cor||'#0ea5e9'}}>{current.Nome_Profissional[0]}</div><div className="truncate"><p className={`text-[11px] font-black truncate ${isAus?'line-through text-red-500':''}`}>{current.Nome_Profissional}</p><p className="text-[8px] font-bold opacity-60 truncate mt-0.5">{current.Cargo} • <i className="ph-fill ph-clock"></i> {current.Horario}</p></div></div>
                     <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2 mt-1">
                         <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>{current.Status}</span>
                         {isAd && !isAus && <div className="flex gap-1"><button onClick={()=>setStatus(current, isInt?'NO POSTO':'INTERVALO')} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button><button onClick={()=>setStatus(current, 'AUSENTE')} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-red-100 transition text-slate-500"><i className="ph-fill ph-warning"></i></button></div>}
@@ -426,6 +434,25 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     if(!actU) {
         return (
             <div className="animate-fade-in space-y-8 max-w-7xl mx-auto">
+                <div className="clean-card p-6 rounded-[1.5rem] border-l-4 border-l-primary flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-xl flex items-center justify-center text-3xl"><i className="ph-fill ph-shield-check"></i></div>
+                        <div><p className="text-[10px] uppercase tracking-widest font-bold opacity-60">Supervisão Geral</p><h3 className="font-black text-xl leading-none">No Comando: <span className="text-primary">{supervisorAtual}</span></h3></div>
+                    </div>
+                    {isAd && (
+                        isAssumindo ? (
+                            <div className="flex gap-2 w-full md:w-auto animate-fade-in">
+                                <select id="superSelect" className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold outline-none text-sm">
+                                    <option value="">Quem está assumindo?</option><option value={user.nome}>{user.nome} (Eu)</option>{profs.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+                                </select>
+                                <button onClick={()=>{const v = document.getElementById('superSelect').value; if(v) assumirPlantao(v);}} className="bg-primary text-white px-4 rounded-xl font-bold hover:bg-blue-600">OK</button>
+                            </div>
+                        ) : (
+                            <button onClick={()=>setIsAssumindo(true)} className="w-full md:w-auto bg-slate-800 dark:bg-slate-700 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-700 transition">Trocar Supervisor</button>
+                        )
+                    )}
+                </div>
+
                 {cfg?.showDash !== false && (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                         <div className="clean-card p-5 text-center border-b-4 border-b-green-500"><p className="text-[10px] font-black opacity-50 uppercase tracking-widest">Em Plantão (Hoje)</p><h3 className="text-4xl font-black text-green-600 mt-1">{qAtivos}</h3></div>
