@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><meta name="theme-color" content="#1E40AF"><title>Escalas CSV</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><meta name="theme-color" content="#1E40AF"><title>Escalas SV ERP</title>
 <script>window.addEventListener('error', e => { document.body.innerHTML = `<div style="background:#fee2e2;color:#991b1b;padding:40px;text-align:center;"><h1>Erro Detectado</h1><p>${e.message} (Linha ${e.lineno})</p><button onclick="location.reload()" style="padding:10px 20px; background:#991b1b; color:white; border-radius:8px; margin-top:20px;">Recarregar</button></div>`; });</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:'#0ea5e9',secondary:'#1E40AF',accent:'#10b981'},animation:{'fade-in':'fadeIn 0.3s ease-out'},keyframes:{fadeIn:{'0%':{opacity:'0',transform:'translateY(10px)'},'100%':{opacity:'1',transform:'translateY(0)'}}}}}}</script>
@@ -18,7 +18,7 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .timeline-line::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e2e8f0;z-index:0;}.dark .timeline-line::before{background:#334155;}
 </style>
 <script>
-    const VERSAO_ATUAL = "31.0.0"; 
+    const VERSAO_ATUAL = "32.0.0"; 
     if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); }
 </script>
 </head>
@@ -39,7 +39,6 @@ const api = {
 const safeStr = (v) => v==null?'':String(v);
 const fmtImg = (u) => { let s=safeStr(u).trim(); if(!s)return''; let m=s.match(/\/d\/([a-zA-Z0-9_-]+)/)||s.match(/id=([a-zA-Z0-9_-]+)/); return m?`https://drive.google.com/uc?export=view&id=${m[1]}`:s; };
 
-// PADRONIZADOR DE DATAS (MATA BUGS MUNDIAIS DE FUSO HORÁRIO)
 const getStrDt = (d) => {
     if(!d) return '';
     return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
@@ -176,7 +175,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
     const [modal, setModal] = useState(false); const [fd, setFd] = useState({}); const [busca, setBusca] = useState('');
     const u = cfg?.unidades||[]; const s = cfg?.setores||[]; const h = cfg?.habilidades||[]; const a = cfg?.ausencias||[];
 
-    const openModal = (i=null) => { setFd(i ? {...i} : { Nome:'', Cargo:'', Tipo:'Colaborador', UnidadeBase:'', Setor:'', Habilidades:[], Cor:'#0ea5e9', CRM:'', CodUnimed:'', URA:'', CBO:'', OutroDoc:'', Segmento:'', ObsProfissional:'', StatusGeral:'Ativo' }); setModal(true); };
+    const openModal = (i=null) => { setFd(i ? {...i} : { Nome:'', Cargo:'', Tipo:'Colaborador', UnidadeBase:'', Setor:'', Habilidades:[], Cor:'#0ea5e9', CRM:'', CodUnimed:'', URA:'', CBO:'', OutroDoc:'', Segmento:'', isGestor: false, StatusGeral:'Ativo' }); setModal(true); };
     const toggleHab = (hab) => { let arr = fd.Habilidades||[]; setFd({...fd, Habilidades: arr.includes(hab)?arr.filter(x=>x!==hab):[...arr, hab]}); };
     const save = async (e) => { e.preventDefault(); await onSave('PROFISSIONAIS', fd); setModal(false); onRefresh(); };
 
@@ -193,6 +192,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                         <h3 className="font-black text-sm truncate w-full leading-tight">{p.Nome}</h3>
                         <p className="text-[9px] font-bold opacity-60 uppercase mt-0.5">{p.Tipo === 'Médico' ? `CRM: ${p.CRM||'N/A'}` : p.Cargo}</p>
                         <p className="text-[8px] font-black bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded mt-1 truncate max-w-full">{p.UnidadeBase||'S/ Unid'} • {p.Setor||'S/ Setor'}</p>
+                        {p.isGestor && <span className="mt-2 text-[8px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">Autorizado Supervisão</span>}
                         <button onClick={(e)=>{e.stopPropagation();if(confirm('Excluir?')){onDelete('PROFISSIONAIS',p.ID);onRefresh();}}} className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 bg-red-50 dark:bg-red-900/30 p-1 rounded transition"><i className="ph-fill ph-trash"></i></button>
                     </div>
                 ))}
@@ -207,6 +207,13 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                                 <label className="flex items-center gap-2 font-bold cursor-pointer"><input type="radio" checked={fd.Tipo==='Colaborador'} onChange={()=>setFd({...fd, Tipo:'Colaborador'})} /> Equipe Base</label>
                                 <label className="flex items-center gap-2 font-bold cursor-pointer text-blue-600 dark:text-blue-400"><input type="radio" checked={fd.Tipo==='Médico'} onChange={()=>setFd({...fd, Tipo:'Médico'})} /> Corpo Clínico (Médico)</label>
                             </div>
+                            
+                            {/* NOVA OPÇÃO PARA LÍDERES/SUPERVISORES */}
+                            <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                                <input type="checkbox" id="isGestor" checked={fd.isGestor||false} onChange={e=>setFd({...fd, isGestor: e.target.checked})} className="w-4 h-4" />
+                                <label htmlFor="isGestor" className="font-bold text-sm cursor-pointer">Identificar como Líder/Supervisor (Permite Assumir Casa de Vidro)</label>
+                            </div>
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Nome</label><input type="text" value={fd.Nome} onChange={e=>setFd({...fd,Nome:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
                                 <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Foto URL</label><input type="text" value={fd.FotoURL||''} onChange={e=>setFd({...fd,FotoURL:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
@@ -265,7 +272,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     
     const addD = () => { if(dInput && !dates.includes(dInput)){ setDates([...dates, dInput]); setDInput(''); } };
     const gerar = async () => {
-        if(!selProf || !selUnd || !selSala || dates.length===0) return alert("Preencha Profissional, Unidade, Sala e Datas!");
+        if(!selProf || !selSala || dates.length===0) return alert("Preencha Profissional, Sala e Datas!");
         const prof = profs.find(x=>x.ID===selProf || x.Nome===selProf);
         for(let d of dates){
             const dFmt = d.split('-').reverse().join('/');
@@ -293,17 +300,16 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 <div className="clean-card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                         <div><label className="text-xs font-bold opacity-60">Colaborador / Médico</label><select value={selProf} onChange={e=>setSelProf(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione...</option>{profs.filter(x=>x.StatusGeral==='Ativo'||!x.StatusGeral).map(x=><option key={x.ID} value={x.ID}>{x.Nome}</option>)}</select></div>
+                        <div><label className="text-xs font-bold opacity-60">Unidade (Opcional)</label><select value={selUnd} onChange={e=>setSelUnd(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione...</option>{unds.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
                         
-                        <div><label className="text-xs font-bold opacity-60">Unidade de Destino</label><select value={selUnd} onChange={e=>setSelUnd(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione...</option>{unds.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
-                        
-                        {/* CAMPO DE SALAS LIVRE E INDEPENDENTE */}
+                        {/* SEM TRAVAS PARA ESCOLHER SALA */}
                         <div><label className="text-xs font-bold opacity-60">Posto / Sala</label><select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione a sala...</option>{psts.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x} {x.setor?`(${x.setor})`:''}</option>)}</select></div>
                         
                         <div className="flex gap-2">
                             <div className="flex-1"><label className="text-xs font-bold opacity-60">Entra</label><input type="time" value={hIn} onChange={e=>setHIn(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" /></div>
                             <div className="flex-1"><label className="text-xs font-bold opacity-60">Sai</label><input type="time" value={hOut} onChange={e=>setHOut(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" /></div>
                         </div>
-                        <div><label className="text-xs font-bold opacity-60">Anotação / Obs (Opcional)</label><input type="text" value={obs} onChange={e=>setObs(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" placeholder="Ex: Cobre o almoço" /></div>
+                        <div><label className="text-xs font-bold opacity-60">Anotação / Obs</label><input type="text" value={obs} onChange={e=>setObs(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" placeholder="Ex: Plantão extra" /></div>
                     </div>
                     <div className="border-l border-slate-200 dark:border-slate-700 pl-0 md:pl-6 space-y-4 flex flex-col">
                         <div><label className="text-xs font-bold opacity-60">Adicionar Datas da Escala</label><div className="flex gap-2 mt-1"><input type="date" value={dInput} onChange={e=>setDInput(e.target.value)} className="flex-1 p-3 border dark:border-slate-700 rounded-xl bg-transparent text-sm" /><button onClick={addD} className="bg-slate-800 dark:bg-slate-700 text-white px-4 rounded-xl font-black">+</button></div></div>
@@ -381,11 +387,10 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     );
 };
 
-// ================== ABA 4: MAPA DE PLANTÃO (A REDE DE SEGURANÇA) ==================
+// ================== ABA 4: MAPA DE PLANTÃO ==================
 const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
-    const [now, setNow] = useState(Date.now()); const [actU, setActU] = useState(null);
-    useEffect(() => { const t = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(t); }, []);
+    const [actU, setActU] = useState(null);
 
     const dStr = getStrDt(new Date()); 
     const escHj = escalas.filter(e => e.Data === dStr);
@@ -405,24 +410,39 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         setIsAssumindo(false); onRefresh();
     };
 
-    const setStatus = async (esc, st) => { let u={...esc, Status:st}; if(st==='INTERVALO'){ u.IntervaloInicio=Date.now(); u.IntervaloMinutos=15; } else u.IntervaloInicio=null; await api.saveRecord('ESCALAS', u); onRefresh(); };
+    const setStatus = async (esc, st) => { let u={...esc, Status:st}; await api.saveRecord('ESCALAS', u); onRefresh(); };
 
     const renderPosto = (sala, ocupantes) => {
         ocupantes.sort((a,b)=> (a.Horario||'').localeCompare(b.Horario||''));
-        const d=new Date(now); const hStr=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+        const d=new Date(); const hStr=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
         let ativoIdx = ocupantes.findIndex(o => { let pts = (o.Horario||'').split(' às '); if(pts.length!==2) return true; return hStr >= pts[0].trim() && hStr <= pts[1].trim(); });
         if(ativoIdx===-1) ativoIdx = 0; 
 
         const current = ocupantes[ativoIdx]; const next = ocupantes[ativoIdx+1]; 
-        const isInt = current?.Status === 'INTERVALO'; const isAus = current?.Status === 'AUSENTE';
+        const isInt = current?.Status === 'LANCHE'; const isAus = current?.Status === 'AUSENTE';
 
         return (
             <div className="flex-1 p-2 flex flex-col justify-between space-y-2">
                 <div className={`p-2.5 rounded-xl relative border shadow-sm transition-colors ${isInt?'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800':isAus?'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70':'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
                     <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-md" style={{background:current.Cor||'#0ea5e9'}}>{current.Nome_Profissional[0]}</div><div className="truncate"><p className={`text-[11px] font-black truncate ${isAus?'line-through text-red-500':''}`}>{current.Nome_Profissional}</p><p className="text-[8px] font-bold opacity-60 truncate mt-0.5">{current.Cargo} • <i className="ph-fill ph-clock"></i> {current.Horario}</p></div></div>
                     <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2 mt-1">
-                        <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>{current.Status}</span>
-                        {isAd && !isAus && <div className="flex gap-1"><button onClick={()=>setStatus(current, isInt?'NO POSTO':'INTERVALO')} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button><button onClick={()=>setStatus(current, 'AUSENTE')} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-red-100 transition text-slate-500"><i className="ph-fill ph-warning"></i></button></div>}
+                        <span className={`text-[8px] font-black px-2 py-1 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>{current.Status === 'NO POSTO' ? 'ATIVO' : current.Status}</span>
+                        
+                        {/* AÇÕES REDESENHADAS */}
+                        {isAd && (
+                            <div className="flex gap-1">
+                                {(!isInt && !isAus) ? (
+                                    <>
+                                        <button onClick={()=>setStatus(current, 'LANCHE')} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 hover:text-orange-600 transition text-slate-500" title="Foi pro Lanche"><i className="ph-fill ph-coffee"></i></button>
+                                        <button onClick={()=>setModalAction({tipo:'ausencia', escala: current})} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-red-100 hover:text-red-600 transition text-slate-500" title="Marcar Ausência"><i className="ph-fill ph-warning"></i></button>
+                                    </>
+                                ) : (
+                                    <button onClick={()=>setStatus(current, 'NO POSTO')} className="px-2 py-1 bg-slate-800 text-white rounded text-[8px] font-black hover:bg-slate-700 transition" title="Voltar ao Posto"><i className="ph-bold ph-arrow-u-down-left"></i> VOLTAR</button>
+                                )}
+                                
+                                {isAus && <button onClick={()=>setModalAction({tipo:'substituto', escala: current})} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black hover:bg-blue-600 transition"><i className="ph-bold ph-magic-wand"></i> COBRIR</button>}
+                            </div>
+                        )}
                     </div>
                 </div>
                 {next && (
@@ -446,8 +466,11 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     {isAd && (
                         isAssumindo ? (
                             <div className="flex gap-2 w-full md:w-auto animate-fade-in">
+                                {/* FILTRO DE LÍDERES APLICADO AQUI */}
                                 <select id="superSelect" className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold outline-none text-sm">
-                                    <option value="">Quem está assumindo?</option><option value={user.nome}>{user.nome} (Eu)</option>{profs.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+                                    <option value="">Quem está assumindo?</option>
+                                    <option value={user.nome}>{user.nome} (Eu)</option>
+                                    {profs.filter(p => p.isGestor).map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
                                 </select>
                                 <button onClick={()=>{const v = document.getElementById('superSelect').value; if(v) assumirPlantao(v);}} className="bg-primary text-white px-4 rounded-xl font-bold hover:bg-blue-600">OK</button>
                             </div>
@@ -478,27 +501,23 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         );
     }
 
-    // A REDE DE SEGURANÇA: Garante que as escalas do dia APAREÇAM mesmo se a sala não estiver linkada corretamente em Ajustes.
-    const escUnidade = escHj.filter(e => safeStr(e.Unidade).toUpperCase() === safeStr(actU).toUpperCase());
-    let setSetores = new Set(setoresSis.filter(s => safeStr(s.unidade).toUpperCase() === safeStr(actU).toUpperCase()).map(s=>s.nome));
-    escUnidade.forEach(e => { const p = postosSis.find(x => x.nome === e.Sala); if(p && p.setor) setSetores.add(p.setor); else if(!p) setSetores.add('OUTRAS SALAS (Extras)'); });
-    const setoresDaUnidade = Array.from(setSetores);
+    // A MÁGICA DA HIERARQUIA RESTRITA (MATA OS ORFÃOS)
+    const setoresDaUnidade = setoresSis.filter(s => safeStr(s.unidade).toUpperCase() === safeStr(actU).toUpperCase()).map(s=>s.nome);
     
     return (
         <div className="animate-fade-in space-y-8 max-w-[1600px] mx-auto pb-10">
             <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-4"><button onClick={()=>setActU(null)} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100"><i className="ph-bold ph-arrow-left"></i></button><div><p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Unidade Ativa</p><h2 className="text-2xl font-black">{actU}</h2></div></div>
             
             {setoresDaUnidade.map(setor => {
-                let postosSetor = postosSis.filter(p => p.setor === setor);
-                // Injeta as salas orfãs na renderização
-                escUnidade.forEach(e => { const pst = postosSis.find(p => p.nome === e.Sala); if (pst && pst.setor === setor && !postosSetor.some(p => p.nome === e.Sala)) postosSetor.push(pst); else if (!pst && setor === 'OUTRAS SALAS (Extras)' && !postosSetor.some(p => p.nome === e.Sala)) postosSetor.push({ nome: e.Sala, setor: 'OUTRAS SALAS (Extras)' }); });
-
+                const postosSetor = postosSis.filter(p => p.setor === setor);
+                if(postosSetor.length === 0) return null; // Não renderiza setores vazios
+                
                 return (
                     <div key={setor} className="space-y-4">
                         <h3 className="text-lg font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2"><i className="ph-fill ph-squares-four opacity-50"></i> {setor}</h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                             {postosSetor.map((pst, i) => {
-                                const ocup = escUnidade.filter(e => e.Sala === pst.nome);
+                                const ocup = escHj.filter(e => e.Sala === pst.nome);
                                 return (
                                     <div key={i} className={`clean-card flex flex-col p-1 min-h-[140px] border-t-4 ${ocup.length===0?'opacity-70 border-t-slate-300 dark:border-t-slate-600':'border-t-primary shadow-md'}`}>
                                         <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-t-xl font-black text-[11px] uppercase tracking-widest text-center border-b border-slate-100 dark:border-slate-700 truncate px-2">{pst.nome}</div>
@@ -510,7 +529,42 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     </div>
                 )
             })}
-            {setoresDaUnidade.length===0 && <p className="p-10 text-center opacity-50 font-bold border-2 border-dashed rounded-xl">Nenhuma escala ativa nesta unidade hoje.</p>}
+            {setoresDaUnidade.length===0 && <p className="p-10 text-center opacity-50 font-bold border-2 border-dashed rounded-xl">Nenhum setor cadastrado nesta unidade.</p>}
+
+            {/* MODAIS DO MAPA (AUSENCIA / APOIO) */}
+            {modalAction && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setModalAction(null)}>
+                    <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
+                        
+                        {modalAction.tipo === 'ausencia' && (
+                            <form onSubmit={async (e)=>{ e.preventDefault(); await api.saveRecord('ESCALAS', { ...modalAction.escala, Status: 'AUSENTE', MotivoAusencia: e.target.motivo.value, ObsDia: `Ausente: ${e.target.motivo.value}` }); setModalAction(null); onRefresh(); }} className="space-y-4">
+                                <h3 className="text-lg font-black mb-2 text-red-500">Marcar Ausência</h3>
+                                <p className="text-xs font-bold opacity-70 mb-4">{modalAction.escala.Nome_Profissional}</p>
+                                <select name="motivo" className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold outline-none text-sm" required>
+                                    <option value="Faltou">Faltou</option><option value="Atestado">Atestado Médico</option><option value="Trabalho Externo">Trabalho Externo</option><option value="Outros">Outros</option>
+                                </select>
+                                <button type="submit" className="w-full py-3 bg-red-500 text-white font-bold rounded-xl">Confirmar Ausência</button>
+                            </form>
+                        )}
+                        
+                        {/* COBERTURA */}
+                        {modalAction.tipo === 'substituto' && (
+                            <div>
+                                <h3 className="text-xl font-black mb-2 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-primary"></i> Substituir Ausência</h3>
+                                <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                                    {profs.filter(p => p.StatusGeral === 'Ativo' && !escHj.some(e => e.Nome_Profissional === p.Nome)).map(sub => (
+                                        <div key={sub.ID} className="p-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-xl flex justify-between items-center">
+                                            <div><p className="font-black text-sm">{sub.Nome}</p><p className="text-[8px] font-bold opacity-50 uppercase">{sub.Cargo}</p></div>
+                                            <button onClick={async()=>{ await api.saveRecord('ESCALAS', {...modalAction.escala, ID: '', Nome_Profissional: sub.Nome, Status: 'NO POSTO', Cor: sub.Cor}, false); setModalAction(null); onRefresh(); }} className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:scale-105 transition">Acionar</button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        <button type="button" onClick={()=>setModalAction(null)} className="w-full py-2 mt-4 text-sm font-bold opacity-50 hover:opacity-100 text-center block">Cancelar</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
