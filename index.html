@@ -31,7 +31,7 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .timeline-line::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e2e8f0;z-index:0;}.dark .timeline-line::before{background:#334155;}
 </style>
 <script>
-    const VERSAO_ATUAL = "33.0.0"; 
+    const VERSAO_ATUAL = "34.0.0"; // Força atualização de cache
     if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); }
 </script>
 </head>
@@ -68,6 +68,8 @@ const TopHeader = ({ user, isDark, toggleDark }) => {
             <div className="flex items-center gap-4">
                 <div className="hidden md:block text-right"><p className="text-[10px] uppercase font-bold opacity-50">Portal Médico</p><p className="font-black text-sm">Escalas SV</p></div>
                 <button onClick={toggleDark} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex justify-center items-center text-xl hover:scale-110 transition">{isDark?<i className="ph-fill ph-sun text-yellow-400"></i>:<i className="ph-fill ph-moon text-slate-600"></i>}</button>
+                {/* BOTÃO DE SAIR MOBILE ADCIONADO AQUI */}
+                <button onClick={()=>auth.signOut()} className="md:hidden w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 flex justify-center items-center text-xl hover:scale-110 transition text-red-500"><i className="ph-bold ph-sign-out"></i></button>
             </div>
         </div>
     );
@@ -254,12 +256,21 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const [hIn, setHIn] = useState('08:00'); const [hOut, setHOut] = useState('18:00'); const [obs, setObs] = useState('');
     const [dates, setDates] = useState([]); 
 
-    // O Picker de Calendário para criar Múltiplas Datas
     const [bMes, setBMes] = useState(new Date());
 
     const [calProf, setCalProf] = useState(isAd ? '' : user.nome);
     const [mesAtual, setMesAtual] = useState(new Date());
     const [diaAtivo, setDiaAtivo] = useState(null); 
+    
+    // NOVOS ESTADOS PARA PESQUISA INTELIGENTE E EDIÇÃO
+    const [filtroCat, setFiltroCat] = useState('');
+    const [buscaNome, setBuscaNome] = useState('');
+    const [showAuto, setShowAuto] = useState(false);
+    const [editData, setEditData] = useState(null); // Armazena a escala em edição
+
+    useEffect(() => {
+        if(calProf) setBuscaNome(calProf);
+    }, []);
     
     const toggleD = (dFmt) => { if(dates.includes(dFmt)) setDates(dates.filter(x=>x!==dFmt)); else setDates([...dates, dFmt]); };
     
@@ -325,12 +336,39 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 </div>
             ) : (
                 <div className="space-y-6">
-                    <div className="clean-card p-5 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="clean-card p-5 flex flex-col lg:flex-row justify-between items-center gap-4 relative">
                         <div className="flex items-center gap-4"><button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-left"></i></button><h2 className="text-lg font-black uppercase tracking-widest w-40 text-center">{mesAtual.toLocaleString('pt-BR', {month:'long', year:'numeric'})}</h2><button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-right"></i></button></div>
-                        {/* A CAIXA DE SELEÇÃO AGORA É LIVRE PARA TODOS (APENAS O BUILDER É EXCLUSIVO DE ADMIN) */}
-                        <select value={calProf} onChange={e=>{setCalProf(e.target.value); setDiaAtivo(null);}} className="p-2.5 rounded-lg border dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-sm w-full md:w-64">
-                            <option value="">Buscar Perfil...</option>{profs.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
-                        </select>
+                        
+                        {/* SISTEMA DE BUSCA INTELIGENTE COM FILTRO */}
+                        <div className="flex flex-col md:flex-row w-full lg:w-auto gap-2">
+                            <select value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} className="p-2.5 rounded-lg border dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-sm">
+                                <option value="">Todas Categorias</option>
+                                <option value="Médico">Médicos</option>
+                                <option value="Colaborador">Colaboradores</option>
+                                <option value="Gestor">Supervisores/Líderes</option>
+                            </select>
+                            
+                            <div className="relative flex-1 lg:w-72">
+                                <input type="text" placeholder="Buscar profissional..." value={buscaNome} onChange={e=>{setBuscaNome(e.target.value); setShowAuto(true); setCalProf(''); setDiaAtivo(null);}} onFocus={()=>setShowAuto(true)} className="p-2.5 rounded-lg border dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-sm w-full" />
+                                
+                                {showAuto && buscaNome && (
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+                                        {profs.filter(p => {
+                                            let match = true;
+                                            if(filtroCat==='Médico') match = p.Tipo === 'Médico';
+                                            else if(filtroCat==='Colaborador') match = p.Tipo === 'Colaborador';
+                                            else if(filtroCat==='Gestor') match = p.isGestor === true;
+                                            return match && safeStr(p.Nome).toLowerCase().includes(buscaNome.toLowerCase());
+                                        }).map(p => (
+                                            <div key={p.ID} onClick={()=>{setBuscaNome(p.Nome); setCalProf(p.Nome); setShowAuto(false); setDiaAtivo(null);}} className="p-3 cursor-pointer hover:bg-blue-50 dark:hover:bg-slate-700 border-b border-slate-100 dark:border-slate-700 last:border-0">
+                                                <p className="font-bold text-sm">{p.Nome}</p>
+                                                <p className="text-[10px] opacity-60 uppercase">{p.Tipo} {p.isGestor?'• Gestor/Supervisor':''}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     {!calProf ? <div className="p-10 text-center clean-card opacity-60 font-bold border-dashed">Selecione um profissional para carregar o calendário.</div> :
@@ -372,7 +410,14 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                                     <h4 className="font-black text-base pl-1">{esc.Sala} {esc.EmApoio?'(Apoio)':''}</h4>
                                                     <p className="text-sm font-bold opacity-80 mt-1 pl-1"><i className="ph-fill ph-clock"></i> {esc.Horario}</p>
                                                     {esc.ObsDia && <p className="text-xs mt-3 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 p-2 rounded ml-1"><i className="ph-bold ph-info"></i> {esc.ObsDia}</p>}
-                                                    {isAd && <button onClick={async()=>{if(confirm('Excluir turno?')){await api.deleteRecord('ESCALAS', esc.ID); onRefresh(); setDiaAtivo(null)}}} className="absolute top-2 right-2 text-red-500 hover:scale-110"><i className="ph-fill ph-trash"></i></button>}
+                                                    
+                                                    {isAd && (
+                                                        <div className="absolute top-2 right-2 flex gap-2">
+                                                            {/* BOTÃO DE EDITAR ADICIONADO AQUI */}
+                                                            <button onClick={() => setEditData({...esc})} className="text-yellow-500 hover:scale-110"><i className="ph-fill ph-pencil"></i></button>
+                                                            <button onClick={async()=>{if(confirm('Excluir turno?')){await api.deleteRecord('ESCALAS', esc.ID); onRefresh(); setDiaAtivo(null)}}} className="text-red-500 hover:scale-110"><i className="ph-fill ph-trash"></i></button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -387,6 +432,26 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                         </div>
 
                     </div>}
+                </div>
+            )}
+
+            {/* MODAL DE EDIÇÃO DE ESCALA */}
+            {editData && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setEditData(null)}>
+                    <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
+                        <h3 className="text-lg font-black mb-4">Editar Escala de {editData.Nome_Profissional}</h3>
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            await onSave('ESCALAS', editData);
+                            setEditData(null);
+                            onRefresh();
+                        }} className="space-y-4">
+                            <div><label className="text-[10px] font-black uppercase opacity-60">Horário</label><input type="text" value={editData.Horario} onChange={e=>setEditData({...editData, Horario:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
+                            <div><label className="text-[10px] font-black uppercase opacity-60">Sala / Posto</label><select value={editData.Sala} onChange={e=>setEditData({...editData, Sala:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800"><option value="">Selecione...</option>{cfg?.postos?.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}</select></div>
+                            <div><label className="text-[10px] font-black uppercase opacity-60">Anotação / Obs</label><input type="text" value={editData.ObsDia||''} onChange={e=>setEditData({...editData, ObsDia:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
+                            <div className="flex justify-end gap-2 pt-4"><button type="button" onClick={()=>setEditData(null)} className="px-4 py-2 font-bold opacity-60">Cancelar</button><button type="submit" className="bg-primary text-white px-6 py-2 rounded-xl font-bold">Salvar Alterações</button></div>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>
@@ -611,16 +676,23 @@ const App = () => {
     );
 
     const isAd = u.nivel === 'Admin' || u.nivel === 'Supervisor';
-    const menu = [ {id:'HOJE', i:'ph-kanban', n:'Plantão'}, {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas', ad:false}, {id:'EQUIPE', i:'ph-users', n:'Equipe', ad:isAd}, {id:'CONFIG', i:'ph-gear', n:'Ajustes', ad:isAd} ];
+    
+    // CORREÇÃO DO BUG: array de menu agora usa adminOnly de forma rígida
+    const menu = [ 
+        {id:'HOJE', i:'ph-kanban', n:'Plantão'}, 
+        {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas'}, 
+        {id:'EQUIPE', i:'ph-users', n:'Equipe', adminOnly:true}, 
+        {id:'CONFIG', i:'ph-gear', n:'Ajustes', adminOnly:true} 
+    ];
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row pb-20 md:pb-0">
             <aside className="hidden md:flex flex-col h-screen fixed z-30 w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
                 <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3"><div className="w-10 h-10 bg-primary text-white rounded-lg flex justify-center items-center"><i className="ph-fill ph-heartbeat text-xl"></i></div><div><h2 className="font-black text-lg">Escalas SV</h2><p className="text-[9px] uppercase opacity-50 font-bold tracking-widest">ERP Hospitalar</p></div></div>
-                <nav className="flex-1 px-4 py-6 space-y-2">{menu.filter(m=>!m.ad||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition ${t===m.id?'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400':'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><i className={`ph-fill ${m.i} text-xl`}></i> {m.n}</button>)}</nav>
+                <nav className="flex-1 px-4 py-6 space-y-2">{menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition ${t===m.id?'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400':'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><i className={`ph-fill ${m.i} text-xl`}></i> {m.n}</button>)}</nav>
                 <div className="p-4 border-t border-slate-100 dark:border-slate-800"><button onClick={()=>auth.signOut()} className="text-red-500 font-bold flex items-center gap-2 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded w-full transition"><i className="ph-bold ph-sign-out text-lg"></i> Sair do App</button></div>
             </aside>
-            <nav className="md:hidden fixed bottom-0 inset-x-0 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around p-2 pb-safe bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">{menu.filter(m=>!m.ad||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`flex flex-col items-center gap-1 p-2 rounded-xl w-16 transition ${t===m.id?'text-primary':'text-slate-400'}`}><i className={`ph-fill ${m.i} text-2xl`}></i><span className="text-[9px] font-black uppercase">{m.n}</span></button>)}</nav>
+            <nav className="md:hidden fixed bottom-0 inset-x-0 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around p-2 pb-safe bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">{menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`flex flex-col items-center gap-1 p-2 rounded-xl w-16 transition ${t===m.id?'text-primary':'text-slate-400'}`}><i className={`ph-fill ${m.i} text-2xl`}></i><span className="text-[9px] font-black uppercase">{m.n}</span></button>)}</nav>
             
             <main className="flex-1 transition-all p-4 md:p-8 w-full md:ml-64">
                 {(t==='HOJE'||t==='CALENDARIO') && <div className="max-w-[1600px] mx-auto"><TopHeader user={u} isDark={isD} toggleDark={()=>setIsD(!isD)} /></div>}
