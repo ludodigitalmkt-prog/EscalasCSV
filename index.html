@@ -42,7 +42,14 @@ const { useState, useEffect, Component } = React;
 
 const firebaseConfig = { apiKey:"AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c", authDomain:"escalas-sao-vicente.firebaseapp.com", projectId:"escalas-sao-vicente", storageBucket:"escalas-sao-vicente.firebasestorage.app", messagingSenderId:"256697542067", appId:"1:256697542067:web:b8087390bb57d74def97c6" };
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore(); const auth = firebase.auth();
+const db = firebase.firestore(); 
+
+// === ATIVAÇÃO DO CACHE (MEMÓRIA LOCAL) ===
+// Salva os dados no computador do funcionário para não gastar o limite de 50 mil leituras
+db.enablePersistence({ synchronizeTabs: true })
+  .catch((err) => { console.log("Erro ao ativar cache do Firebase:", err); });
+
+const auth = firebase.auth();
 
 const api = {
     fetch: async (c) => { try { const s = await db.collection(c).get(); return s.docs.map(d => ({ ID: d.id, ...d.data() })); } catch(e){return [];} },
@@ -747,3 +754,4 @@ const App = () => {
 };
 const root = ReactDOM.createRoot(document.getElementById('root')); root.render(<ErrorBoundary><App /></ErrorBoundary>);
 </script></body></html>
+
