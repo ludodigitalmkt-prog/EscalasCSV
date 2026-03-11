@@ -15,10 +15,9 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .clean-card:hover{transform:translateY(-2px);box-shadow:0 10px 15px -3px rgba(0,0,0,0.08);}.dark .clean-card:hover{box-shadow:0 10px 15px -3px rgba(0,0,0,0.3);}
 .fade-next{background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(248,250,252,0.8) 100%);}
 .dark .fade-next{background:linear-gradient(180deg, rgba(30,41,59,0) 0%, rgba(15,23,42,0.8) 100%);}
-.timeline-line::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e2e8f0;z-index:0;}.dark .timeline-line::before{background:#334155;}
 </style>
 <script>
-    const VERSAO_ATUAL = "29.0.0"; 
+    const VERSAO_ATUAL = "30.0.0"; 
     if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); }
 </script>
 </head>
@@ -58,15 +57,11 @@ const TopHeader = ({ user, isDark, toggleDark }) => {
     );
 };
 
-// ================== ABA 1: AJUSTES (COM MODAIS BONITOS) ==================
+// ================== ABA 1: AJUSTES ==================
 const AjustesView = ({ cfg, onSave, onRefresh }) => {
-    // Optional chaining previne o erro de 'undefined'
     const [u, setU] = useState([]); const [s, setS] = useState([]); const [p, setP] = useState([]);
     const [h, setH] = useState([]); const [a, setA] = useState([]); const [dash, setDash] = useState(true);
     const [loading, setL] = useState(false);
-    
-    // Novo estado para o Modal Bonito de Ajustes
-    const [mod, setMod] = useState(null); // { tipo: 'u'|'s'|'p'|'h'|'a', acao: 'add'|'edit', idx: 0, v1: '', v2: '' }
 
     useEffect(() => {
         const formatData = (arr) => (arr||[]).map(x => typeof x === 'string' ? {nome: x.toUpperCase()} : x);
@@ -76,52 +71,35 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
 
     const salvar = async () => { setL(true); await onSave('CONFIGURACOES',{ID:'parametros',unidades:u,setores:s,postos:p,habilidades:h,ausencias:a,showDash:dash}); onRefresh(); setL(false); alert("Configurações Salvas!"); };
 
-    const openAdd = (tipo) => setMod({ tipo, acao: 'add', v1: '', v2: '' });
-    const openEdit = (tipo, idx) => {
-        if(tipo==='u') setMod({ tipo, acao: 'edit', idx, v1: u[idx].nome, v2: '' });
-        if(tipo==='s') setMod({ tipo, acao: 'edit', idx, v1: s[idx].nome, v2: s[idx].unidade||'' });
-        if(tipo==='p') setMod({ tipo, acao: 'edit', idx, v1: p[idx].nome, v2: p[idx].setor||'' });
-        if(tipo==='h') setMod({ tipo, acao: 'edit', idx, v1: h[idx], v2: '' });
-        if(tipo==='a') setMod({ tipo, acao: 'edit', idx, v1: a[idx], v2: '' });
+    const add = (tipo) => {
+        if(tipo==='u'){ let n=prompt('Nome da Unidade:'); if(n) setU([...u, {id:Date.now(), nome:n.toUpperCase()}]); }
+        if(tipo==='s'){ if(u.length===0) return alert("Cadastre uma unidade primeiro!"); let un=prompt(`Qual unidade? (${u.map(x=>x.nome).join(', ')})`); if(!un)return; let n=prompt('Nome do Setor:'); if(n) setS([...s, {id:Date.now(), nome:n.toUpperCase(), unidade:un.toUpperCase()}]); }
+        if(tipo==='p'){ if(s.length===0) return alert("Cadastre um setor primeiro!"); let se=prompt(`Qual setor? (${s.map(x=>x.nome).join(', ')})`); if(!se)return; let n=prompt('Nome do Posto/Sala:'); if(n) setP([...p, {id:Date.now(), nome:n, setor:se.toUpperCase()}]); }
+        if(tipo==='h'){ let n=prompt('Nova Habilidade:'); if(n) setH([...h, n]); }
+        if(tipo==='a'){ let n=prompt('Nova Ausência:'); if(n) setA([...a, n]); }
     };
-
-    const confirmMod = (e) => {
-        e.preventDefault();
-        const { tipo, acao, idx, v1, v2 } = mod;
-        let v1_clean = v1.trim(); let v2_clean = v2.trim();
-        if(tipo!=='p' && tipo!=='h' && tipo!=='a') v1_clean = v1_clean.toUpperCase(); // Força maiúscula só onde precisa
-
-        if(acao === 'add') {
-            if(tipo==='u') setU([...u, {id:Date.now(), nome:v1_clean}]);
-            if(tipo==='s') setS([...s, {id:Date.now(), nome:v1_clean, unidade:v2_clean}]);
-            if(tipo==='p') setP([...p, {id:Date.now(), nome:v1_clean, setor:v2_clean}]);
-            if(tipo==='h') setH([...h, v1_clean]);
-            if(tipo==='a') setA([...a, v1_clean]);
-        } else {
-            if(tipo==='u'){ let arr=[...u]; arr[idx].nome=v1_clean; setU(arr); }
-            if(tipo==='s'){ let arr=[...s]; arr[idx].nome=v1_clean; arr[idx].unidade=v2_clean; setS(arr); }
-            if(tipo==='p'){ let arr=[...p]; arr[idx].nome=v1_clean; arr[idx].setor=v2_clean; setP(arr); }
-            if(tipo==='h'){ let arr=[...h]; arr[idx]=v1_clean; setH(arr); }
-            if(tipo==='a'){ let arr=[...a]; arr[idx]=v1_clean; setA(arr); }
-        }
-        setMod(null);
+    const edit = (tipo, idx) => {
+        if(tipo==='u'){ let n=prompt('Editar Unidade:', u[idx].nome); if(n){ let arr=[...u]; arr[idx].nome=n.toUpperCase(); setU(arr); } }
+        if(tipo==='s'){ let n=prompt('Editar Setor:', s[idx].nome); if(n){ let arr=[...s]; arr[idx].nome=n.toUpperCase(); setS(arr); } }
+        if(tipo==='p'){ let n=prompt('Editar Posto:', p[idx].nome); if(n){ let arr=[...p]; arr[idx].nome=n; setP(arr); } }
+        if(tipo==='h'){ let n=prompt('Editar Habilidade:', h[idx]); if(n){ let arr=[...h]; arr[idx]=n; setH(arr); } }
+        if(tipo==='a'){ let n=prompt('Editar Ausência:', a[idx]); if(n){ let arr=[...a]; arr[idx]=n; setA(arr); } }
     };
-
     const del = (tipo, idx) => {
-        if(!confirm("Excluir item permanentemente?")) return;
+        if(!confirm("Excluir?")) return;
         if(tipo==='u') setU(u.filter((_,i)=>i!==idx)); if(tipo==='s') setS(s.filter((_,i)=>i!==idx)); if(tipo==='p') setP(p.filter((_,i)=>i!==idx));
         if(tipo==='h') setH(h.filter((_,i)=>i!==idx)); if(tipo==='a') setA(a.filter((_,i)=>i!==idx));
     };
 
     const ListRender = ({title, arr, tipo, desc}) => (
         <div className="clean-card p-5">
-            <div className="flex justify-between items-center mb-2"><h3 className="font-black text-sm">{title}</h3><button onClick={()=>openAdd(tipo)} className="bg-primary text-white w-6 h-6 rounded font-black hover:scale-110 transition">+</button></div>
+            <div className="flex justify-between items-center mb-2"><h3 className="font-black text-sm">{title}</h3><button onClick={()=>add(tipo)} className="bg-primary text-white w-6 h-6 rounded font-black">+</button></div>
             <p className="text-[9px] opacity-50 mb-3">{desc}</p>
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                 {arr.map((item, i) => (
                     <div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-2 rounded text-xs border border-slate-100 dark:border-slate-700">
                         <div className="truncate pr-2"><p className="font-bold">{item.nome || item}</p>{item.unidade && <p className="text-[8px] opacity-60">Em: {item.unidade}</p>}{item.setor && <p className="text-[8px] opacity-60">Setor: {item.setor}</p>}</div>
-                        <div className="flex gap-1 shrink-0"><button onClick={()=>openEdit(tipo, i)} className="text-yellow-600 bg-yellow-100 p-1 rounded hover:bg-yellow-200"><i className="ph-bold ph-pencil"></i></button><button onClick={()=>del(tipo, i)} className="text-red-600 bg-red-100 p-1 rounded hover:bg-red-200"><i className="ph-bold ph-trash"></i></button></div>
+                        <div className="flex gap-1 shrink-0"><button onClick={()=>edit(tipo, i)} className="text-yellow-600 bg-yellow-100 p-1 rounded"><i className="ph-bold ph-pencil"></i></button><button onClick={()=>del(tipo, i)} className="text-red-600 bg-red-100 p-1 rounded"><i className="ph-bold ph-trash"></i></button></div>
                     </div>
                 ))}
                 {arr.length===0 && <p className="text-[10px] opacity-40">Nenhum item cadastrado.</p>}
@@ -132,59 +110,17 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
     return (
         <div className="animate-fade-in space-y-6 max-w-6xl mx-auto">
             <div className="flex justify-between items-center"><h2 className="text-2xl font-black">Ajustes & Parâmetros</h2><button onClick={salvar} disabled={loading} className="bg-primary text-white px-6 py-2 rounded-xl font-bold">{loading?'Salvando...':'Salvar Servidor'}</button></div>
-            
             <div className="clean-card p-4 flex justify-between items-center bg-blue-50/50 dark:bg-slate-800/50">
-                <div><h4 className="font-bold text-sm">Dashboard Principal</h4><p className="text-[10px] opacity-60">Exibir contagem de funcionários no mapa</p></div>
+                <div><h4 className="font-bold text-sm">Dashboard Principal</h4><p className="text-[10px] opacity-60">Exibir contagem de funcionários</p></div>
                 <button onClick={()=>setDash(!dash)} className={`w-12 h-6 rounded-full transition-colors relative ${dash?'bg-green-500':'bg-slate-300 dark:bg-slate-600'}`}><div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${dash?'translate-x-6.5 left-0':'left-0.5'}`}></div></button>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <ListRender title="1. Unidades/Prédios" arr={u} tipo="u" desc="Estruturas físicas (Ex: Matriz)." />
-                <ListRender title="2. Setores" arr={s} tipo="s" desc="Departamentos (Precisa de Unidade)." />
-                <ListRender title="3. Postos/Salas" arr={p} tipo="p" desc="Locais exatos (Precisa de Setor)." />
+                <ListRender title="1. Unidades/Prédios" arr={u} tipo="u" desc="Estruturas físicas." />
+                <ListRender title="2. Setores" arr={s} tipo="s" desc="Departamentos." />
+                <ListRender title="3. Postos/Salas" arr={p} tipo="p" desc="Locais exatos de trabalho." />
                 <ListRender title="Motivos de Afastamento" arr={a} tipo="a" desc="Férias, Licenças." />
                 <ListRender title="Competências" arr={h} tipo="h" desc="Habilidades da equipe." />
             </div>
-
-            {/* O NOVO MODAL BONITO PARA CADASTROS DA ABA AJUSTES */}
-            {mod && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setMod(null)}>
-                    <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
-                        <h3 className="text-xl font-black mb-4">{mod.acao==='add'?'Adicionar':'Editar'} Registro</h3>
-                        <form onSubmit={confirmMod} className="space-y-4">
-                            <div>
-                                <label className="text-[10px] font-black uppercase opacity-60">Nome / Descrição</label>
-                                <input type="text" value={mod.v1} onChange={e=>setMod({...mod, v1:e.target.value})} className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 font-bold text-sm" required autoFocus/>
-                            </div>
-                            
-                            {mod.tipo === 's' && (
-                                <div>
-                                    <label className="text-[10px] font-black uppercase opacity-60">Vincular a qual Unidade?</label>
-                                    <select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 font-bold text-sm" required>
-                                        <option value="">Selecione a Unidade...</option>
-                                        {u.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}
-                                    </select>
-                                </div>
-                            )}
-                            
-                            {mod.tipo === 'p' && (
-                                <div>
-                                    <label className="text-[10px] font-black uppercase opacity-60">Vincular a qual Setor?</label>
-                                    <select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 font-bold text-sm" required>
-                                        <option value="">Selecione o Setor...</option>
-                                        {s.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}
-                                    </select>
-                                </div>
-                            )}
-
-                            <div className="flex justify-end gap-2 pt-4">
-                                <button type="button" onClick={()=>setMod(null)} className="px-4 py-2 opacity-60 font-bold">Cancelar</button>
-                                <button type="submit" className="bg-primary text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-600 transition">Confirmar</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
@@ -192,9 +128,9 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
 // ================== ABA 2: EQUIPE ==================
 const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
     const [modal, setModal] = useState(false); const [fd, setFd] = useState({}); const [busca, setBusca] = useState('');
-    const s = cfg?.setores||[]; const h = cfg?.habilidades||[]; const a = cfg?.ausencias||[];
+    const u = cfg?.unidades||[]; const s = cfg?.setores||[]; const h = cfg?.habilidades||[]; const a = cfg?.ausencias||[];
 
-    const openModal = (i=null) => { setFd(i ? {...i} : { Nome:'', Cargo:'', Tipo:'Colaborador', Setor:'', Habilidades:[], Cor:'#0ea5e9', CRM:'', StatusGeral:'Ativo' }); setModal(true); };
+    const openModal = (i=null) => { setFd(i ? {...i} : { Nome:'', Cargo:'', Tipo:'Colaborador', UnidadeBase:'', Setor:'', Habilidades:[], Cor:'#0ea5e9', CRM:'', CodUnimed:'', URA:'', CBO:'', OutroDoc:'', Segmento:'', ObsProfissional:'', StatusGeral:'Ativo' }); setModal(true); };
     const toggleHab = (hab) => { let arr = fd.Habilidades||[]; setFd({...fd, Habilidades: arr.includes(hab)?arr.filter(x=>x!==hab):[...arr, hab]}); };
     const save = async (e) => { e.preventDefault(); await onSave('PROFISSIONAIS', fd); setModal(false); onRefresh(); };
 
@@ -210,6 +146,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                         {p.FotoURL ? <img src={fmtImg(p.FotoURL)} className="w-14 h-14 rounded-full object-cover shadow mb-2" /> : <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black text-white shadow mb-2" style={{backgroundColor:p.Cor||'#0ea5e9'}}>{safeStr(p.Nome)[0]}</div>}
                         <h3 className="font-black text-sm truncate w-full leading-tight">{p.Nome}</h3>
                         <p className="text-[9px] font-bold opacity-60 uppercase mt-0.5">{p.Tipo === 'Médico' ? `CRM: ${p.CRM||'N/A'}` : p.Cargo}</p>
+                        <p className="text-[8px] font-black bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded mt-1 truncate max-w-full">{p.UnidadeBase||'S/ Unid'} • {p.Setor||'S/ Setor'}</p>
                         <button onClick={(e)=>{e.stopPropagation();if(confirm('Excluir?')){onDelete('PROFISSIONAIS',p.ID);onRefresh();}}} className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 bg-red-50 p-1 rounded"><i className="ph-fill ph-trash"></i></button>
                     </div>
                 ))}
@@ -217,34 +154,45 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
 
             {modal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" onClick={()=>setModal(false)}>
-                    <div className="clean-card w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e=>e.stopPropagation()}>
+                    <div className="clean-card w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e=>e.stopPropagation()}>
                         <div className="p-4 border-b dark:border-slate-700 flex justify-between bg-slate-50 dark:bg-slate-800"><h3 className="font-black">Ficha Cadastral</h3><button onClick={()=>setModal(false)}><i className="ph-bold ph-x"></i></button></div>
                         <form onSubmit={save} className="p-5 overflow-y-auto space-y-4 text-sm">
-                            <div className="flex gap-4 mb-2">
+                            <div className="flex gap-4 mb-2 p-3 bg-blue-50 dark:bg-slate-800 rounded-xl border border-blue-100 dark:border-slate-700">
                                 <label className="flex items-center gap-2 font-bold cursor-pointer"><input type="radio" checked={fd.Tipo==='Colaborador'} onChange={()=>setFd({...fd, Tipo:'Colaborador'})} /> Equipe Base</label>
                                 <label className="flex items-center gap-2 font-bold cursor-pointer text-blue-600 dark:text-blue-400"><input type="radio" checked={fd.Tipo==='Médico'} onChange={()=>setFd({...fd, Tipo:'Médico'})} /> Corpo Clínico (Médico)</label>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Nome</label><input type="text" value={fd.Nome} onChange={e=>setFd({...fd,Nome:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
                                 <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Foto URL</label><input type="text" value={fd.FotoURL||''} onChange={e=>setFd({...fd,FotoURL:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
+                                
+                                <div><label className="text-[10px] font-black uppercase opacity-60">Unidade de Atendimento</label><select value={fd.UnidadeBase||''} onChange={e=>setFd({...fd,UnidadeBase:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"><option value="">Selecione...</option>{u.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}</select></div>
+                                <div><label className="text-[10px] font-black uppercase opacity-60">Setor Base</label><select value={fd.Setor||''} onChange={e=>setFd({...fd,Setor:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"><option value="">Selecione...</option>{s.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}</select></div>
+
                                 {fd.Tipo==='Médico' ? (
-                                    <>
-                                    <div><label className="text-[10px] font-black uppercase opacity-60">CRM</label><input type="text" value={fd.CRM||''} onChange={e=>setFd({...fd,CRM:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
-                                    <div><label className="text-[10px] font-black uppercase opacity-60">Especialidade (Cargo)</label><input type="text" value={fd.Cargo} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
-                                    </>
+                                    <div className="col-span-2 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mt-2 space-y-4">
+                                        <h4 className="text-xs font-black uppercase text-blue-600 dark:text-blue-400 border-b border-slate-100 dark:border-slate-700 pb-2">Informações Médicas</h4>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                            <div><label className="text-[9px] font-black uppercase opacity-60">CRM</label><input type="text" value={fd.CRM||''} onChange={e=>setFd({...fd,CRM:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
+                                            <div><label className="text-[9px] font-black uppercase opacity-60">Cód Unimed</label><input type="text" value={fd.CodUnimed||''} onChange={e=>setFd({...fd,CodUnimed:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
+                                            <div><label className="text-[9px] font-black uppercase opacity-60">URA</label><input type="text" value={fd.URA||''} onChange={e=>setFd({...fd,URA:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
+                                            <div><label className="text-[9px] font-black uppercase opacity-60">CBO</label><input type="text" value={fd.CBO||''} onChange={e=>setFd({...fd,CBO:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
+                                            <div><label className="text-[9px] font-black uppercase opacity-60">Outro Doc/Registro</label><input type="text" value={fd.OutroDoc||''} onChange={e=>setFd({...fd,OutroDoc:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
+                                            <div><label className="text-[9px] font-black uppercase opacity-60">Especialidade / Cargo</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
+                                            <div className="col-span-2 md:col-span-3"><label className="text-[9px] font-black uppercase opacity-60">Segmento / Observações Clínicas</label><textarea value={fd.Segmento||''} onChange={e=>setFd({...fd,Segmento:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" rows="2"></textarea></div>
+                                        </div>
+                                    </div>
                                 ) : (
-                                    <>
-                                    <div><label className="text-[10px] font-black uppercase opacity-60">Cargo</label><input type="text" value={fd.Cargo} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
-                                    <div><label className="text-[10px] font-black uppercase opacity-60">Setor Base</label><select value={fd.Setor} onChange={e=>setFd({...fd,Setor:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"><option value="">Selecione...</option>{s.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}</select></div>
-                                    </>
+                                    <div className="col-span-2">
+                                        <label className="text-[10px] font-black uppercase opacity-60">Cargo</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/>
+                                    </div>
                                 )}
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Afastamentos</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd,StatusGeral:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent font-bold"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{a.map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-8 cursor-pointer" /></div>
+                                <div><label className="text-[10px] font-black uppercase opacity-60">Afastamentos / Folga Longa</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd,StatusGeral:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent text-red-500 font-bold"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{a.map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
+                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor Destacada</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-9 cursor-pointer border dark:border-slate-700 rounded p-0.5" /></div>
                             </div>
-                            <div><label className="text-[10px] font-black uppercase opacity-60">Competências</label>
-                                <div className="flex flex-wrap gap-1 mt-1">{h.map((x,i)=><button type="button" key={i} onClick={()=>toggleHab(x)} className={`px-2 py-1 text-[10px] rounded border ${fd.Habilidades?.includes(x)?'bg-primary text-white border-primary':'bg-transparent dark:border-slate-700'}`}>{x}</button>)}</div>
+                            <div><label className="text-[10px] font-black uppercase opacity-60 block mb-1">Competências</label>
+                                <div className="flex flex-wrap gap-1">{h.map((x,i)=><button type="button" key={i} onClick={()=>toggleHab(x)} className={`px-2 py-1 text-[10px] rounded border ${fd.Habilidades?.includes(x)?'bg-primary text-white border-primary':'bg-transparent dark:border-slate-700'}`}>{x}</button>)}</div>
                             </div>
-                            <div className="pt-4 flex justify-end gap-2"><button type="button" onClick={()=>setModal(false)} className="px-4 py-2 opacity-60 font-bold">Cancelar</button><button type="submit" className="bg-primary text-white px-6 py-2 rounded font-bold">Salvar Ficha</button></div>
+                            <div className="pt-4 flex justify-end gap-2 border-t border-slate-200 dark:border-slate-700"><button type="button" onClick={()=>setModal(false)} className="px-4 py-2 opacity-60 font-bold">Cancelar</button><button type="submit" className="bg-primary text-white px-6 py-2 rounded font-bold">Salvar Ficha</button></div>
                         </form>
                     </div>
                 </div>
@@ -257,33 +205,46 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
 const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
     const [mode, setMode] = useState('TIMELINE'); 
-    const [selProf, setSelProf] = useState(isAd ? '' : user.nome);
-    const [mesAtual, setMesAtual] = useState(new Date());
-
-    const psts = cfg?.postos||[]; const [selSala, setSelSala] = useState('');
+    
+    // BUILDER STATE
+    const psts = cfg?.postos||[]; const unds = cfg?.unidades||[]; const sets = cfg?.setores||[];
+    const [selProf, setSelProf] = useState(''); const [selUnd, setSelUnd] = useState(''); const [selSala, setSelSala] = useState('');
     const [hIn, setHIn] = useState('08:00'); const [hOut, setHOut] = useState('18:00'); const [obs, setObs] = useState('');
     const [dates, setDates] = useState([]); const [dInput, setDInput] = useState('');
+
+    // CALENDAR VIEW STATE
+    const [calProf, setCalProf] = useState(isAd ? '' : user.nome);
+    const [mesAtual, setMesAtual] = useState(new Date());
+    const [diaAtivo, setDiaAtivo] = useState(null); // dataStr do dia clicado
+
+    // Filtro em cascata para as salas
+    const setoresDaUnidade = sets.filter(s => s.unidade === selUnd).map(s=>s.nome);
+    const postosFiltrados = selUnd ? psts.filter(p => setoresDaUnidade.includes(p.setor)) : psts;
     
     const addD = () => { if(dInput && !dates.includes(dInput)){ setDates([...dates, dInput]); setDInput(''); } };
     const gerar = async () => {
-        if(!selProf || !selSala || dates.length===0) return alert("Preencha Profissional, Sala e Datas!");
+        if(!selProf || !selUnd || !selSala || dates.length===0) return alert("Preencha Profissional, Unidade, Sala e Datas!");
         const prof = profs.find(x=>x.ID===selProf || x.Nome===selProf);
         for(let d of dates){
             const dFmt = d.split('-').reverse().join('/');
-            await onSave('ESCALAS', { Data: dFmt, Sala: selSala, Nome_Profissional: prof.Nome, Cargo: prof.Cargo, Horario: `${hIn} às ${hOut}`, Status: 'NO POSTO', Cor: prof.Cor, Habilidades: prof.Habilidades||[], ObsDia: obs });
+            await onSave('ESCALAS', { Data: dFmt, Unidade: selUnd, Sala: selSala, Nome_Profissional: prof.Nome, Cargo: prof.Cargo, Horario: `${hIn} às ${hOut}`, Status: 'NO POSTO', Cor: prof.Cor, Habilidades: prof.Habilidades||[], ObsDia: obs });
         }
-        alert("Escalas Geradas!"); setDates([]); setMode('TIMELINE'); onRefresh();
+        alert("Escalas Geradas com Sucesso!"); setDates([]); setMode('TIMELINE'); onRefresh();
     };
 
-    const diasNoMes = new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 0).getDate();
-    const dias = Array.from({length: diasNoMes}, (_, i) => { const data = new Date(mesAtual.getFullYear(), mesAtual.getMonth(), i + 1); return { data, diaSemana: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][data.getDay()], dataStr: data.toLocaleDateString('pt-BR') }; });
+    // Calendar logic
+    const ano = mesAtual.getFullYear(); const mes = mesAtual.getMonth();
+    const diasNoMes = new Date(ano, mes + 1, 0).getDate();
+    const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
+    const diasVazios = Array.from({length: primeiroDiaSemana});
+    const dias = Array.from({length: diasNoMes}, (_, i) => { const data = new Date(ano, mes, i + 1); return { data, dataStr: data.toLocaleDateString('pt-BR') }; });
 
     return (
-        <div className="animate-fade-in max-w-4xl mx-auto space-y-6 pb-10">
+        <div className="animate-fade-in max-w-5xl mx-auto space-y-6 pb-10">
             {isAd && (
                 <div className="flex gap-2 mb-4 border-b border-slate-200 dark:border-slate-700 pb-4">
-                    <button onClick={()=>setMode('TIMELINE')} className={`px-4 py-2 rounded-xl font-bold text-sm ${mode==='TIMELINE'?'bg-primary text-white':'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>Visualizar Escala</button>
-                    <button onClick={()=>setMode('BUILDER')} className={`px-4 py-2 rounded-xl font-bold text-sm ${mode==='BUILDER'?'bg-accent text-white':'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}><i className="ph-bold ph-magic-wand"></i> Gerador Automático</button>
+                    <button onClick={()=>setMode('TIMELINE')} className={`px-4 py-2 rounded-xl font-bold text-sm ${mode==='TIMELINE'?'bg-primary text-white':'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}><i className="ph-bold ph-calendar"></i> Ver Calendário</button>
+                    <button onClick={()=>setMode('BUILDER')} className={`px-4 py-2 rounded-xl font-bold text-sm ${mode==='BUILDER'?'bg-accent text-white':'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}><i className="ph-bold ph-magic-wand"></i> Criar Escalas</button>
                 </div>
             )}
 
@@ -291,60 +252,84 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 <div className="clean-card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                         <div><label className="text-xs font-bold opacity-60">Colaborador / Médico</label><select value={selProf} onChange={e=>setSelProf(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione...</option>{profs.filter(x=>x.StatusGeral==='Ativo'||!x.StatusGeral).map(x=><option key={x.ID} value={x.ID}>{x.Nome}</option>)}</select></div>
-                        <div><label className="text-xs font-bold opacity-60">Posto / Sala</label><select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione...</option>{psts.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x} {x.setor?`(${x.setor})`:''}</option>)}</select></div>
+                        <div><label className="text-xs font-bold opacity-60">Unidade (Prédio)</label><select value={selUnd} onChange={e=>setSelUnd(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione...</option>{unds.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
+                        <div><label className="text-xs font-bold opacity-60">Posto / Sala</label><select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent"><option value="">Selecione a Unidade primeiro...</option>{postosFiltrados.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x} {x.setor?`(${x.setor})`:''}</option>)}</select></div>
                         <div className="flex gap-2">
                             <div className="flex-1"><label className="text-xs font-bold opacity-60">Entra</label><input type="time" value={hIn} onChange={e=>setHIn(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" /></div>
                             <div className="flex-1"><label className="text-xs font-bold opacity-60">Sai</label><input type="time" value={hOut} onChange={e=>setHOut(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" /></div>
                         </div>
-                        <div><label className="text-xs font-bold opacity-60">Anotação (Opcional)</label><input type="text" value={obs} onChange={e=>setObs(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" placeholder="Ex: Plantão extra" /></div>
+                        <div><label className="text-xs font-bold opacity-60">Anotação / Obs</label><input type="text" value={obs} onChange={e=>setObs(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-transparent" placeholder="Ex: Plantão extra" /></div>
                     </div>
                     <div className="border-l border-slate-200 dark:border-slate-700 pl-0 md:pl-6 space-y-4 flex flex-col">
                         <div><label className="text-xs font-bold opacity-60">Adicionar Datas da Escala</label><div className="flex gap-2 mt-1"><input type="date" value={dInput} onChange={e=>setDInput(e.target.value)} className="flex-1 p-3 border dark:border-slate-700 rounded-xl bg-transparent text-sm" /><button onClick={addD} className="bg-slate-800 dark:bg-slate-700 text-white px-4 rounded-xl font-black">+</button></div></div>
                         <div className="flex flex-wrap gap-2 flex-1 content-start mt-2">
                             {dates.map((d,i)=><span key={i} className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 border border-blue-200 dark:border-blue-800">{d.split('-').reverse().join('/')} <i onClick={()=>setDates(dates.filter(x=>x!==d))} className="ph-bold ph-x cursor-pointer hover:text-red-500"></i></span>)}
-                            {dates.length===0 && <p className="text-[10px] opacity-40 w-full text-center py-4 border-2 border-dashed rounded-xl border-slate-200 dark:border-slate-700">Selecione os dias acima.</p>}
+                            {dates.length===0 && <p className="text-[10px] opacity-40 w-full text-center py-4 border-2 border-dashed rounded-xl border-slate-200 dark:border-slate-700">Selecione os dias acima para distribuir.</p>}
                         </div>
-                        <button onClick={gerar} className="w-full bg-accent text-white py-4 rounded-xl font-black shadow-lg hover:scale-[1.02] transition mt-auto">Salvar na Escala</button>
+                        <button onClick={gerar} className="w-full bg-accent text-white py-4 rounded-xl font-black shadow-lg hover:scale-[1.02] transition mt-auto">Salvar Escalas no Servidor</button>
                     </div>
                 </div>
             ) : (
                 <div className="space-y-6">
                     <div className="clean-card p-5 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div className="flex items-center gap-4"><button onClick={()=>setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1))} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-left"></i></button><h2 className="text-lg font-black uppercase tracking-widest w-32 text-center">{mesAtual.toLocaleString('pt-BR', {month:'long'})}</h2><button onClick={()=>setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1))} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-right"></i></button></div>
-                        {isAd ? <select value={selProf} onChange={e=>setSelProf(e.target.value)} className="p-2.5 rounded-lg border dark:border-slate-700 outline-none bg-transparent font-bold text-sm w-full md:w-64"><option value="">Selecionar Perfil...</option>{profs.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}</select> : <div className="px-4 py-2 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-xl font-black text-sm">Minha Escala</div>}
+                        <div className="flex items-center gap-4"><button onClick={()=>{setMesAtual(new Date(ano, mes-1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-left"></i></button><h2 className="text-lg font-black uppercase tracking-widest w-40 text-center">{mesAtual.toLocaleString('pt-BR', {month:'long', year:'numeric'})}</h2><button onClick={()=>{setMesAtual(new Date(ano, mes+1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-right"></i></button></div>
+                        {isAd ? <select value={calProf} onChange={e=>{setCalProf(e.target.value); setDiaAtivo(null);}} className="p-2.5 rounded-lg border dark:border-slate-700 outline-none bg-transparent font-bold text-sm w-full md:w-64"><option value="">Buscar Perfil...</option>{profs.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}</select> : <div className="px-4 py-2 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-xl font-black text-sm">Minha Escala</div>}
                     </div>
 
-                    {!selProf ? <div className="p-10 text-center clean-card opacity-60 font-bold border-dashed">Selecione para gerar a linha do tempo.</div> :
-                    <div className="clean-card p-6 relative overflow-hidden">
-                        <h3 className="font-black opacity-50 uppercase tracking-widest text-xs mb-6 border-b border-slate-100 dark:border-slate-800 pb-2">Linha do Tempo</h3>
-                        <div className="relative">
-                            <div className="timeline-line"></div>
-                            <div className="space-y-4">
+                    {!calProf ? <div className="p-10 text-center clean-card opacity-60 font-bold border-dashed">Selecione um profissional para carregar o calendário.</div> :
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        {/* CALENDÁRIO EM GRID */}
+                        <div className="clean-card p-6 lg:col-span-2">
+                            <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[10px] font-black opacity-50 uppercase">
+                                <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                            </div>
+                            <div className="grid grid-cols-7 gap-2">
+                                {diasVazios.map((_, i) => <div key={`v-${i}`} className="p-2 opacity-10"></div>)}
                                 {dias.map((d, i) => {
-                                    const escDia = escalas.filter(e => e.Nome_Profissional === selProf && e.Data === d.dataStr);
-                                    if (escDia.length === 0) return null;
+                                    const temEscala = escalas.some(e => e.Nome_Profissional === calProf && e.Data === d.dataStr);
+                                    const profColor = profs.find(p=>p.Nome===calProf)?.Cor || '#0ea5e9';
                                     const isToday = d.dataStr === new Date().toLocaleDateString('pt-BR');
+                                    const isSel = diaAtivo === d.dataStr;
 
                                     return (
-                                        <div key={i} className="flex relative z-10 animate-fade-in group">
-                                            <div className="w-16 shrink-0 flex flex-col items-center pt-2"><div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shadow-sm z-10 ${isToday ? 'bg-primary text-white ring-4 ring-blue-100 dark:ring-blue-900/50' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700'}`}>{d.data.getDate()}</div><span className={`text-[9px] font-black uppercase mt-1 ${isToday?'text-primary':'opacity-50'}`}>{d.diaSemana}</span></div>
-                                            <div className="flex-1 pl-4">
-                                                <div className={`p-4 rounded-2xl border transition-all ${isToday ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 shadow-sm' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
-                                                    {escDia.map((esc, j) => (
-                                                        <div key={j} className="mb-2 last:mb-0">
-                                                            <div className="flex items-center gap-2 mb-1"><span className="w-2 h-2 rounded-full bg-accent"></span><h4 className="font-black text-sm text-slate-700 dark:text-slate-200">{esc.Sala} {esc.EmApoio?'(Apoio)':''}</h4></div>
-                                                            <p className="text-xs font-bold opacity-60 ml-4"><i className="ph-fill ph-clock"></i> {esc.Horario}</p>
-                                                            {esc.ObsDia && <p className="text-[9px] font-bold text-orange-600 bg-orange-50 dark:bg-orange-900/30 px-2 py-1 rounded w-max mt-1.5 ml-4 border border-orange-100 dark:border-orange-800"><i className="ph-bold ph-info"></i> {esc.ObsDia}</p>}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
+                                        <div key={i} onClick={()=> temEscala && setDiaAtivo(d.dataStr)} className={`relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${temEscala?'cursor-pointer hover:border-primary':''} ${isSel?'ring-2 ring-primary bg-blue-50 dark:bg-slate-800':isToday?'bg-slate-100 dark:bg-slate-700':'bg-transparent border-slate-100 dark:border-slate-800'}`}>
+                                            <span className={`text-sm font-bold ${temEscala?'text-slate-800 dark:text-white':'text-slate-400 dark:text-slate-500'}`}>{d.data.getDate()}</span>
+                                            {temEscala && <span className="absolute bottom-2 w-1.5 h-1.5 rounded-full" style={{backgroundColor:profColor}}></span>}
                                         </div>
-                                    );
+                                    )
                                 })}
-                                {dias.filter(d => escalas.some(e=>e.Nome_Profissional===selProf&&e.Data===d.dataStr)).length === 0 && <p className="pl-16 text-xs font-bold opacity-50 py-4">Sem plantões previstos este mês.</p>}
                             </div>
                         </div>
+
+                        {/* DETALHES DO DIA CLICADO */}
+                        <div className="clean-card p-6 bg-slate-50 dark:bg-slate-800">
+                            {diaAtivo ? (() => {
+                                const escDia = escalas.filter(e => e.Nome_Profissional === calProf && e.Data === diaAtivo);
+                                return (
+                                    <div>
+                                        <h3 className="font-black text-lg mb-4 text-primary border-b border-slate-200 dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-check"></i> {diaAtivo}</h3>
+                                        <div className="space-y-4">
+                                            {escDia.map((esc, j) => (
+                                                <div key={j} className="p-4 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden">
+                                                    <div className="absolute left-0 top-0 bottom-0 w-1" style={{backgroundColor: esc.Cor||'#0ea5e9'}}></div>
+                                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">{esc.Unidade || 'Unidade Padrão'}</p>
+                                                    <h4 className="font-black text-base">{esc.Sala} {esc.EmApoio?'(Apoio)':''}</h4>
+                                                    <p className="text-sm font-bold opacity-80 mt-1"><i className="ph-fill ph-clock"></i> {esc.Horario}</p>
+                                                    {esc.ObsDia && <p className="text-xs mt-3 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 p-2 rounded"><i className="ph-bold ph-info"></i> {esc.ObsDia}</p>}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )
+                            })() : (
+                                <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
+                                    <i className="ph-fill ph-cursor-click text-4xl mb-2"></i>
+                                    <p className="text-xs font-bold">Clique em um dia com bolinha no calendário para ver os detalhes do plantão.</p>
+                                </div>
+                            )}
+                        </div>
+
                     </div>}
                 </div>
             )}
@@ -388,7 +373,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 </div>
                 {next && (
                     <div className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 fade-next relative overflow-hidden">
-                        <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-1">Entra às {next.Horario.split(' ')[0]}</p>
+                        <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-1">Próximo Turno: {next.Horario.split(' ')[0]}</p>
                         <div className="flex items-center gap-2 opacity-70"><div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px]" style={{background:next.Cor||'#000'}}>{next.Nome_Profissional[0]}</div><div><p className="text-[9px] font-black truncate max-w-[100px]">{next.Nome_Profissional}</p></div></div>
                     </div>
                 )}
@@ -403,7 +388,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                         <div className="clean-card p-5 text-center border-b-4 border-b-green-500"><p className="text-[10px] font-black opacity-50 uppercase tracking-widest">Em Plantão (Hoje)</p><h3 className="text-4xl font-black text-green-600 mt-1">{qAtivos}</h3></div>
                         <div className="clean-card p-5 text-center border-b-4 border-b-slate-300 dark:border-b-slate-600"><p className="text-[10px] font-black opacity-50 uppercase tracking-widest">Folga</p><h3 className="text-4xl font-black text-slate-400 mt-1">{qFolga}</h3></div>
-                        <div className="clean-card p-5 text-center border-b-4 border-b-red-500"><p className="text-[10px] font-black opacity-50 uppercase tracking-widest">Licenças / Férias</p><h3 className="text-4xl font-black text-red-500 mt-1">{qAfastados}</h3></div>
+                        <div className="clean-card p-5 text-center border-b-4 border-b-red-500"><p className="text-[10px] font-black opacity-50 uppercase tracking-widest">Licenças / Afastados</p><h3 className="text-4xl font-black text-red-500 mt-1">{qAfastados}</h3></div>
                     </div>
                 )}
                 <h2 className="text-2xl font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-hospital text-primary"></i> Selecione a Unidade</h2>
@@ -414,7 +399,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                             <h3 className="font-black text-xl uppercase tracking-widest">{u.nome}</h3>
                         </div>
                     ))}
-                    {unids.length===0 && <div className="col-span-full p-10 text-center border-2 border-dashed rounded-2xl opacity-50 font-bold">Vá na aba "Ajustes" e cadastre Prédios e Unidades.</div>}
+                    {unids.length===0 && <div className="col-span-full p-10 text-center border-2 border-dashed rounded-2xl opacity-50 font-bold">Vá em "Ajustes" e cadastre Prédios e Unidades.</div>}
                 </div>
             </div>
         );
@@ -424,7 +409,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     
     return (
         <div className="animate-fade-in space-y-8 max-w-[1600px] mx-auto pb-10">
-            <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-4"><button onClick={()=>setActU(null)} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button><div><p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Unidade Ativa</p><h2 className="text-2xl font-black">{actU}</h2></div></div>
+            <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-4"><button onClick={()=>setActU(null)} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100"><i className="ph-bold ph-arrow-left"></i></button><div><p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Unidade Ativa</p><h2 className="text-2xl font-black">{actU}</h2></div></div>
             
             {setoresDaUnidade.map(setor => {
                 const postosSetor = postosSis.filter(p => p.setor === setor);
@@ -437,7 +422,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                 return (
                                     <div key={i} className={`clean-card flex flex-col p-1 min-h-[140px] border-t-4 ${ocup.length===0?'opacity-70 border-t-slate-300 dark:border-t-slate-600':'border-t-primary shadow-md'}`}>
                                         <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-t-xl font-black text-[11px] uppercase tracking-widest text-center border-b border-slate-100 dark:border-slate-700 truncate px-2">{pst.nome}</div>
-                                        {ocup.length===0 ? <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-6"><i className="ph-bold ph-ghost text-3xl mb-2 opacity-30"></i><span className="text-[9px] font-black uppercase">Livre</span></div> : renderPosto(pst.nome, ocup)}
+                                        {ocup.length===0 ? <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-6"><i className="ph-bold ph-ghost text-3xl mb-2 opacity-30"></i><span className="text-[9px] font-black uppercase">Posto Livre</span></div> : renderPosto(pst.nome, ocup)}
                                     </div>
                                 )
                             })}
@@ -445,7 +430,6 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     </div>
                 )
             })}
-            {setoresDaUnidade.length===0 && <p className="p-10 text-center opacity-50 font-bold border-2 border-dashed rounded-xl">Nenhum setor atrelado a esta unidade.</p>}
         </div>
     );
 };
@@ -464,7 +448,19 @@ const App = () => {
         setDb({ PROFISSIONAIS: pr||[], ESCALAS: es||[], CONFIGURACOES: {...pCfg, ...plCfg} });
     };
 
-    useEffect(() => { const un = auth.onAuthStateChanged(async usr => { if(usr){ let role = 'Colaborador'; if (usr.email.includes('admin') || usr.email.includes('gestao') || usr.email.includes('diretor')) role = 'Admin'; else if (usr.email.includes('supervis')) role = 'Supervisor'; setU({email:usr.email, nome:usr.email.split('@')[0], nivel:role}); await f(); }else setU(null); setL(false); }); return ()=>un(); }, []);
+    useEffect(() => { 
+        const un = auth.onAuthStateChanged(async usr => { 
+            if(usr){ 
+                let role = 'Colaborador';
+                if (usr.email.includes('admin') || usr.email.includes('gestao') || usr.email.includes('diretor')) role = 'Admin';
+                else if (usr.email.includes('supervis')) role = 'Supervisor';
+                setU({email:usr.email, nome:usr.email.split('@')[0], nivel:role}); 
+                await f(); 
+            } else setU(null); 
+            setL(false); 
+        }); 
+        return ()=>un(); 
+    }, []);
 
     if (l) return <div className="min-h-screen flex items-center justify-center"><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
 
