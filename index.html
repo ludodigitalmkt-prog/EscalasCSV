@@ -31,7 +31,7 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .timeline-line::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e2e8f0;z-index:0;}.dark .timeline-line::before{background:#334155;}
 </style>
 <script>
-    const VERSAO_ATUAL = "34.0.0"; // Força atualização de cache
+    const VERSAO_ATUAL = "35.0.0"; // Força atualização de cache
     if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); }
 </script>
 </head>
@@ -54,6 +54,15 @@ const fmtImg = (u) => { let s=safeStr(u).trim(); if(!s)return''; let m=s.match(/
 
 const getStrDt = (d) => { if(!d) return ''; return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); };
 
+// Função para ajudar a identificar quem é o usuário logado
+const checkIsMe = (nomeProfissional, userEmail) => {
+    if(!nomeProfissional || !userEmail) return false;
+    const norm = (s) => safeStr(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const parts = norm(userEmail).split('@')[0].split(/[.\-_]/);
+    const nProf = norm(nomeProfissional);
+    return parts.some(p => p.length > 2 && nProf.includes(p));
+};
+
 class ErrorBoundary extends Component {
     constructor(props){super(props);this.state={hasError:false,e:''};} static getDerivedStateFromError(e){return{hasError:true};} componentDidCatch(e){this.setState({e:String(e)});}
     render(){ if(this.state.hasError) return <div className="p-10 text-center"><h2 className="text-2xl text-red-500 font-black mb-2">Erro</h2><p className="text-xs bg-red-100 text-red-800 p-4 rounded max-w-xl mx-auto">{this.state.e}</p><button onClick={()=>location.reload()} className="p-3 bg-blue-500 text-white rounded font-bold mt-4">Recarregar</button></div>; return this.props.children; }
@@ -68,7 +77,6 @@ const TopHeader = ({ user, isDark, toggleDark }) => {
             <div className="flex items-center gap-4">
                 <div className="hidden md:block text-right"><p className="text-[10px] uppercase font-bold opacity-50">Portal Médico</p><p className="font-black text-sm">Escalas SV</p></div>
                 <button onClick={toggleDark} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex justify-center items-center text-xl hover:scale-110 transition">{isDark?<i className="ph-fill ph-sun text-yellow-400"></i>:<i className="ph-fill ph-moon text-slate-600"></i>}</button>
-                {/* BOTÃO DE SAIR MOBILE ADCIONADO AQUI */}
                 <button onClick={()=>auth.signOut()} className="md:hidden w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 flex justify-center items-center text-xl hover:scale-110 transition text-red-500"><i className="ph-bold ph-sign-out"></i></button>
             </div>
         </div>
@@ -262,11 +270,10 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const [mesAtual, setMesAtual] = useState(new Date());
     const [diaAtivo, setDiaAtivo] = useState(null); 
     
-    // NOVOS ESTADOS PARA PESQUISA INTELIGENTE E EDIÇÃO
     const [filtroCat, setFiltroCat] = useState('');
     const [buscaNome, setBuscaNome] = useState('');
     const [showAuto, setShowAuto] = useState(false);
-    const [editData, setEditData] = useState(null); // Armazena a escala em edição
+    const [editData, setEditData] = useState(null);
 
     useEffect(() => {
         if(calProf) setBuscaNome(calProf);
@@ -339,7 +346,6 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     <div className="clean-card p-5 flex flex-col lg:flex-row justify-between items-center gap-4 relative">
                         <div className="flex items-center gap-4"><button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-left"></i></button><h2 className="text-lg font-black uppercase tracking-widest w-40 text-center">{mesAtual.toLocaleString('pt-BR', {month:'long', year:'numeric'})}</h2><button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-right"></i></button></div>
                         
-                        {/* SISTEMA DE BUSCA INTELIGENTE COM FILTRO */}
                         <div className="flex flex-col md:flex-row w-full lg:w-auto gap-2">
                             <select value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} className="p-2.5 rounded-lg border dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-sm">
                                 <option value="">Todas Categorias</option>
@@ -413,7 +419,6 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                                     
                                                     {isAd && (
                                                         <div className="absolute top-2 right-2 flex gap-2">
-                                                            {/* BOTÃO DE EDITAR ADICIONADO AQUI */}
                                                             <button onClick={() => setEditData({...esc})} className="text-yellow-500 hover:scale-110"><i className="ph-fill ph-pencil"></i></button>
                                                             <button onClick={async()=>{if(confirm('Excluir turno?')){await api.deleteRecord('ESCALAS', esc.ID); onRefresh(); setDiaAtivo(null)}}} className="text-red-500 hover:scale-110"><i className="ph-fill ph-trash"></i></button>
                                                         </div>
@@ -435,7 +440,6 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 </div>
             )}
 
-            {/* MODAL DE EDIÇÃO DE ESCALA */}
             {editData && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setEditData(null)}>
                     <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
@@ -465,10 +469,8 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     useEffect(() => { const t = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(t); }, []);
 
     const dStr = getStrDt(new Date()); 
-    // AUTO-HIDE DE TURNOS ENCERRADOS: Filta a escala para achar SÓ quem tem turno HOJE, e depois oculta se a hora já passou do limite da pessoa.
     const escHjRaw = escalas.filter(e => e.Data === dStr);
     
-    // Contagem Dashboard
     const nomesTrabHj = new Set(escHjRaw.map(e => e.Nome_Profissional));
     const qAtivos = nomesTrabHj.size;
     const qAfastados = profs.filter(p => p.StatusGeral && p.StatusGeral !== 'Ativo').length;
@@ -489,7 +491,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         let curr = null; let nxt = null;
         for(let o of ocupantes) {
             let pts = (o.Horario||'').split(' às '); let inH = pts[0]?.trim(); let outH = pts[1]?.trim();
-            if(!inH || !outH) { curr = o; break; } // fallback se nao tem formato horario
+            if(!inH || !outH) { curr = o; break; } 
             if(hStr >= inH && hStr <= outH) curr = o;
             else if(hStr < inH && (!nxt || inH < nxt.Horario.split(' às ')[0].trim())) nxt = o;
         }
@@ -497,6 +499,8 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         if(!curr && !nxt) return <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-6"><i className="ph-bold ph-ghost text-3xl mb-2 opacity-30"></i><span className="text-[9px] font-black uppercase">Turno Encerrado</span></div>;
 
         const isInt = curr?.Status === 'LANCHE'; const isAus = curr?.Status === 'AUSENTE';
+        // VERIFICA SE O CARD É DO PRÓPRIO USUÁRIO LOGADO
+        const isMe = checkIsMe(curr?.Nome_Profissional, user.email);
 
         return (
             <div className="flex-1 p-2 flex flex-col justify-between space-y-2">
@@ -505,19 +509,35 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                         <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-md" style={{background:curr.Cor||'#0ea5e9'}}>{curr.Nome_Profissional[0]}</div><div className="truncate"><p className={`text-[11px] font-black truncate text-slate-800 dark:text-white ${isAus?'line-through text-red-500 dark:text-red-400':''}`}>{curr.Nome_Profissional}</p><p className="text-[8px] font-bold opacity-60 truncate mt-0.5 text-slate-600 dark:text-slate-300">{curr.Cargo} • <i className="ph-fill ph-clock"></i> {curr.Horario}</p></div></div>
                         <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2 mt-1">
                             <span className={`text-[8px] font-black px-2 py-1 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>{curr.Status === 'NO POSTO' ? 'ATIVO' : curr.Status}</span>
-                            {isAd && (
-                                <div className="flex gap-1">
-                                    {(!isInt && !isAus) ? (
-                                        <>
-                                            <button onClick={()=>setStatus(curr, 'LANCHE')} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 hover:text-orange-600 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button>
-                                            <button onClick={()=>setModalAction({tipo:'ausencia', escala: curr})} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-red-100 hover:text-red-600 transition text-slate-500"><i className="ph-fill ph-warning"></i></button>
-                                        </>
-                                    ) : (
-                                        <button onClick={()=>setStatus(curr, 'NO POSTO')} className="px-2 py-1 bg-slate-800 dark:bg-slate-700 text-white rounded text-[8px] font-black hover:bg-slate-600 transition"><i className="ph-bold ph-arrow-u-down-left"></i> VOLTAR</button>
-                                    )}
-                                    {isAus && <button onClick={()=>setModalAction({tipo:'substituto', escala: curr})} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black hover:bg-blue-600 transition ml-1"><i className="ph-bold ph-magic-wand"></i> COBRIR</button>}
-                                </div>
-                            )}
+                            
+                            {/* AÇÕES DE GERENCIAMENTO */}
+                            <div className="flex gap-1">
+                                {(!isInt && !isAus) ? (
+                                    <>
+                                        {/* Botão de Lanche (Admin ou Próprio Colaborador) */}
+                                        {(isAd || isMe) && (
+                                            <button onClick={()=>setStatus(curr, 'LANCHE')} title="Ir para o Lanche/Pausa" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 hover:text-orange-600 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button>
+                                        )}
+                                        {/* Botões restritos ao Admin */}
+                                        {isAd && (
+                                            <>
+                                                <button onClick={()=>setModalAction({tipo:'trocar_posto', escala: curr})} title="Trocar de Posto/Sala" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 hover:text-blue-600 transition text-slate-500"><i className="ph-fill ph-swap"></i></button>
+                                                <button onClick={()=>setModalAction({tipo:'ausencia', escala: curr})} title="Marcar Ausência" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-red-100 hover:text-red-600 transition text-slate-500"><i className="ph-fill ph-warning"></i></button>
+                                            </>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        {/* Botão de Reverter (Voltar ao Posto) */}
+                                        {(isAd || (isMe && isInt)) && (
+                                            <button onClick={()=>setStatus(curr, 'NO POSTO')} className="px-2 py-1 bg-slate-800 dark:bg-slate-700 text-white rounded text-[8px] font-black hover:bg-slate-600 transition"><i className="ph-bold ph-arrow-u-down-left"></i> VOLTAR</button>
+                                        )}
+                                    </>
+                                )}
+                                {/* Botão de Cobrir Restrito ao Admin caso a pessoa esteja ausente */}
+                                {isAus && isAd && <button onClick={()=>setModalAction({tipo:'substituto', escala: curr})} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black hover:bg-blue-600 transition ml-1"><i className="ph-bold ph-magic-wand"></i> COBRIR</button>}
+                            </div>
+
                         </div>
                     </div>
                 )}
@@ -608,6 +628,26 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             {modalAction && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setModalAction(null)}>
                     <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
+                        
+                        {/* MODAL DE TROCAR DE POSTO (NOVO) */}
+                        {modalAction.tipo === 'trocar_posto' && (
+                            <form onSubmit={async (e)=>{
+                                e.preventDefault();
+                                await api.saveRecord('ESCALAS', { ...modalAction.escala, Sala: e.target.novo_posto.value });
+                                setModalAction(null);
+                                onRefresh();
+                            }} className="space-y-4">
+                                <h3 className="text-lg font-black mb-2 text-primary">Trocar de Posto / Sala</h3>
+                                <p className="text-xs font-bold opacity-70 mb-4">Transferir {modalAction.escala.Nome_Profissional} do posto "{modalAction.escala.Sala}" para:</p>
+                                <select name="novo_posto" className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold outline-none text-sm" required>
+                                    <option value="">Selecione o novo posto...</option>
+                                    {cfg?.postos?.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}
+                                </select>
+                                <button type="submit" className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-blue-600 transition">Confirmar Troca</button>
+                            </form>
+                        )}
+
+                        {/* MODAL DE AUSÊNCIA */}
                         {modalAction.tipo === 'ausencia' && (
                             <form onSubmit={async (e)=>{ e.preventDefault(); await api.saveRecord('ESCALAS', { ...modalAction.escala, Status: 'AUSENTE', MotivoAusencia: e.target.motivo.value, ObsDia: `Ausente: ${e.target.motivo.value}` }); setModalAction(null); onRefresh(); }} className="space-y-4">
                                 <h3 className="text-lg font-black mb-2 text-red-500">Marcar Ausência</h3>
@@ -618,6 +658,8 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                 <button type="submit" className="w-full py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition">Confirmar Ausência</button>
                             </form>
                         )}
+
+                        {/* MODAL DE SUBSTITUIR / COBRIR */}
                         {modalAction.tipo === 'substituto' && (
                             <div>
                                 <h3 className="text-xl font-black mb-2 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-primary"></i> Substituir Ausência</h3>
@@ -658,7 +700,6 @@ const App = () => {
             if(usr){ 
                 let role = 'Colaborador';
                 const eml = usr.email.toLowerCase();
-                // A TRAVA DE SEGURANÇA: Só vira Admin se tiver a palavra certa no e-mail
                 if (eml.includes('admin') || eml.includes('gestao') || eml.includes('diretor')) role = 'Admin';
                 else if (eml.includes('supervis')) role = 'Supervisor';
                 setU({email:usr.email, nome:usr.email.split('@')[0], nivel:role}); 
@@ -677,7 +718,6 @@ const App = () => {
 
     const isAd = u.nivel === 'Admin' || u.nivel === 'Supervisor';
     
-    // CORREÇÃO DO BUG: array de menu agora usa adminOnly de forma rígida
     const menu = [ 
         {id:'HOJE', i:'ph-kanban', n:'Plantão'}, 
         {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas'}, 
