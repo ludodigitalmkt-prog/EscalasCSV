@@ -31,7 +31,7 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .timeline-line::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e2e8f0;z-index:0;}.dark .timeline-line::before{background:#334155;}
 </style>
 <script>
-    const VERSAO_ATUAL = "35.0.0"; // Força atualização de cache
+    const VERSAO_ATUAL = "36.0.0"; // Versão atualizada para forçar limpeza de cache e exibir todo mundo empilhado
     if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); }
 </script>
 </head>
@@ -42,14 +42,7 @@ const { useState, useEffect, Component } = React;
 
 const firebaseConfig = { apiKey:"AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c", authDomain:"escalas-sao-vicente.firebaseapp.com", projectId:"escalas-sao-vicente", storageBucket:"escalas-sao-vicente.firebasestorage.app", messagingSenderId:"256697542067", appId:"1:256697542067:web:b8087390bb57d74def97c6" };
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore(); 
-
-// === ATIVAÇÃO DO CACHE (MEMÓRIA LOCAL) ===
-// Salva os dados no computador do funcionário para não gastar o limite de 50 mil leituras
-db.enablePersistence({ synchronizeTabs: true })
-  .catch((err) => { console.log("Erro ao ativar cache do Firebase:", err); });
-
-const auth = firebase.auth();
+const db = firebase.firestore(); const auth = firebase.auth();
 
 const api = {
     fetch: async (c) => { try { const s = await db.collection(c).get(); return s.docs.map(d => ({ ID: d.id, ...d.data() })); } catch(e){return [];} },
@@ -61,7 +54,6 @@ const fmtImg = (u) => { let s=safeStr(u).trim(); if(!s)return''; let m=s.match(/
 
 const getStrDt = (d) => { if(!d) return ''; return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); };
 
-// Função para ajudar a identificar quem é o usuário logado
 const checkIsMe = (nomeProfissional, userEmail) => {
     if(!nomeProfissional || !userEmail) return false;
     const norm = (s) => safeStr(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -495,65 +487,68 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         ocupantes.sort((a,b)=> (a.Horario||'').localeCompare(b.Horario||''));
         const d=new Date(now); const hStr=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
         
-        let curr = null; let nxt = null;
+        let currArr = [];
+        let nxtArr = [];
+
+        // NOVO CÓDIGO: Permite que VÁRIAS pessoas fiquem no mesmo posto ao mesmo tempo
         for(let o of ocupantes) {
             let pts = (o.Horario||'').split(' às '); let inH = pts[0]?.trim(); let outH = pts[1]?.trim();
-            if(!inH || !outH) { curr = o; break; } 
-            if(hStr >= inH && hStr <= outH) curr = o;
-            else if(hStr < inH && (!nxt || inH < nxt.Horario.split(' às ')[0].trim())) nxt = o;
+            if(!inH || !outH) { currArr.push(o); continue; } 
+            
+            if(hStr >= inH && hStr <= outH) {
+                currArr.push(o);
+            } else if (hStr < inH) {
+                nxtArr.push(o);
+            }
         }
 
-        if(!curr && !nxt) return <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-6"><i className="ph-bold ph-ghost text-3xl mb-2 opacity-30"></i><span className="text-[9px] font-black uppercase">Turno Encerrado</span></div>;
-
-        const isInt = curr?.Status === 'LANCHE'; const isAus = curr?.Status === 'AUSENTE';
-        // VERIFICA SE O CARD É DO PRÓPRIO USUÁRIO LOGADO
-        const isMe = checkIsMe(curr?.Nome_Profissional, user.email);
+        if(currArr.length === 0 && nxtArr.length === 0) return <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-6"><i className="ph-bold ph-ghost text-3xl mb-2 opacity-30"></i><span className="text-[9px] font-black uppercase">Turno Encerrado</span></div>;
 
         return (
-            <div className="flex-1 p-2 flex flex-col justify-between space-y-2">
-                {curr && (
-                    <div className={`p-2.5 rounded-xl relative border shadow-sm transition-colors ${isInt?'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800':isAus?'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70':'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
-                        <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-md" style={{background:curr.Cor||'#0ea5e9'}}>{curr.Nome_Profissional[0]}</div><div className="truncate"><p className={`text-[11px] font-black truncate text-slate-800 dark:text-white ${isAus?'line-through text-red-500 dark:text-red-400':''}`}>{curr.Nome_Profissional}</p><p className="text-[8px] font-bold opacity-60 truncate mt-0.5 text-slate-600 dark:text-slate-300">{curr.Cargo} • <i className="ph-fill ph-clock"></i> {curr.Horario}</p></div></div>
-                        <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2 mt-1">
-                            <span className={`text-[8px] font-black px-2 py-1 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>{curr.Status === 'NO POSTO' ? 'ATIVO' : curr.Status}</span>
-                            
-                            {/* AÇÕES DE GERENCIAMENTO */}
-                            <div className="flex gap-1">
-                                {(!isInt && !isAus) ? (
-                                    <>
-                                        {/* Botão de Lanche (Admin ou Próprio Colaborador) */}
-                                        {(isAd || isMe) && (
-                                            <button onClick={()=>setStatus(curr, 'LANCHE')} title="Ir para o Lanche/Pausa" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 hover:text-orange-600 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button>
-                                        )}
-                                        {/* Botões restritos ao Admin */}
-                                        {isAd && (
-                                            <>
-                                                <button onClick={()=>setModalAction({tipo:'trocar_posto', escala: curr})} title="Trocar de Posto/Sala" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 hover:text-blue-600 transition text-slate-500"><i className="ph-fill ph-swap"></i></button>
-                                                <button onClick={()=>setModalAction({tipo:'ausencia', escala: curr})} title="Marcar Ausência" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-red-100 hover:text-red-600 transition text-slate-500"><i className="ph-fill ph-warning"></i></button>
-                                            </>
-                                        )}
-                                    </>
-                                ) : (
-                                    <>
-                                        {/* Botão de Reverter (Voltar ao Posto) */}
-                                        {(isAd || (isMe && isInt)) && (
-                                            <button onClick={()=>setStatus(curr, 'NO POSTO')} className="px-2 py-1 bg-slate-800 dark:bg-slate-700 text-white rounded text-[8px] font-black hover:bg-slate-600 transition"><i className="ph-bold ph-arrow-u-down-left"></i> VOLTAR</button>
-                                        )}
-                                    </>
-                                )}
-                                {/* Botão de Cobrir Restrito ao Admin caso a pessoa esteja ausente */}
-                                {isAus && isAd && <button onClick={()=>setModalAction({tipo:'substituto', escala: curr})} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black hover:bg-blue-600 transition ml-1"><i className="ph-bold ph-magic-wand"></i> COBRIR</button>}
-                            </div>
+            <div className="flex-1 p-2 flex flex-col gap-2">
+                {currArr.map((curr, idx) => {
+                    const isInt = curr?.Status === 'LANCHE'; const isAus = curr?.Status === 'AUSENTE';
+                    const isMe = checkIsMe(curr?.Nome_Profissional, user.email);
 
+                    return (
+                        <div key={'c'+idx} className={`p-2.5 rounded-xl relative border shadow-sm transition-colors ${isInt?'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800':isAus?'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70':'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
+                            <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-md" style={{background:curr.Cor||'#0ea5e9'}}>{curr.Nome_Profissional[0]}</div><div className="truncate"><p className={`text-[11px] font-black truncate text-slate-800 dark:text-white ${isAus?'line-through text-red-500 dark:text-red-400':''}`}>{curr.Nome_Profissional}</p><p className="text-[8px] font-bold opacity-60 truncate mt-0.5 text-slate-600 dark:text-slate-300">{curr.Cargo} • <i className="ph-fill ph-clock"></i> {curr.Horario}</p></div></div>
+                            <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2 mt-1">
+                                <span className={`text-[8px] font-black px-2 py-1 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>{curr.Status === 'NO POSTO' ? 'ATIVO' : curr.Status}</span>
+                                
+                                <div className="flex gap-1">
+                                    {(!isInt && !isAus) ? (
+                                        <>
+                                            {(isAd || isMe) && (
+                                                <button onClick={()=>setStatus(curr, 'LANCHE')} title="Ir para o Lanche/Pausa" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 hover:text-orange-600 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button>
+                                            )}
+                                            {isAd && (
+                                                <>
+                                                    <button onClick={()=>setModalAction({tipo:'trocar_posto', escala: curr})} title="Trocar de Posto/Sala" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 hover:text-blue-600 transition text-slate-500"><i className="ph-fill ph-swap"></i></button>
+                                                    <button onClick={()=>setModalAction({tipo:'ausencia', escala: curr})} title="Marcar Ausência" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-red-100 hover:text-red-600 transition text-slate-500"><i className="ph-fill ph-warning"></i></button>
+                                                </>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {(isAd || (isMe && isInt)) && (
+                                                <button onClick={()=>setStatus(curr, 'NO POSTO')} className="px-2 py-1 bg-slate-800 dark:bg-slate-700 text-white rounded text-[8px] font-black hover:bg-slate-600 transition"><i className="ph-bold ph-arrow-u-down-left"></i> VOLTAR</button>
+                                            )}
+                                        </>
+                                    )}
+                                    {isAus && isAd && <button onClick={()=>setModalAction({tipo:'substituto', escala: curr})} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black hover:bg-blue-600 transition ml-1"><i className="ph-bold ph-magic-wand"></i> COBRIR</button>}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                )}
-                {nxt && (
-                    <div className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 fade-next relative overflow-hidden">
+                    );
+                })}
+
+                {nxtArr.map((nxt, idx) => (
+                    <div key={'n'+idx} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 fade-next relative overflow-hidden">
                         <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-1">Próximo: {nxt.Horario.split(' ')[0]}</p>
                         <div className="flex items-center gap-2 opacity-70"><div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px]" style={{background:nxt.Cor||'#000'}}>{nxt.Nome_Profissional[0]}</div><div><p className="text-[9px] font-black truncate max-w-[100px] text-slate-800 dark:text-white">{nxt.Nome_Profissional}</p></div></div>
                     </div>
-                )}
+                ))}
             </div>
         );
     };
@@ -603,14 +598,18 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         );
     }
 
-    const setoresDaUnidade = setoresSis.filter(s => safeStr(s.unidade).toUpperCase() === safeStr(actU).toUpperCase()).map(s=>s.nome);
+    // NOVO CÓDIGO: Filtro limpador (remove espaços e ignora maiúsculas/minúsculas)
+    const setoresDaUnidade = setoresSis
+        .filter(s => safeStr(s.unidade).trim().toUpperCase() === safeStr(actU).trim().toUpperCase())
+        .map(s => s.nome);
     
     return (
         <div className="animate-fade-in space-y-8 max-w-[1600px] mx-auto pb-10">
             <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-4"><button onClick={()=>setActU(null)} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button><div><p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Unidade Ativa</p><h2 className="text-2xl font-black">{actU}</h2></div></div>
             
             {setoresDaUnidade.map(setor => {
-                const postosSetor = postosSis.filter(p => p.setor === setor);
+                // NOVO CÓDIGO: Filtro limpador para achar os postos daquele setor
+                const postosSetor = postosSis.filter(p => safeStr(p.setor).trim().toUpperCase() === safeStr(setor).trim().toUpperCase());
                 if(postosSetor.length === 0) return null; 
                 
                 return (
@@ -636,7 +635,6 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setModalAction(null)}>
                     <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
                         
-                        {/* MODAL DE TROCAR DE POSTO (NOVO) */}
                         {modalAction.tipo === 'trocar_posto' && (
                             <form onSubmit={async (e)=>{
                                 e.preventDefault();
@@ -654,7 +652,6 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                             </form>
                         )}
 
-                        {/* MODAL DE AUSÊNCIA */}
                         {modalAction.tipo === 'ausencia' && (
                             <form onSubmit={async (e)=>{ e.preventDefault(); await api.saveRecord('ESCALAS', { ...modalAction.escala, Status: 'AUSENTE', MotivoAusencia: e.target.motivo.value, ObsDia: `Ausente: ${e.target.motivo.value}` }); setModalAction(null); onRefresh(); }} className="space-y-4">
                                 <h3 className="text-lg font-black mb-2 text-red-500">Marcar Ausência</h3>
@@ -666,7 +663,6 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                             </form>
                         )}
 
-                        {/* MODAL DE SUBSTITUIR / COBRIR */}
                         {modalAction.tipo === 'substituto' && (
                             <div>
                                 <h3 className="text-xl font-black mb-2 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-primary"></i> Substituir Ausência</h3>
@@ -754,4 +750,3 @@ const App = () => {
 };
 const root = ReactDOM.createRoot(document.getElementById('root')); root.render(<ErrorBoundary><App /></ErrorBoundary>);
 </script></body></html>
-
