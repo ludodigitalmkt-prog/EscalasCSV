@@ -31,7 +31,7 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .timeline-line::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e2e8f0;z-index:0;}.dark .timeline-line::before{background:#334155;}
 </style>
 <script>
-    const VERSAO_ATUAL = "37.0.0"; // Versão com pastas na equipe, botões no builder e ordem alfabética
+    const VERSAO_ATUAL = "38.0.0"; // Versão atualizada: Lançamento de Folgas, Campos A Definir, Filtro no Mapa.
     if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); }
 </script>
 </head>
@@ -54,7 +54,6 @@ const fmtImg = (u) => { let s=safeStr(u).trim(); if(!s)return''; let m=s.match(/
 
 const getStrDt = (d) => { if(!d) return ''; return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); };
 
-// Helper para Ordenar Alfabeticamente
 const ordenarPorNome = (lista) => {
     return [...lista].sort((a, b) => safeStr(a.Nome).localeCompare(safeStr(b.Nome)));
 };
@@ -182,7 +181,6 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
 
 // ================== ABA 2: EQUIPE ==================
 const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
-    // viewMode controla se estamos vendo as pastas ('MENU') ou a lista ('Colaborador' ou 'Médico')
     const [viewMode, setViewMode] = useState('MENU'); 
     const [modal, setModal] = useState(false); const [fd, setFd] = useState({}); const [busca, setBusca] = useState('');
     const u = cfg?.unidades||[]; const s = cfg?.setores||[]; const h = cfg?.habilidades||[]; const a = cfg?.ausencias||[];
@@ -190,10 +188,9 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
     const openModal = (i=null) => { 
         setFd(i ? {...i} : { 
             Nome:'', Cargo:'', 
-            Tipo: viewMode !== 'MENU' ? viewMode : 'Colaborador', // Já puxa o tipo da pasta que a pessoa está
+            Tipo: viewMode !== 'MENU' ? viewMode : 'Colaborador',
             UnidadeBase:'', Setor:'', Habilidades:[], Cor:'#0ea5e9', CRM:'', CodUnimed:'', URA:'', CBO:'', OutroDoc:'', Segmento:'', isGestor: false, StatusGeral:'Ativo',
-            TipoContrato: '', // NOVO CAMPO
-            ObservacoesGerais: '' // NOVO CAMPO
+            TipoContrato: '', ObservacoesGerais: '' 
         }); 
         setModal(true); 
     };
@@ -201,15 +198,12 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
     const toggleHab = (hab) => { let arr = fd.Habilidades||[]; setFd({...fd, Habilidades: arr.includes(hab)?arr.filter(x=>x!==hab):[...arr, hab]}); };
     const save = async (e) => { e.preventDefault(); await onSave('PROFISSIONAIS', fd); setModal(false); onRefresh(); };
 
-    // Filtra pelo tipo da pasta aberta, filtra pela busca, e ORDENA A-Z
     const filtrados = ordenarPorNome(data)
         .filter(p => viewMode === 'MENU' ? true : p.Tipo === viewMode)
         .filter(p => safeStr(p.Nome).toLowerCase().includes(busca.toLowerCase()));
 
     return (
         <div className="animate-fade-in space-y-6 max-w-7xl mx-auto">
-            
-            {/* TELA DE MENU (PASTAS) */}
             {viewMode === 'MENU' && (
                 <div>
                     <h2 className="text-2xl font-black mb-6">Gestão de Pessoas</h2>
@@ -228,7 +222,6 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                 </div>
             )}
 
-            {/* TELA DE LISTA (DENTRO DA PASTA) */}
             {viewMode !== 'MENU' && (
                 <div className="animate-fade-in">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
@@ -301,7 +294,6 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                                     <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Cargo</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
                                 )}
                                 
-                                {/* NOVOS CAMPOS ADICIONADOS AQUI */}
                                 <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Tipo de Contrato</label><input type="text" placeholder="Ex: CLT, PJ, RPA..." value={fd.TipoContrato||''} onChange={e=>setFd({...fd,TipoContrato:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" /></div>
                                 <div><label className="text-[10px] font-black uppercase opacity-60">Afastamentos / Folga Longa</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd,StatusGeral:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 text-red-500 font-bold"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{a.map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
                                 <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Observações Gerais</label><textarea value={fd.ObservacoesGerais||''} onChange={e=>setFd({...fd,ObservacoesGerais:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" rows="2" placeholder="Anotações sobre horários, preferências, restrições..."></textarea></div>
@@ -325,12 +317,15 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
     const [mode, setMode] = useState('TIMELINE'); 
     
-    // NOVO ESTADO: Controla qual grupo o Admin quer montar a escala
+    // NOVO ESTADO: Controla qual grupo o Admin quer montar a escala (Médico ou Colaborador)
     const [builderTipo, setBuilderTipo] = useState('Colaborador'); 
+    // NOVO ESTADO: Controla se estamos lançando Plantão ou Folga
+    const [tipoLancamento, setTipoLancamento] = useState('PLANTAO');
+    const [motivoAus, setMotivoAus] = useState('Folga');
 
     const psts = cfg?.postos||[]; const unds = cfg?.unidades||[]; 
     const [selProf, setSelProf] = useState(''); const [selUnd, setSelUnd] = useState(''); const [selSala, setSelSala] = useState('');
-    const [hIn, setHIn] = useState('08:00'); const [hOut, setHOut] = useState('18:00'); const [obs, setObs] = useState('');
+    const [hIn, setHIn] = useState(''); const [hOut, setHOut] = useState(''); const [obs, setObs] = useState('');
     const [dates, setDates] = useState([]); 
 
     const [bMes, setBMes] = useState(new Date());
@@ -351,9 +346,36 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const toggleD = (dFmt) => { if(dates.includes(dFmt)) setDates(dates.filter(x=>x!==dFmt)); else setDates([...dates, dFmt]); };
     
     const gerar = async () => {
-        if(!selProf || !selSala || dates.length===0) return alert("Preencha Profissional, Sala e Datas!");
+        if(!selProf || dates.length===0) return alert("Preencha Profissional e as Datas no calendário!");
         const prof = profs.find(x=>x.ID===selProf || x.Nome===selProf);
-        for(let d of dates){ await onSave('ESCALAS', { Data: d, Unidade: selUnd, Sala: selSala, Nome_Profissional: prof.Nome, Cargo: prof.Cargo, Horario: `${hIn} às ${hOut}`, Status: 'NO POSTO', Cor: prof.Cor, Habilidades: prof.Habilidades||[], ObsDia: obs }); }
+        
+        // Regras de Preenchimento Automático
+        let statusFinal = 'NO POSTO';
+        let salaFinal = selSala || 'A DEFINIR';
+        let horarioFinal = (hIn && hOut) ? `${hIn} às ${hOut}` : 'A DEFINIR';
+        let obsFinal = obs;
+
+        if (tipoLancamento === 'AUSENCIA') {
+            statusFinal = motivoAus === 'Folga' ? 'FOLGA' : 'AUSENTE';
+            salaFinal = motivoAus.toUpperCase();
+            horarioFinal = '--:--';
+            obsFinal = obs ? `${motivoAus} - ${obs}` : motivoAus;
+        }
+
+        for(let d of dates){ 
+            await onSave('ESCALAS', { 
+                Data: d, 
+                Unidade: tipoLancamento === 'AUSENCIA' ? '' : selUnd, 
+                Sala: salaFinal, 
+                Nome_Profissional: prof.Nome, 
+                Cargo: prof.Cargo, 
+                Horario: horarioFinal, 
+                Status: statusFinal, 
+                Cor: prof.Cor, 
+                Habilidades: prof.Habilidades||[], 
+                ObsDia: obsFinal 
+            }); 
+        }
         alert("Escalas Geradas com Sucesso!"); setDates([]); setMode('TIMELINE'); onRefresh();
     };
 
@@ -369,7 +391,6 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const gridTL = buildGrid(mesAtual);
     const gridB = buildGrid(bMes);
 
-    // Listas de Profissionais Ordenadas para os Selects
     const profsOrdenadosParaBusca = ordenarPorNome(profs);
     const profsOrdenadosParaBuilder = ordenarPorNome(profs.filter(x => (x.StatusGeral==='Ativo'||!x.StatusGeral) && x.Tipo === builderTipo));
 
@@ -385,24 +406,38 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             {mode === 'BUILDER' ? (
                 <div className="clean-card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                        {/* NOVOS BOTÕES DE FILTRO PARA CRIAR ESCALA */}
                         <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-2">
-                            <button onClick={()=>{setBuilderTipo('Colaborador'); setSelProf('');}} className={`flex-1 py-2 text-xs font-black uppercase rounded-lg transition ${builderTipo==='Colaborador'?'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400':'opacity-60 hover:opacity-100'}`}>Colaboradores</button>
-                            <button onClick={()=>{setBuilderTipo('Médico'); setSelProf('');}} className={`flex-1 py-2 text-xs font-black uppercase rounded-lg transition ${builderTipo==='Médico'?'bg-white dark:bg-slate-700 shadow text-red-600 dark:text-red-400':'opacity-60 hover:opacity-100'}`}>Médicos</button>
+                            <button onClick={()=>{setBuilderTipo('Colaborador'); setSelProf('');}} className={`flex-1 py-2 text-[10px] sm:text-xs font-black uppercase rounded-lg transition ${builderTipo==='Colaborador'?'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400':'opacity-60 hover:opacity-100'}`}>Equipe Base</button>
+                            <button onClick={()=>{setBuilderTipo('Médico'); setSelProf('');}} className={`flex-1 py-2 text-[10px] sm:text-xs font-black uppercase rounded-lg transition ${builderTipo==='Médico'?'bg-white dark:bg-slate-700 shadow text-red-600 dark:text-red-400':'opacity-60 hover:opacity-100'}`}>Médicos</button>
                         </div>
 
-                        <div><label className="text-xs font-bold opacity-60">Selecione o(a) {builderTipo}</label><select value={selProf} onChange={e=>setSelProf(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold"><option value="">Abre a lista (A-Z)...</option>{profsOrdenadosParaBuilder.map(x=><option key={x.ID} value={x.ID}>{x.Nome}</option>)}</select></div>
-                        <div><label className="text-xs font-bold opacity-60">Unidade (Opcional)</label><select value={selUnd} onChange={e=>setSelUnd(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white"><option value="">Selecione...</option>{unds.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
-                        <div><label className="text-xs font-bold opacity-60">Posto / Sala</label><select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white"><option value="">Selecione a sala...</option>{psts.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x} {x.setor?`(${x.setor})`:''}</option>)}</select></div>
-                        <div className="flex gap-2">
-                            <div className="flex-1"><label className="text-xs font-bold opacity-60">Entra</label><input type="time" value={hIn} onChange={e=>setHIn(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold" /></div>
-                            <div className="flex-1"><label className="text-xs font-bold opacity-60">Sai</label><input type="time" value={hOut} onChange={e=>setHOut(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold" /></div>
+                        <div><label className="text-xs font-bold opacity-60">1. Selecione o(a) {builderTipo}</label><select value={selProf} onChange={e=>setSelProf(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold"><option value="">Abre a lista (A-Z)...</option>{profsOrdenadosParaBuilder.map(x=><option key={x.ID} value={x.ID}>{x.Nome}</option>)}</select></div>
+                        
+                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl my-4">
+                            <button onClick={()=>setTipoLancamento('PLANTAO')} className={`flex-1 py-2 text-[10px] sm:text-xs font-black uppercase rounded-lg transition ${tipoLancamento==='PLANTAO'?'bg-white dark:bg-slate-700 shadow text-primary':'opacity-60 hover:opacity-100'}`}>Plantão Normal</button>
+                            <button onClick={()=>setTipoLancamento('AUSENCIA')} className={`flex-1 py-2 text-[10px] sm:text-xs font-black uppercase rounded-lg transition ${tipoLancamento==='AUSENCIA'?'bg-white dark:bg-slate-700 shadow text-red-500 dark:text-red-400':'opacity-60 hover:opacity-100'}`}>Folga / Ausência</button>
                         </div>
-                        <div><label className="text-xs font-bold opacity-60">Anotação / Obs (Opcional)</label><input type="text" value={obs} onChange={e=>setObs(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white" placeholder="Ex: Plantão extra" /></div>
+
+                        {tipoLancamento === 'PLANTAO' ? (
+                            <div className="space-y-4 animate-fade-in">
+                                <div><label className="text-xs font-bold opacity-60">Unidade (Opcional - Pode preencher depois)</label><select value={selUnd} onChange={e=>setSelUnd(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white"><option value="">A DEFINIR DEPOIS...</option>{unds.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
+                                <div><label className="text-xs font-bold opacity-60">Posto / Sala (Opcional - Pode preencher depois)</label><select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white"><option value="">A DEFINIR DEPOIS...</option>{psts.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x} {x.setor?`(${x.setor})`:''}</option>)}</select></div>
+                                <div className="flex gap-2">
+                                    <div className="flex-1"><label className="text-xs font-bold opacity-60">Entra (Opcional)</label><input type="time" value={hIn} onChange={e=>setHIn(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold" /></div>
+                                    <div className="flex-1"><label className="text-xs font-bold opacity-60">Sai (Opcional)</label><input type="time" value={hOut} onChange={e=>setHOut(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold" /></div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4 animate-fade-in">
+                                <div><label className="text-xs font-bold opacity-60">Selecione o Motivo</label><select value={motivoAus} onChange={e=>setMotivoAus(e.target.value)} className="w-full p-3 border border-red-200 dark:border-red-900/30 rounded-xl mt-1 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-bold"><option value="Folga">Folga Agendada</option><option value="Férias">Férias</option><option value="Atestado">Atestado Médico</option><option value="Trabalho Externo">Trabalho Externo</option><option value="Outros">Outros motivos</option></select></div>
+                            </div>
+                        )}
+
+                        <div><label className="text-xs font-bold opacity-60">Anotação / Obs (Opcional)</label><input type="text" value={obs} onChange={e=>setObs(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white" placeholder="Detalhes adicionais..." /></div>
                     </div>
                     
                     <div className="border-l border-slate-200 dark:border-slate-700 pl-0 md:pl-6 space-y-4 flex flex-col">
-                        <label className="text-xs font-bold opacity-60">Selecione Múltiplas Datas no Calendário</label>
+                        <label className="text-xs font-bold opacity-60">Selecione as Datas no Calendário</label>
                         <div className="flex items-center justify-between mb-2">
                             <button onClick={()=>setBMes(new Date(bMes.getFullYear(), bMes.getMonth()-1, 1))} className="w-8 h-8 rounded bg-slate-100 dark:bg-slate-800"><i className="ph-bold ph-caret-left"></i></button>
                             <span className="font-bold text-sm uppercase">{bMes.toLocaleString('pt-BR',{month:'long',year:'numeric'})}</span>
@@ -413,11 +448,11 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                             {gridB.vazios.map((_, i) => <div key={`v-${i}`} className="p-2"></div>)}
                             {gridB.dias.map((d, i) => {
                                 const isSel = dates.includes(d.dStr);
-                                return <button key={i} onClick={(e)=>{e.preventDefault(); toggleD(d.dStr);}} className={`p-2 rounded-lg text-xs font-bold transition ${isSel?'bg-primary text-white shadow-md':'bg-slate-50 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700'}`}>{d.d.getDate()}</button>
+                                return <button key={i} onClick={(e)=>{e.preventDefault(); toggleD(d.dStr);}} className={`p-2 rounded-lg text-xs font-bold transition ${isSel? (tipoLancamento==='AUSENCIA'?'bg-red-500 text-white shadow-md':'bg-primary text-white shadow-md') : 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700'}`}>{d.d.getDate()}</button>
                             })}
                         </div>
                         <div className="mt-2 text-[10px] font-bold opacity-60">{dates.length} dias selecionados.</div>
-                        <button onClick={gerar} className="w-full bg-accent text-white py-4 rounded-xl font-black shadow-lg hover:scale-[1.02] transition mt-auto">Salvar Escalas no Servidor</button>
+                        <button onClick={gerar} className={`w-full py-4 rounded-xl font-black shadow-lg hover:scale-[1.02] transition mt-auto text-white ${tipoLancamento==='AUSENCIA'?'bg-red-500':'bg-accent'}`}>Salvar {tipoLancamento==='AUSENCIA'?'Folgas':'Escalas'} no Servidor</button>
                     </div>
                 </div>
             ) : (
@@ -488,22 +523,30 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                     <div>
                                         <h3 className="font-black text-lg mb-4 text-primary border-b border-slate-200 dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-check"></i> {diaAtivo}</h3>
                                         <div className="space-y-4">
-                                            {escDia.map((esc, j) => (
-                                                <div key={j} className="p-4 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden">
-                                                    <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{backgroundColor: esc.Cor||'#0ea5e9'}}></div>
-                                                    {esc.Unidade && <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1 pl-1">{esc.Unidade}</p>}
-                                                    <h4 className="font-black text-base pl-1">{esc.Sala} {esc.EmApoio?'(Apoio)':''}</h4>
-                                                    <p className="text-sm font-bold opacity-80 mt-1 pl-1"><i className="ph-fill ph-clock"></i> {esc.Horario}</p>
-                                                    {esc.ObsDia && <p className="text-xs mt-3 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 p-2 rounded ml-1"><i className="ph-bold ph-info"></i> {esc.ObsDia}</p>}
+                                            {escDia.map((esc, j) => {
+                                                const isFolga = esc.Status === 'FOLGA';
+                                                const isAus = esc.Status === 'AUSENTE';
+                                                
+                                                return (
+                                                <div key={j} className={`p-4 rounded-xl shadow-sm border relative overflow-hidden ${isFolga?'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-80':isAus?'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/30':'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-700'}`}>
+                                                    <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{backgroundColor: isFolga ? '#94a3b8' : isAus ? '#ef4444' : (esc.Cor||'#0ea5e9')}}></div>
+                                                    
+                                                    {(!isFolga && !isAus && esc.Unidade) && <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1 pl-1">{esc.Unidade}</p>}
+                                                    
+                                                    <h4 className={`font-black text-base pl-1 ${isFolga||isAus?'text-slate-600 dark:text-slate-400':''}`}>{esc.Sala} {esc.EmApoio?'(Apoio)':''}</h4>
+                                                    
+                                                    {(!isFolga && !isAus) && <p className={`text-sm font-bold mt-1 pl-1 ${esc.Horario==='A DEFINIR'?'text-red-500':'opacity-80'}`}><i className="ph-fill ph-clock"></i> {esc.Horario}</p>}
+                                                    
+                                                    {esc.ObsDia && <p className={`text-xs mt-3 p-2 rounded ml-1 ${isFolga||isAus?'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300':'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400'}`}><i className="ph-bold ph-info"></i> {esc.ObsDia}</p>}
                                                     
                                                     {isAd && (
                                                         <div className="absolute top-2 right-2 flex gap-2">
                                                             <button onClick={() => setEditData({...esc})} className="text-yellow-500 hover:scale-110"><i className="ph-fill ph-pencil"></i></button>
-                                                            <button onClick={async()=>{if(confirm('Excluir turno?')){await api.deleteRecord('ESCALAS', esc.ID); onRefresh(); setDiaAtivo(null)}}} className="text-red-500 hover:scale-110"><i className="ph-fill ph-trash"></i></button>
+                                                            <button onClick={async()=>{if(confirm('Excluir turno permanentemente?')){await api.deleteRecord('ESCALAS', esc.ID); onRefresh(); setDiaAtivo(null)}}} className="text-red-500 hover:scale-110"><i className="ph-fill ph-trash"></i></button>
                                                         </div>
                                                     )}
                                                 </div>
-                                            ))}
+                                            )})}
                                         </div>
                                     </div>
                                 )
@@ -522,16 +565,37 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             {editData && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setEditData(null)}>
                     <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
-                        <h3 className="text-lg font-black mb-4">Editar Escala de {editData.Nome_Profissional}</h3>
+                        <h3 className="text-lg font-black mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">Editar: {editData.Nome_Profissional}</h3>
                         <form onSubmit={async (e) => {
                             e.preventDefault();
                             await onSave('ESCALAS', editData);
                             setEditData(null);
                             onRefresh();
                         }} className="space-y-4">
-                            <div><label className="text-[10px] font-black uppercase opacity-60">Horário</label><input type="text" value={editData.Horario} onChange={e=>setEditData({...editData, Horario:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
-                            <div><label className="text-[10px] font-black uppercase opacity-60">Sala / Posto</label><select value={editData.Sala} onChange={e=>setEditData({...editData, Sala:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800"><option value="">Selecione...</option>{cfg?.postos?.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}</select></div>
-                            <div><label className="text-[10px] font-black uppercase opacity-60">Anotação / Obs</label><input type="text" value={editData.ObsDia||''} onChange={e=>setEditData({...editData, ObsDia:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
+                            
+                            <div><label className="text-[10px] font-black uppercase opacity-60">Status da Escala</label>
+                                <select value={editData.Status} onChange={e=>setEditData({...editData, Status:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 font-bold">
+                                    <option value="NO POSTO">🟢 Turno Normal (Ativo)</option>
+                                    <option value="FOLGA">⚪ Folga Agendada</option>
+                                    <option value="AUSENTE">🔴 Ausente / Outros</option>
+                                </select>
+                            </div>
+
+                            <div><label className="text-[10px] font-black uppercase opacity-60">Horário</label><input type="text" value={editData.Horario} onChange={e=>setEditData({...editData, Horario:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent font-bold"/></div>
+                            
+                            <div><label className="text-[10px] font-black uppercase opacity-60">Sala / Posto</label>
+                                <select value={editData.Sala} onChange={e=>setEditData({...editData, Sala:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 font-bold">
+                                    <option value="A DEFINIR">A DEFINIR...</option>
+                                    <option value="FOLGA">FOLGA</option>
+                                    <option value="FÉRIAS">FÉRIAS</option>
+                                    <option value="ATESTADO">ATESTADO</option>
+                                    <option disabled>──────────</option>
+                                    {cfg?.postos?.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}
+                                </select>
+                            </div>
+
+                            <div><label className="text-[10px] font-black uppercase opacity-60">Anotação / Obs / Motivo</label><input type="text" value={editData.ObsDia||''} onChange={e=>setEditData({...editData, ObsDia:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
+                            
                             <div className="flex justify-end gap-2 pt-4"><button type="button" onClick={()=>setEditData(null)} className="px-4 py-2 font-bold opacity-60">Cancelar</button><button type="submit" className="bg-primary text-white px-6 py-2 rounded-xl font-bold">Salvar Alterações</button></div>
                         </form>
                     </div>
@@ -550,10 +614,14 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const dStr = getStrDt(new Date()); 
     const escHjRaw = escalas.filter(e => e.Data === dStr);
     
-    const nomesTrabHj = new Set(escHjRaw.map(e => e.Nome_Profissional));
-    const qAtivos = nomesTrabHj.size;
-    const qAfastados = profs.filter(p => p.StatusGeral && p.StatusGeral !== 'Ativo').length;
-    const qFolga = profs.filter(p => (!p.StatusGeral || p.StatusGeral === 'Ativo') && !nomesTrabHj.has(p.Nome)).length;
+    // Contagens Otimizadas para o Dashboard
+    const nomesHjNoPosto = new Set(escHjRaw.filter(e => e.Status !== 'FOLGA' && e.Status !== 'AUSENTE').map(e => e.Nome_Profissional));
+    const nomesAusente = new Set(escHjRaw.filter(e => e.Status === 'AUSENTE').map(e => e.Nome_Profissional));
+    
+    const qAtivos = nomesHjNoPosto.size;
+    const qAfastados = profs.filter(p => (p.StatusGeral && p.StatusGeral !== 'Ativo') || nomesAusente.has(p.Nome)).length;
+    // Todo mundo que está ativo no geral, mas que não tem escala no posto hoje e não está ausente = Folga
+    const qFolga = profs.filter(p => (!p.StatusGeral || p.StatusGeral === 'Ativo') && !nomesHjNoPosto.has(p.Nome) && !nomesAusente.has(p.Nome)).length;
 
     const postosSis = cfg?.postos||[]; const setoresSis = cfg?.setores||[]; const unids = cfg?.unidades||[];
     const supervisorAtual = cfg?.supervisorAtual || 'Nenhum Assumiu';
@@ -572,7 +640,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
 
         for(let o of ocupantes) {
             let pts = (o.Horario||'').split(' às '); let inH = pts[0]?.trim(); let outH = pts[1]?.trim();
-            if(!inH || !outH) { currArr.push(o); continue; } 
+            if(!inH || !outH || o.Horario === 'A DEFINIR') { currArr.push(o); continue; } 
             
             if(hStr >= inH && hStr <= outH) {
                 currArr.push(o);
@@ -586,12 +654,14 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         return (
             <div className="flex-1 p-2 flex flex-col gap-2">
                 {currArr.map((curr, idx) => {
-                    const isInt = curr?.Status === 'LANCHE'; const isAus = curr?.Status === 'AUSENTE';
+                    const isInt = curr?.Status === 'LANCHE'; 
+                    // No mapa, ausente só aparece se alguém mudou o status dele AGORA. Mas como filtramos no loop de renderização, isso não deve ocorrer, mas mantemos por segurança.
+                    const isAus = curr?.Status === 'AUSENTE';
                     const isMe = checkIsMe(curr?.Nome_Profissional, user.email);
 
                     return (
                         <div key={'c'+idx} className={`p-2.5 rounded-xl relative border shadow-sm transition-colors ${isInt?'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800':isAus?'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70':'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
-                            <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-md" style={{background:curr.Cor||'#0ea5e9'}}>{curr.Nome_Profissional[0]}</div><div className="truncate"><p className={`text-[11px] font-black truncate text-slate-800 dark:text-white ${isAus?'line-through text-red-500 dark:text-red-400':''}`}>{curr.Nome_Profissional}</p><p className="text-[8px] font-bold opacity-60 truncate mt-0.5 text-slate-600 dark:text-slate-300">{curr.Cargo} • <i className="ph-fill ph-clock"></i> {curr.Horario}</p></div></div>
+                            <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-md" style={{background:curr.Cor||'#0ea5e9'}}>{curr.Nome_Profissional[0]}</div><div className="truncate"><p className={`text-[11px] font-black truncate text-slate-800 dark:text-white ${isAus?'line-through text-red-500 dark:text-red-400':''}`}>{curr.Nome_Profissional}</p><p className={`text-[8px] font-bold opacity-60 truncate mt-0.5 text-slate-600 dark:text-slate-300 ${curr.Horario==='A DEFINIR'?'text-red-500':''}`}>{curr.Cargo} • <i className="ph-fill ph-clock"></i> {curr.Horario}</p></div></div>
                             <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2 mt-1">
                                 <span className={`text-[8px] font-black px-2 py-1 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>{curr.Status === 'NO POSTO' ? 'ATIVO' : curr.Status}</span>
                                 
@@ -694,7 +764,8 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                         <h3 className="text-lg font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2"><i className="ph-fill ph-squares-four opacity-50"></i> {setor}</h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                             {postosSetor.map((pst, i) => {
-                                const ocup = escHjRaw.filter(e => e.Sala === pst.nome);
+                                // O FILTRO MÁGICO: Esconde quem está de Folga ou Ausente do Mapa
+                                const ocup = escHjRaw.filter(e => e.Sala === pst.nome && e.Status !== 'FOLGA' && e.Status !== 'AUSENTE');
                                 return (
                                     <div key={i} className={`clean-card flex flex-col p-1 min-h-[140px] border-t-4 ${ocup.length===0?'opacity-70 border-t-slate-300 dark:border-t-slate-600':'border-t-primary shadow-md'}`}>
                                         <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-t-xl font-black text-[11px] uppercase tracking-widest text-center border-b border-slate-100 dark:border-slate-700 truncate px-2">{pst.nome}</div>
