@@ -44,6 +44,13 @@ const firebaseConfig = { apiKey:"AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c", authD
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore(); const auth = firebase.auth();
 
+// LIGA O MODO ECONÔMICO (CACHE LOCAL) DO FIREBASE
+db.enablePersistence({synchronizeTabs:true}).catch(function(err) {
+    console.log("Aviso de Cache: ", err.code);
+});
+
+const api = {
+    
 const api = {
     fetch: async (c) => { try { const s = await db.collection(c).get(); return s.docs.map(d => ({ ID: d.id, ...d.data() })); } catch(e){return [];} },
     saveRecord: async (c, d) => { try { let o={...d}; let id=o.ID; delete o.ID; if(id) await db.collection(c).doc(id).set(o,{merge:true}); else await db.collection(c).add(o); return true; } catch(e){return false;} },
@@ -898,3 +905,4 @@ const App = () => {
 };
 const root = ReactDOM.createRoot(document.getElementById('root')); root.render(<ErrorBoundary><App /></ErrorBoundary>);
 </script></body></html>
+
