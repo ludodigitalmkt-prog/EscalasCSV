@@ -29,24 +29,23 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .fade-next{background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(248,250,252,0.8) 100%);}
 .dark .fade-next{background:linear-gradient(180deg, rgba(30,41,59,0) 0%, rgba(15,23,42,0.8) 100%);}
 .timeline-line::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e2e8f0;z-index:0;}.dark .timeline-line::before{background:#334155;}
-/* Estilos para o Gantt */
-.gantt-grid { display: grid; grid-template-columns: 150px 150px 1fr; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+/* Estilos Melhorados para o Gantt */
+.gantt-grid { display: grid; grid-template-columns: 240px 1fr; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
 .dark .gantt-grid { border-color: #334155; }
 .gantt-header { background: #f8fafc; font-weight: 900; font-size: 10px; text-transform: uppercase; padding: 12px; border-bottom: 2px solid #e2e8f0; }
 .dark .gantt-header { background: #0f172a; border-color: #334155; }
 .gantt-row { border-bottom: 1px solid #f1f5f9; transition: background 0.2s; }
-.dark .gantt-row { border-color: #1e293b; }
+.dark .gantt-row { border-color: #1e293b; border-bottom-color: #334155; }
 .gantt-row:hover { background: #f8fafc; }
 .dark .gantt-row:hover { background: #1e293b; }
 .gantt-cell { padding: 12px; border-right: 1px solid #f1f5f9; display: flex; align-items: center; font-size: 12px; font-weight: 700; }
-.dark .gantt-cell { border-color: #1e293b; }
-.gantt-timeline-container { position: relative; padding: 12px 0; min-height: 50px; background: repeating-linear-gradient(90deg, transparent, transparent calc(100%/24 - 1px), #f1f5f9 calc(100%/24 - 1px), #f1f5f9 calc(100%/24)); }
-.dark .gantt-timeline-container { background: repeating-linear-gradient(90deg, transparent, transparent calc(100%/24 - 1px), #334155 calc(100%/24 - 1px), #334155 calc(100%/24)); }
-.gantt-bar { position: absolute; top: 10px; bottom: 10px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; padding: 0 8px; font-size: 10px; font-weight: 900; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: transform 0.2s;}
-.gantt-bar:hover { transform: scaleY(1.1); z-index: 10; }
+.dark .gantt-cell { border-color: #334155; }
+.gantt-timeline-container { position: relative; padding: 12px 0; min-height: 50px; }
+.gantt-bar { position: absolute; top: 8px; bottom: 8px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; align-items: center; padding: 0 8px; font-size: 10px; font-weight: 900; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: all 0.2s;}
+.gantt-bar:hover { transform: scaleY(1.1) scaleX(1.01); z-index: 50; filter: brightness(1.1); }
 </style>
 <script>
-    const VERSAO_ATUAL = "39.0.0"; 
+    const VERSAO_ATUAL = "40.0.0"; // Versão com Crachá, Foto Gigante no Calendário e Gantt Ao Vivo
     if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); }
 </script>
 </head>
@@ -59,7 +58,6 @@ const firebaseConfig = { apiKey:"AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c", authD
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore(); const auth = firebase.auth();
 
-// LIGA O MODO ECONÔMICO (CACHE LOCAL) DO FIREBASE PARA POUPAR LEITURAS
 db.enablePersistence({synchronizeTabs:true}).catch(function(err) { console.log("Aviso de Cache: ", err.code); });
 
 const api = {
@@ -69,12 +67,11 @@ const api = {
 };
 const safeStr = (v) => v==null?'':String(v);
 
-// NOVO PARSER DE IMAGENS DO DRIVE (Mais robusto)
 const fmtImg = (u) => { 
     let s=safeStr(u).trim(); 
     if(!s) return ''; 
     const match = s.match(/(?:file\/d\/|id=|v\/|u\/\d+\/p\/)([a-zA-Z0-9_-]{25,})/);
-    if(match) return `https://lh3.googleusercontent.com/d/${match[1]}`; 
+    if(match) return `https://drive.google.com/uc?export=view&id=${match[1]}`; 
     return s; 
 };
 
@@ -92,10 +89,9 @@ const checkIsMe = (nomeProfissional, userEmail) => {
     return parts.some(p => p.length > 2 && nProf.includes(p));
 };
 
-// Componente para Renderizar a Logo do Convênio
 const BadgeConvenio = ({ codUnimed, configLogo }) => {
     if(!codUnimed) return null;
-    if(configLogo) return <img src={fmtImg(configLogo)} className="h-4 w-auto inline-block ml-2 rounded-sm" title="Possui Convênio" alt="Convênio" />;
+    if(configLogo) return <img src={fmtImg(configLogo)} className="h-4 w-auto inline-block ml-2 rounded-sm" title={`Código Unimed: ${codUnimed}`} alt="Convênio" />;
     return <span className="ml-2 bg-green-500 text-white text-[8px] px-1.5 py-0.5 rounded font-black">CONVÊNIO</span>;
 }
 
@@ -431,6 +427,9 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
 
     const profsOrdenadosParaBusca = ordenarPorNome(profs);
     const profsOrdenadosParaBuilder = ordenarPorNome(profs.filter(x => (x.StatusGeral==='Ativo'||!x.StatusGeral) && x.Tipo === builderTipo));
+    
+    // Identifica se há um profissional selecionado para mostrar o cabeçalho com foto
+    const profSelecionado = profs.find(p => p.Nome === calProf);
 
     return (
         <div className="animate-fade-in max-w-5xl mx-auto space-y-6 pb-10">
@@ -495,10 +494,10 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 </div>
             ) : (
                 <div className="space-y-6">
-                    <div className="clean-card p-5 flex flex-col lg:flex-row justify-between items-center gap-4 relative">
+                    <div className="clean-card p-5 flex flex-col md:flex-row justify-between md:items-center gap-4 relative">
                         <div className="flex items-center gap-4"><button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-left"></i></button><h2 className="text-lg font-black uppercase tracking-widest w-40 text-center">{mesAtual.toLocaleString('pt-BR', {month:'long', year:'numeric'})}</h2><button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-right"></i></button></div>
                         
-                        <div className="flex flex-col md:flex-row w-full lg:w-auto gap-2">
+                        <div className="flex flex-col md:flex-row w-full md:w-auto gap-2">
                             <select value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} className="p-2.5 rounded-lg border dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-sm">
                                 <option value="">Todas Categorias</option>
                                 <option value="Médico">Médicos</option>
@@ -506,7 +505,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                 <option value="Gestor">Supervisores/Líderes</option>
                             </select>
                             
-                            <div className="relative flex-1 lg:w-72">
+                            <div className="relative flex-1 md:w-72">
                                 <input type="text" placeholder="Buscar profissional..." value={buscaNome} onChange={e=>{setBuscaNome(e.target.value); setShowAuto(true); setCalProf(''); setDiaAtivo(null);}} onFocus={()=>setShowAuto(true)} className="p-2.5 rounded-lg border dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-sm w-full" />
                                 
                                 {showAuto && buscaNome && (
@@ -529,73 +528,95 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                         </div>
                     </div>
 
-                    {!calProf ? <div className="p-10 text-center clean-card opacity-60 font-bold border-dashed">Selecione um profissional para carregar o calendário.</div> :
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {!calProf ? <div className="p-10 text-center clean-card opacity-50 font-bold border-dashed">Selecione um profissional para carregar o calendário.</div> :
+                    <div className="space-y-6">
                         
-                        <div className="clean-card p-6 lg:col-span-2">
-                            <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[10px] font-black opacity-50 uppercase">
-                                <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                        {/* NOVO: CARD GIGANTE DO PROFISSIONAL NO CALENDÁRIO */}
+                        {profSelecionado && (
+                            <div className="clean-card p-6 flex flex-col md:flex-row items-center md:items-start gap-6 bg-gradient-to-r from-blue-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-primary">
+                                {profSelecionado.FotoURL ? (
+                                    <img src={fmtImg(profSelecionado.FotoURL)} className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white dark:border-slate-800 shrink-0" />
+                                ) : (
+                                    <div className="w-24 h-24 rounded-full bg-primary text-white flex items-center justify-center text-4xl font-black shadow-lg border-4 border-white dark:border-slate-800 shrink-0" style={{backgroundColor:profSelecionado.Cor||'#0ea5e9'}}>
+                                        {profSelecionado.Nome[0]}
+                                    </div>
+                                )}
+                                <div className="text-center md:text-left mt-2 md:mt-0">
+                                    <h2 className="text-2xl font-black text-slate-800 dark:text-white flex items-center justify-center md:justify-start gap-2">
+                                        {profSelecionado.Nome}
+                                        <BadgeConvenio codUnimed={profSelecionado.CodUnimed} configLogo={cfg?.logoConvenio} />
+                                    </h2>
+                                    <p className="text-sm font-bold text-primary uppercase mt-1">{profSelecionado.Cargo}</p>
+                                    <p className="text-xs font-bold opacity-60 mt-1 uppercase tracking-widest"><i className="ph-fill ph-map-pin"></i> Lotação: {profSelecionado.UnidadeBase || 'S/ Unid'} • {profSelecionado.Setor || 'S/ Setor'}</p>
+                                </div>
                             </div>
-                            <div className="grid grid-cols-7 gap-2">
-                                {gridTL.vazios.map((_, i) => <div key={`v-${i}`} className="p-2 opacity-10"></div>)}
-                                {gridTL.dias.map((d, i) => {
-                                    const temEscala = escalas.some(e => e.Nome_Profissional === calProf && e.Data === d.dStr);
-                                    const profColor = profs.find(p=>p.Nome===calProf)?.Cor || '#0ea5e9';
-                                    const isToday = d.dStr === getStrDt(new Date());
-                                    const isSel = diaAtivo === d.dStr;
+                        )}
 
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="clean-card p-6 lg:col-span-2">
+                                <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[10px] font-black opacity-50 uppercase">
+                                    <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                                </div>
+                                <div className="grid grid-cols-7 gap-2">
+                                    {gridTL.vazios.map((_, i) => <div key={`v-${i}`} className="p-2 opacity-10"></div>)}
+                                    {gridTL.dias.map((d, i) => {
+                                        const temEscala = escalas.some(e => e.Nome_Profissional === calProf && e.Data === d.dStr);
+                                        const profColor = profs.find(p=>p.Nome===calProf)?.Cor || '#0ea5e9';
+                                        const isToday = d.dStr === getStrDt(new Date());
+                                        const isSel = diaAtivo === d.dStr;
+
+                                        return (
+                                            <div key={i} onClick={()=> temEscala && setDiaAtivo(d.dStr)} className={`relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${temEscala?'cursor-pointer hover:border-primary shadow-sm':''} ${isSel?'ring-2 ring-primary bg-blue-50 dark:bg-slate-800':isToday?'bg-slate-100 dark:bg-slate-700':'bg-transparent border-slate-100 dark:border-slate-800'}`}>
+                                                <span className={`text-sm font-bold ${temEscala?'text-slate-800 dark:text-white':'text-slate-400 dark:text-slate-500'}`}>{d.d.getDate()}</span>
+                                                {temEscala && <span className="absolute bottom-2 w-1.5 h-1.5 rounded-full" style={{backgroundColor:profColor}}></span>}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="clean-card p-6 bg-slate-50 dark:bg-slate-800">
+                                {diaAtivo ? (() => {
+                                    const escDia = escalas.filter(e => e.Nome_Profissional === calProf && e.Data === diaAtivo);
                                     return (
-                                        <div key={i} onClick={()=> temEscala && setDiaAtivo(d.dStr)} className={`relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${temEscala?'cursor-pointer hover:border-primary shadow-sm':''} ${isSel?'ring-2 ring-primary bg-blue-50 dark:bg-slate-800':isToday?'bg-slate-100 dark:bg-slate-700':'bg-transparent border-slate-100 dark:border-slate-800'}`}>
-                                            <span className={`text-sm font-bold ${temEscala?'text-slate-800 dark:text-white':'text-slate-400 dark:text-slate-500'}`}>{d.d.getDate()}</span>
-                                            {temEscala && <span className="absolute bottom-2 w-1.5 h-1.5 rounded-full" style={{backgroundColor:profColor}}></span>}
+                                        <div>
+                                            <h3 className="font-black text-lg mb-4 text-primary border-b border-slate-200 dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-check"></i> {diaAtivo}</h3>
+                                            <div className="space-y-4">
+                                                {escDia.map((esc, j) => {
+                                                    const isFolga = esc.Status === 'FOLGA';
+                                                    const isAus = esc.Status === 'AUSENTE';
+                                                    
+                                                    return (
+                                                    <div key={j} className={`p-4 rounded-xl shadow-sm border relative overflow-hidden ${isFolga?'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-80':isAus?'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/30':'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-700'}`}>
+                                                        <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{backgroundColor: isFolga ? '#94a3b8' : isAus ? '#ef4444' : (esc.Cor||'#0ea5e9')}}></div>
+                                                        
+                                                        {(!isFolga && !isAus && esc.Unidade) && <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1 pl-1">{esc.Unidade}</p>}
+                                                        
+                                                        <h4 className={`font-black text-base pl-1 ${isFolga||isAus?'text-slate-600 dark:text-slate-400':''}`}>{esc.Sala} {esc.EmApoio?'(Apoio)':''}</h4>
+                                                        
+                                                        {(!isFolga && !isAus) && <p className={`text-sm font-bold mt-1 pl-1 ${esc.Horario==='A DEFINIR'?'text-red-500':'opacity-80'}`}><i className="ph-fill ph-clock"></i> {esc.Horario}</p>}
+                                                        
+                                                        {esc.ObsDia && <p className={`text-xs mt-3 p-2 rounded ml-1 ${isFolga||isAus?'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300':'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400'}`}><i className="ph-bold ph-info"></i> {esc.ObsDia}</p>}
+                                                        
+                                                        {isAd && (
+                                                            <div className="absolute top-2 right-2 flex gap-2">
+                                                                <button onClick={() => setEditData({...esc})} className="text-yellow-500 hover:scale-110"><i className="ph-fill ph-pencil"></i></button>
+                                                                <button onClick={async()=>{if(confirm('Excluir turno permanentemente?')){await api.deleteRecord('ESCALAS', esc.ID); onRefresh(); setDiaAtivo(null)}}} className="text-red-500 hover:scale-110"><i className="ph-fill ph-trash"></i></button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )})}
+                                            </div>
                                         </div>
                                     )
-                                })}
+                                })() : (
+                                    <div className="h-full flex flex-col items-center justify-center text-center opacity-50 min-h-[200px]">
+                                        <i className="ph-fill ph-cursor-click text-4xl mb-2"></i>
+                                        <p className="text-xs font-bold">Clique no calendário para ver os detalhes.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
-
-                        <div className="clean-card p-6 bg-slate-50 dark:bg-slate-800">
-                            {diaAtivo ? (() => {
-                                const escDia = escalas.filter(e => e.Nome_Profissional === calProf && e.Data === diaAtivo);
-                                return (
-                                    <div>
-                                        <h3 className="font-black text-lg mb-4 text-primary border-b border-slate-200 dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-check"></i> {diaAtivo}</h3>
-                                        <div className="space-y-4">
-                                            {escDia.map((esc, j) => {
-                                                const isFolga = esc.Status === 'FOLGA';
-                                                const isAus = esc.Status === 'AUSENTE';
-                                                
-                                                return (
-                                                <div key={j} className={`p-4 rounded-xl shadow-sm border relative overflow-hidden ${isFolga?'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-80':isAus?'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/30':'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-700'}`}>
-                                                    <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{backgroundColor: isFolga ? '#94a3b8' : isAus ? '#ef4444' : (esc.Cor||'#0ea5e9')}}></div>
-                                                    
-                                                    {(!isFolga && !isAus && esc.Unidade) && <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1 pl-1">{esc.Unidade}</p>}
-                                                    
-                                                    <h4 className={`font-black text-base pl-1 ${isFolga||isAus?'text-slate-600 dark:text-slate-400':''}`}>{esc.Sala} {esc.EmApoio?'(Apoio)':''}</h4>
-                                                    
-                                                    {(!isFolga && !isAus) && <p className={`text-sm font-bold mt-1 pl-1 ${esc.Horario==='A DEFINIR'?'text-red-500':'opacity-80'}`}><i className="ph-fill ph-clock"></i> {esc.Horario}</p>}
-                                                    
-                                                    {esc.ObsDia && <p className={`text-xs mt-3 p-2 rounded ml-1 ${isFolga||isAus?'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300':'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400'}`}><i className="ph-bold ph-info"></i> {esc.ObsDia}</p>}
-                                                    
-                                                    {isAd && (
-                                                        <div className="absolute top-2 right-2 flex gap-2">
-                                                            <button onClick={() => setEditData({...esc})} className="text-yellow-500 hover:scale-110"><i className="ph-fill ph-pencil"></i></button>
-                                                            <button onClick={async()=>{if(confirm('Excluir turno permanentemente?')){await api.deleteRecord('ESCALAS', esc.ID); onRefresh(); setDiaAtivo(null)}}} className="text-red-500 hover:scale-110"><i className="ph-fill ph-trash"></i></button>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )})}
-                                        </div>
-                                    </div>
-                                )
-                            })() : (
-                                <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
-                                    <i className="ph-fill ph-cursor-click text-4xl mb-2"></i>
-                                    <p className="text-xs font-bold">Clique em um dia com bolinha no calendário para ver os detalhes.</p>
-                                </div>
-                            )}
-                        </div>
-
                     </div>}
                 </div>
             )}
@@ -660,12 +681,15 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     );
 };
 
-// ================== ABA 4: MAPA DE PLANTÃO (REFORMULADO C/ BUSCA) ==================
+// ================== ABA 4: MAPA DE PLANTÃO (REFORMULADO C/ CRACHÁ E BUSCA) ==================
 const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
     const [now, setNow] = useState(Date.now()); 
     const [actU, setActU] = useState(null);
-    const [buscaGlobal, setBuscaGlobal] = useState(''); // Estado para o super radar de nomes
+    const [buscaGlobal, setBuscaGlobal] = useState(''); 
+    
+    // NOVO: Estado para abrir o Crachá Virtual
+    const [infoProfModal, setInfoProfModal] = useState(null);
 
     useEffect(() => { const t = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(t); }, []);
 
@@ -702,11 +726,10 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 {currArr.map((curr, idx) => {
                     const isInt = curr?.Status === 'LANCHE'; const isAus = curr?.Status === 'AUSENTE';
                     const isMe = checkIsMe(curr?.Nome_Profissional, user.email);
-                    // Puxa informações do profissional
-                    const pInfo = profs.find(p => p.Nome === curr.Nome_Profissional) || {};
+                    const pInfo = profs.find(p => p.Nome === curr.Nome_Profissional) || {Nome: curr.Nome_Profissional, Cargo: curr.Cargo, Cor: curr.Cor};
 
                     return (
-                        <div key={'c'+idx} className={`p-2.5 rounded-xl relative border shadow-sm transition-colors ${isInt?'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800':isAus?'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70':'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
+                        <div key={'c'+idx} onClick={() => setInfoProfModal(pInfo)} className={`p-2.5 rounded-xl relative border shadow-sm transition-colors cursor-pointer hover:shadow-md ${isInt?'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800':isAus?'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70':'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 hover:border-primary'}`}>
                             <div className="flex items-center gap-2 mb-2">
                                 {pInfo.FotoURL ? 
                                     <img src={fmtImg(pInfo.FotoURL)} className="w-8 h-8 rounded-full object-cover shadow-md shrink-0" /> : 
@@ -727,23 +750,23 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                     {(!isInt && !isAus) ? (
                                         <>
                                             {(isAd || isMe) && (
-                                                <button onClick={()=>setStatus(curr, 'LANCHE')} title="Ir para o Lanche/Pausa" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 hover:text-orange-600 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button>
+                                                <button onClick={(e)=>{e.stopPropagation(); setStatus(curr, 'LANCHE');}} title="Ir para o Lanche/Pausa" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 hover:text-orange-600 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button>
                                             )}
                                             {isAd && (
                                                 <>
-                                                    <button onClick={()=>setModalAction({tipo:'trocar_posto', escala: curr})} title="Trocar de Posto/Sala" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 hover:text-blue-600 transition text-slate-500"><i className="ph-fill ph-swap"></i></button>
-                                                    <button onClick={()=>setModalAction({tipo:'ausencia', escala: curr})} title="Marcar Ausência" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-red-100 hover:text-red-600 transition text-slate-500"><i className="ph-fill ph-warning"></i></button>
+                                                    <button onClick={(e)=>{e.stopPropagation(); setModalAction({tipo:'trocar_posto', escala: curr});}} title="Trocar de Posto/Sala" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 hover:text-blue-600 transition text-slate-500"><i className="ph-fill ph-swap"></i></button>
+                                                    <button onClick={(e)=>{e.stopPropagation(); setModalAction({tipo:'ausencia', escala: curr});}} title="Marcar Ausência" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-red-100 hover:text-red-600 transition text-slate-500"><i className="ph-fill ph-warning"></i></button>
                                                 </>
                                             )}
                                         </>
                                     ) : (
                                         <>
                                             {(isAd || (isMe && isInt)) && (
-                                                <button onClick={()=>setStatus(curr, 'NO POSTO')} className="px-2 py-1 bg-slate-800 dark:bg-slate-700 text-white rounded text-[8px] font-black hover:bg-slate-600 transition"><i className="ph-bold ph-arrow-u-down-left"></i> VOLTAR</button>
+                                                <button onClick={(e)=>{e.stopPropagation(); setStatus(curr, 'NO POSTO');}} className="px-2 py-1 bg-slate-800 dark:bg-slate-700 text-white rounded text-[8px] font-black hover:bg-slate-600 transition"><i className="ph-bold ph-arrow-u-down-left"></i> VOLTAR</button>
                                             )}
                                         </>
                                     )}
-                                    {isAus && isAd && <button onClick={()=>setModalAction({tipo:'substituto', escala: curr})} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black hover:bg-blue-600 transition ml-1"><i className="ph-bold ph-magic-wand"></i> COBRIR</button>}
+                                    {isAus && isAd && <button onClick={(e)=>{e.stopPropagation(); setModalAction({tipo:'substituto', escala: curr});}} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black hover:bg-blue-600 transition ml-1"><i className="ph-bold ph-magic-wand"></i> COBRIR</button>}
                                 </div>
                             </div>
                         </div>
@@ -751,9 +774,9 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 })}
 
                 {nxtArr.map((nxt, idx) => {
-                    const pInfoNxt = profs.find(p => p.Nome === nxt.Nome_Profissional) || {};
+                    const pInfoNxt = profs.find(p => p.Nome === nxt.Nome_Profissional) || {Nome: nxt.Nome_Profissional, Cor: nxt.Cor};
                     return (
-                        <div key={'n'+idx} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 fade-next relative overflow-hidden">
+                        <div key={'n'+idx} onClick={() => setInfoProfModal(pInfoNxt)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 fade-next relative overflow-hidden cursor-pointer hover:border-primary transition">
                             <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-1">Próximo: {nxt.Horario.split(' ')[0]}</p>
                             <div className="flex items-center gap-2 opacity-70">
                                 {pInfoNxt.FotoURL ? 
@@ -772,13 +795,9 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         );
     };
 
-    // MODO PESQUISA GLOBAL ATIVADO
     if(buscaGlobal.trim() !== '') {
         const termo = buscaGlobal.toLowerCase();
-        // Filtra todas as escalas de hoje (exceto folgas definitivas) que o nome bate
         const escalasEncontradas = escHjRaw.filter(e => e.Status !== 'FOLGA' && safeStr(e.Nome_Profissional).toLowerCase().includes(termo));
-        
-        // Descobre quais postos precisam ser renderizados
         const postosParaRenderizar = Array.from(new Set(escalasEncontradas.map(e => e.Sala)));
 
         return (
@@ -813,6 +832,8 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                         })}
                     </div>
                 )}
+                {/* O Modal precisa renderizar aqui também se clicado */}
+                {infoProfModal && <CrachaVirtual profInfo={infoProfModal} cfg={cfg} onClose={()=>setInfoProfModal(null)} />}
             </div>
         )
     }
@@ -841,7 +862,6 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     )}
                 </div>
 
-                {/* BARRA DE PESQUISA RÁPIDA NA HOME */}
                 <div className="relative max-w-2xl mx-auto">
                     <i className="ph-bold ph-magnifying-glass absolute left-4 top-4 text-slate-400 text-xl"></i>
                     <input type="text" placeholder="Onde a pessoa está? Digite o nome aqui..." value={buscaGlobal} onChange={e=>setBuscaGlobal(e.target.value)} className="w-full p-4 pl-12 rounded-2xl border border-slate-200 dark:border-slate-700 outline-none bg-white dark:bg-slate-800 font-bold shadow-sm focus:border-primary transition" />
@@ -892,10 +912,10 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             })}
             {setoresDaUnidade.length===0 && <p className="p-10 text-center opacity-50 font-bold border-2 border-dashed rounded-xl">Nenhum setor cadastrado nesta unidade.</p>}
 
+            {/* MODAIS DE AÇÃO DO GESTOR */}
             {modalAction && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setModalAction(null)}>
                     <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
-                        
                         {modalAction.tipo === 'trocar_posto' && (
                             <form onSubmit={async (e)=>{
                                 e.preventDefault();
@@ -941,19 +961,80 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     </div>
                 </div>
             )}
+
+            {/* NOVO: CRACHÁ VIRTUAL (POPUP) */}
+            {infoProfModal && <CrachaVirtual profInfo={infoProfModal} cfg={cfg} onClose={()=>setInfoProfModal(null)} />}
         </div>
     );
 };
 
-// ================== ABA 5: VISÃO AMPLA (MAPA DE GANTT) ==================
+// Componente Separado para o Crachá Virtual (Facilita a leitura do código)
+const CrachaVirtual = ({ profInfo, cfg, onClose }) => {
+    return (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+            <div className="clean-card w-full max-w-sm p-0 overflow-hidden shadow-2xl" onClick={e=>e.stopPropagation()}>
+                <div className="h-24 bg-gradient-to-r from-primary to-blue-400 relative">
+                    <button onClick={onClose} className="absolute top-4 right-4 text-white hover:scale-110"><i className="ph-bold ph-x text-xl"></i></button>
+                </div>
+                <div className="px-6 pb-6 pt-0 relative flex flex-col items-center text-center">
+                    <div className="w-24 h-24 rounded-full border-4 border-white dark:border-slate-800 shadow-lg -mt-12 bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden mb-3" style={{backgroundColor:profInfo.FotoURL?'':(profInfo.Cor||'#0ea5e9')}}>
+                        {profInfo.FotoURL ? <img src={fmtImg(profInfo.FotoURL)} className="w-full h-full object-cover" /> : <span className="text-4xl font-black text-white">{profInfo.Nome[0]}</span>}
+                    </div>
+                    <h3 className="text-xl font-black leading-tight flex items-center justify-center gap-2">
+                        {profInfo.Nome}
+                        <BadgeConvenio codUnimed={profInfo.CodUnimed} configLogo={cfg?.logoConvenio} />
+                    </h3>
+                    <p className="text-xs font-bold text-primary uppercase mt-1">{profInfo.Cargo}</p>
+
+                    <div className="w-full mt-6 space-y-2 text-left">
+                        <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3">
+                            <i className="ph-fill ph-map-pin text-slate-400 text-xl"></i>
+                            <div>
+                                <p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Lotação Base</p>
+                                <p className="text-xs font-black">{profInfo.UnidadeBase || 'Não informada'} • {profInfo.Setor || '-'}</p>
+                            </div>
+                        </div>
+                        {(profInfo.CRM || profInfo.CodUnimed) && (
+                            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 flex gap-4">
+                                {profInfo.CRM && <div className="flex-1"><p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">CRM</p><p className="text-xs font-black">{profInfo.CRM}</p></div>}
+                                {profInfo.CodUnimed && <div className="flex-1"><p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Cód Unimed</p><p className="text-xs font-black">{profInfo.CodUnimed}</p></div>}
+                            </div>
+                        )}
+                        {profInfo.TipoContrato && (
+                            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+                                <p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Vínculo Contratual</p>
+                                <p className="text-xs font-black">{profInfo.TipoContrato}</p>
+                            </div>
+                        )}
+                        {profInfo.ObservacoesGerais && (
+                            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-xl border border-yellow-100 dark:border-yellow-900/30">
+                                <p className="text-[9px] uppercase font-bold text-yellow-600 mb-0.5 flex items-center gap-1"><i className="ph-fill ph-info"></i> Observações</p>
+                                <p className="text-xs font-medium italic text-yellow-800 dark:text-yellow-400">{profInfo.ObservacoesGerais}</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ================== ABA 5: VISÃO AMPLA (MAPA DE GANTT AO VIVO) ==================
 const GanttView = ({ profs, escalas, cfg }) => {
     const [viewMode, setViewMode] = useState('MENU');
     const [diaAtual, setDiaAtual] = useState(new Date());
     const [buscaGantt, setBuscaGantt] = useState('');
+    
+    // Motor do Tempo Ao Vivo
+    const [agora, setAgora] = useState(new Date());
+    useEffect(() => {
+        const timer = setInterval(() => setAgora(new Date()), 30000); // Atualiza a linha a cada 30 segundos
+        return () => clearInterval(timer);
+    }, []);
 
     const dStr = getStrDt(diaAtual);
+    const isToday = getStrDt(agora) === dStr;
     
-    // Função para converter "08:00" em número (ex: 8.5)
     const parseHorario = (hStr) => {
         if(!hStr) return null;
         let parts = hStr.split(':');
@@ -961,22 +1042,18 @@ const GanttView = ({ profs, escalas, cfg }) => {
         return parseInt(parts[0]) + (parseInt(parts[1])/60);
     }
 
-    // Filtra escalas do dia e do grupo selecionado
     const escalasDiaGrupo = useMemo(() => {
         if (viewMode === 'MENU') return [];
         return escalas.filter(e => {
             if (e.Data !== dStr) return false;
-            // Pega o tipo do profissional
             const pInfo = profs.find(p => p.Nome === e.Nome_Profissional);
             const tipo = pInfo ? pInfo.Tipo : (e.Cargo.toLowerCase().includes('médico') ? 'Médico' : 'Colaborador');
             return tipo === viewMode;
         });
     }, [escalas, dStr, viewMode, profs]);
 
-    // Aplica o filtro de busca de nome
     const escalasFiltradas = escalasDiaGrupo.filter(e => safeStr(e.Nome_Profissional).toLowerCase().includes(buscaGantt.toLowerCase()));
 
-    // Descobre o menor e o maior horário do dia para montar a régua
     const limites = useMemo(() => {
         let minH = 24; let maxH = 0;
         escalasDiaGrupo.forEach(e => {
@@ -988,24 +1065,29 @@ const GanttView = ({ profs, escalas, cfg }) => {
                 if(valOut !== null && valOut > maxH) maxH = Math.ceil(valOut);
             }
         });
-        if(minH === 24) minH = 6; // Default se vazio
+        if(minH === 24) minH = 6; 
         if(maxH === 0) maxH = 20;
-        // Evita réguas muito pequenas
         if(maxH - minH < 6) { minH = 8; maxH = 18; }
-        
-        // Garante que maxH não passe de 24. E se o turno vira a noite (ex sai as 02:00), precisa de ajuste complexo, mas assumimos dia atual por enquanto.
         if (maxH <= minH) maxH = minH + 12;
-
         return { min: minH, max: maxH, range: maxH - minH };
     }, [escalasDiaGrupo]);
 
     const horasRegua = Array.from({length: limites.range + 1}, (_, i) => limites.min + i);
 
+    // Calcula a posição da linha vermelha do tempo
+    let posicaoAgoraPerc = null;
+    if (isToday) {
+        const horaAtualDecimal = agora.getHours() + (agora.getMinutes() / 60);
+        if (horaAtualDecimal >= limites.min && horaAtualDecimal <= limites.max) {
+            posicaoAgoraPerc = ((horaAtualDecimal - limites.min) / limites.range) * 100;
+        }
+    }
+
     return (
         <div className="animate-fade-in space-y-6 max-w-[1600px] mx-auto pb-10">
             {viewMode === 'MENU' && (
                 <div>
-                    <h2 className="text-2xl font-black mb-6">Visão Ampla (Gráfico Temporal)</h2>
+                    <h2 className="text-2xl font-black mb-6">Visão Ampla (Mapa de Gantt)</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-primary hover:shadow-lg transition-all">
                             <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-chart-gantt"></i></div>
@@ -1025,7 +1107,7 @@ const GanttView = ({ profs, escalas, cfg }) => {
                         <div className="flex items-center gap-4">
                             <button onClick={()=>{setViewMode('MENU'); setBuscaGantt('');}} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button>
                             <div>
-                                <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Painel Gantt</p>
+                                <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Painel Gantt Ao Vivo</p>
                                 <h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Corpo Clínico' : 'Colaboradores'}</h2>
                             </div>
                         </div>
@@ -1042,26 +1124,33 @@ const GanttView = ({ profs, escalas, cfg }) => {
                     </div>
 
                     <div className="clean-card bg-white dark:bg-slate-900 overflow-x-auto">
-                        <div className="min-w-[800px] gantt-grid">
-                            {/* Cabeçalho */}
-                            <div className="gantt-header border-r border-slate-200 dark:border-slate-700">Local / Unidade</div>
-                            <div className="gantt-header border-r border-slate-200 dark:border-slate-700">Setor / Posto</div>
-                            <div className="gantt-header flex justify-between relative">
+                        <div className="min-w-[900px] gantt-grid">
+                            
+                            <div className="gantt-header border-r border-slate-200 dark:border-slate-700">Local de Trabalho</div>
+                            <div className="gantt-header flex justify-between relative overflow-hidden">
                                 {horasRegua.map((hr, i) => (
-                                    <div key={i} className="absolute text-[9px] opacity-40 font-black" style={{left: `${(i/limites.range)*100}%`, transform: 'translateX(-50%)'}}>{String(hr).padStart(2,'0')}:00</div>
+                                    <div key={i} className="absolute text-[9px] opacity-40 font-black border-l border-slate-200 dark:border-slate-700 pl-1 h-full top-0" style={{left: `${(i/limites.range)*100}%`}}>
+                                        {String(hr).padStart(2,'0')}:00
+                                    </div>
                                 ))}
+                                {/* A LINHA VERMELHA DO TEMPO AO VIVO */}
+                                {posicaoAgoraPerc !== null && (
+                                    <div className="absolute top-0 bottom-0 w-[2px] bg-red-500 z-30" style={{left: `${posicaoAgoraPerc}%`}}>
+                                        <div className="absolute top-1 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded shadow-lg font-black tracking-widest">
+                                            {agora.getHours().toString().padStart(2,'0')}:{agora.getMinutes().toString().padStart(2,'0')}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Linhas */}
                             {escalasFiltradas.length === 0 ? (
-                                <div className="col-span-3 p-10 text-center font-bold opacity-50">Nenhum plantão registrado para esta data.</div>
+                                <div className="col-span-2 p-10 text-center font-bold opacity-50">Nenhum plantão registrado para esta data.</div>
                             ) : (
                                 escalasFiltradas.sort((a,b)=> safeStr(a.Unidade).localeCompare(safeStr(b.Unidade))).map((e, idx) => {
                                     
                                     const pInfo = profs.find(p => p.Nome === e.Nome_Profissional) || {};
                                     const isFolga = e.Status === 'FOLGA';
                                     
-                                    // Cálculo de posicionamento da barra
                                     let leftPerc = 0; let widthPerc = 100;
                                     let barColor = isFolga ? '#94a3b8' : (e.Cor || '#0ea5e9');
 
@@ -1071,12 +1160,9 @@ const GanttView = ({ profs, escalas, cfg }) => {
                                         let valOut = parseHorario(outH?.trim());
                                         
                                         if (valIn !== null && valOut !== null) {
-                                            if(valOut < valIn) valOut += 24; // Virada de noite simples
-                                            
+                                            if(valOut < valIn) valOut += 24; 
                                             leftPerc = ((valIn - limites.min) / limites.range) * 100;
                                             widthPerc = ((valOut - valIn) / limites.range) * 100;
-                                            
-                                            // Trava visual para não estourar a tela
                                             if(leftPerc < 0) { widthPerc += leftPerc; leftPerc = 0; }
                                             if(leftPerc + widthPerc > 100) widthPerc = 100 - leftPerc;
                                         }
@@ -1084,19 +1170,29 @@ const GanttView = ({ profs, escalas, cfg }) => {
 
                                     return (
                                         <React.Fragment key={e.ID || idx}>
-                                            <div className="gantt-cell uppercase text-[10px] opacity-70">{e.Unidade || 'Geral'}</div>
-                                            <div className="gantt-cell uppercase text-[11px] truncate" title={e.Sala}>{e.Sala}</div>
-                                            <div className="gantt-cell p-0 gantt-timeline-container">
+                                            <div className="gantt-cell flex flex-col items-start justify-center overflow-hidden">
+                                                <span className="font-black text-xs truncate w-full" title={e.Sala}>{e.Sala}</span>
+                                                <span className="text-[9px] opacity-50 uppercase truncate w-full flex items-center gap-1"><i className="ph-fill ph-map-pin"></i> {e.Unidade || 'GERAL'}</span>
+                                            </div>
+                                            <div className="gantt-cell p-0 gantt-timeline-container relative">
+                                                
+                                                {/* Guias verticais fracas no fundo */}
+                                                {horasRegua.map((hr, i) => (
+                                                    <div key={i} className="absolute top-0 bottom-0 border-l border-slate-200 dark:border-slate-800 z-0" style={{left: `${(i/limites.range)*100}%`}}></div>
+                                                ))}
+                                                {/* Linha vermelha no fundo */}
+                                                {posicaoAgoraPerc !== null && <div className="absolute top-0 bottom-0 w-[2px] bg-red-500/20 z-10" style={{left: `${posicaoAgoraPerc}%`}}></div>}
+
                                                 {e.Horario === 'A DEFINIR' ? (
-                                                    <div className="text-[10px] text-red-500 font-black pl-4">HORÁRIO A DEFINIR</div>
+                                                    <div className="text-[10px] text-red-500 font-black pl-4 z-20">HORÁRIO A DEFINIR: {e.Nome_Profissional}</div>
                                                 ) : (
-                                                    <div className="gantt-bar shadow-md" style={{left: `${leftPerc}%`, width: `${widthPerc}%`, backgroundColor: barColor}} title={`${e.Nome_Profissional} (${e.Horario})`}>
+                                                    <div className="gantt-bar z-20" style={{left: `${leftPerc}%`, width: `${widthPerc}%`, backgroundColor: barColor}} title={`${e.Nome_Profissional} (${e.Horario})`}>
                                                         <div className="flex items-center gap-1.5 w-full">
-                                                            {pInfo.FotoURL ? <img src={fmtImg(pInfo.FotoURL)} className="w-4 h-4 rounded-full object-cover shrink-0" /> : <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center shrink-0">{e.Nome_Profissional[0]}</div>}
+                                                            {pInfo.FotoURL ? <img src={fmtImg(pInfo.FotoURL)} className="w-5 h-5 rounded-full object-cover shrink-0 border border-white/30" /> : <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0 border border-white/30">{e.Nome_Profissional[0]}</div>}
                                                             <span className="truncate">{e.Nome_Profissional}</span>
                                                             <BadgeConvenio codUnimed={pInfo.CodUnimed} configLogo={cfg?.logoConvenio} />
                                                             {!isFolga && <span className="opacity-70 ml-auto shrink-0 font-normal">{e.Horario}</span>}
-                                                            {isFolga && <span className="opacity-70 ml-auto shrink-0 font-normal">FOLGA</span>}
+                                                            {isFolga && <span className="opacity-70 ml-auto shrink-0 font-normal">FOLGA / AUSÊNCIA</span>}
                                                         </div>
                                                     </div>
                                                 )}
@@ -1150,7 +1246,6 @@ const App = () => {
 
     const isAd = u.nivel === 'Admin' || u.nivel === 'Supervisor';
     
-    // NOVO MENU COM VISÃO AMPLA GANTT
     const menu = [ 
         {id:'HOJE', i:'ph-kanban', n:'Plantão'}, 
         {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas'}, 
