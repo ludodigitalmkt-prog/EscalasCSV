@@ -29,35 +29,54 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .fade-next{background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(248,250,252,0.8) 100%);}
 .dark .fade-next{background:linear-gradient(180deg, rgba(30,41,59,0) 0%, rgba(15,23,42,0.8) 100%);}
 .timeline-line::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e2e8f0;z-index:0;}.dark .timeline-line::before{background:#334155;}
+/* Estilos para o Gantt */
+.gantt-grid { display: grid; grid-template-columns: 150px 150px 1fr; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+.dark .gantt-grid { border-color: #334155; }
+.gantt-header { background: #f8fafc; font-weight: 900; font-size: 10px; text-transform: uppercase; padding: 12px; border-bottom: 2px solid #e2e8f0; }
+.dark .gantt-header { background: #0f172a; border-color: #334155; }
+.gantt-row { border-bottom: 1px solid #f1f5f9; transition: background 0.2s; }
+.dark .gantt-row { border-color: #1e293b; }
+.gantt-row:hover { background: #f8fafc; }
+.dark .gantt-row:hover { background: #1e293b; }
+.gantt-cell { padding: 12px; border-right: 1px solid #f1f5f9; display: flex; align-items: center; font-size: 12px; font-weight: 700; }
+.dark .gantt-cell { border-color: #1e293b; }
+.gantt-timeline-container { position: relative; padding: 12px 0; min-height: 50px; background: repeating-linear-gradient(90deg, transparent, transparent calc(100%/24 - 1px), #f1f5f9 calc(100%/24 - 1px), #f1f5f9 calc(100%/24)); }
+.dark .gantt-timeline-container { background: repeating-linear-gradient(90deg, transparent, transparent calc(100%/24 - 1px), #334155 calc(100%/24 - 1px), #334155 calc(100%/24)); }
+.gantt-bar { position: absolute; top: 10px; bottom: 10px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; padding: 0 8px; font-size: 10px; font-weight: 900; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: transform 0.2s;}
+.gantt-bar:hover { transform: scaleY(1.1); z-index: 10; }
 </style>
 <script>
-    const VERSAO_ATUAL = "38.0.0"; // Versão atualizada: Lançamento de Folgas, Campos A Definir, Filtro no Mapa.
+    const VERSAO_ATUAL = "39.0.0"; 
     if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); }
 </script>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300">
 <div id="root"></div>
 <script type="text/babel" data-presets="react">
-const { useState, useEffect, Component } = React;
+const { useState, useEffect, Component, useMemo } = React;
 
 const firebaseConfig = { apiKey:"AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c", authDomain:"escalas-sao-vicente.firebaseapp.com", projectId:"escalas-sao-vicente", storageBucket:"escalas-sao-vicente.firebasestorage.app", messagingSenderId:"256697542067", appId:"1:256697542067:web:b8087390bb57d74def97c6" };
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore(); const auth = firebase.auth();
 
-// LIGA O MODO ECONÔMICO (CACHE LOCAL) DO FIREBASE
-db.enablePersistence({synchronizeTabs:true}).catch(function(err) {
-    console.log("Aviso de Cache: ", err.code);
-});
+// LIGA O MODO ECONÔMICO (CACHE LOCAL) DO FIREBASE PARA POUPAR LEITURAS
+db.enablePersistence({synchronizeTabs:true}).catch(function(err) { console.log("Aviso de Cache: ", err.code); });
 
-const api = {
-    
 const api = {
     fetch: async (c) => { try { const s = await db.collection(c).get(); return s.docs.map(d => ({ ID: d.id, ...d.data() })); } catch(e){return [];} },
     saveRecord: async (c, d) => { try { let o={...d}; let id=o.ID; delete o.ID; if(id) await db.collection(c).doc(id).set(o,{merge:true}); else await db.collection(c).add(o); return true; } catch(e){return false;} },
     deleteRecord: async (c, id) => { try { await db.collection(c).doc(id).delete(); return true; } catch(e){return false;} }
 };
 const safeStr = (v) => v==null?'':String(v);
-const fmtImg = (u) => { let s=safeStr(u).trim(); if(!s)return''; let m=s.match(/\/d\/([a-zA-Z0-9_-]+)/)||s.match(/id=([a-zA-Z0-9_-]+)/); return m?`https://drive.google.com/uc?export=view&id=${m[1]}`:s; };
+
+// NOVO PARSER DE IMAGENS DO DRIVE (Mais robusto)
+const fmtImg = (u) => { 
+    let s=safeStr(u).trim(); 
+    if(!s) return ''; 
+    const match = s.match(/(?:file\/d\/|id=|v\/|u\/\d+\/p\/)([a-zA-Z0-9_-]{25,})/);
+    if(match) return `https://lh3.googleusercontent.com/d/${match[1]}`; 
+    return s; 
+};
 
 const getStrDt = (d) => { if(!d) return ''; return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); };
 
@@ -72,6 +91,13 @@ const checkIsMe = (nomeProfissional, userEmail) => {
     const nProf = norm(nomeProfissional);
     return parts.some(p => p.length > 2 && nProf.includes(p));
 };
+
+// Componente para Renderizar a Logo do Convênio
+const BadgeConvenio = ({ codUnimed, configLogo }) => {
+    if(!codUnimed) return null;
+    if(configLogo) return <img src={fmtImg(configLogo)} className="h-4 w-auto inline-block ml-2 rounded-sm" title="Possui Convênio" alt="Convênio" />;
+    return <span className="ml-2 bg-green-500 text-white text-[8px] px-1.5 py-0.5 rounded font-black">CONVÊNIO</span>;
+}
 
 class ErrorBoundary extends Component {
     constructor(props){super(props);this.state={hasError:false,e:''};} static getDerivedStateFromError(e){return{hasError:true};} componentDidCatch(e){this.setState({e:String(e)});}
@@ -96,16 +122,17 @@ const TopHeader = ({ user, isDark, toggleDark }) => {
 // ================== ABA 1: AJUSTES ==================
 const AjustesView = ({ cfg, onSave, onRefresh }) => {
     const [u, setU] = useState([]); const [s, setS] = useState([]); const [p, setP] = useState([]);
-    const [h, setH] = useState([]); const [a, setA] = useState([]); const [dash, setDash] = useState(true);
+    const [h, setH] = useState([]); const [a, setA] = useState([]); 
+    const [logoConv, setLogoConv] = useState('');
     const [loading, setL] = useState(false); const [mod, setMod] = useState(null); 
 
     useEffect(() => {
         const formatData = (arr) => (arr||[]).map(x => typeof x === 'string' ? {nome: x.toUpperCase()} : x);
         setU(formatData(cfg?.unidades)); setS(formatData(cfg?.setores)); setP(formatData(cfg?.postos));
-        setH(cfg?.habilidades||[]); setA(cfg?.ausencias||[]); setDash(cfg?.showDash!==false);
+        setH(cfg?.habilidades||[]); setA(cfg?.ausencias||[]); setLogoConv(cfg?.logoConvenio||'');
     }, [cfg]);
 
-    const salvar = async () => { setL(true); await onSave('CONFIGURACOES',{ID:'parametros',unidades:u,setores:s,postos:p,habilidades:h,ausencias:a,showDash:dash}); onRefresh(); setL(false); alert("Configurações Salvas!"); };
+    const salvar = async () => { setL(true); await onSave('CONFIGURACOES',{ID:'parametros',unidades:u,setores:s,postos:p,habilidades:h,ausencias:a,logoConvenio:logoConv}); onRefresh(); setL(false); alert("Configurações Salvas!"); };
 
     const openAdd = (t) => setMod({ t, act: 'add', v1: '', v2: '' });
     const openEdit = (t, idx) => {
@@ -157,10 +184,12 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
     return (
         <div className="animate-fade-in space-y-6 max-w-6xl mx-auto">
             <div className="flex justify-between items-center"><h2 className="text-2xl font-black">Ajustes & Parâmetros</h2><button onClick={salvar} disabled={loading} className="bg-primary text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-600 transition">{loading?'Salvando...':'Salvar Servidor'}</button></div>
-            <div className="clean-card p-4 flex justify-between items-center bg-blue-50/50 dark:bg-slate-800/50">
-                <div><h4 className="font-bold text-sm">Dashboard Principal</h4><p className="text-[10px] opacity-60">Exibir contagem de funcionários no mapa</p></div>
-                <button onClick={()=>setDash(!dash)} className={`w-12 h-6 rounded-full transition-colors relative ${dash?'bg-green-500':'bg-slate-300 dark:bg-slate-600'}`}><div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${dash?'translate-x-6.5 left-0':'left-0.5'}`}></div></button>
+            
+            <div className="clean-card p-4 flex flex-col md:flex-row justify-between items-center bg-blue-50/50 dark:bg-slate-800/50 gap-4">
+                <div><h4 className="font-bold text-sm">Identidade Visual Convênio (UNIMED)</h4><p className="text-[10px] opacity-60">Cole a URL da logo para exibir no card dos médicos</p></div>
+                <input type="text" value={logoConv} onChange={e=>setLogoConv(e.target.value)} placeholder="URL da imagem (Drive, Imgur, etc)" className="p-2 rounded border dark:border-slate-700 w-full md:w-96 text-xs bg-white dark:bg-slate-900" />
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <ListRender title="1. Unidades/Prédios" arr={u} tipo="u" desc="Estruturas físicas (Ex: Matriz)." />
                 <ListRender title="2. Setores" arr={s} tipo="s" desc="Departamentos (Precisa de Unidade)." />
@@ -253,7 +282,12 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                                 <div key={i} onClick={()=>openModal(p)} className="clean-card p-5 flex flex-col items-center text-center relative cursor-pointer group">
                                     {p.StatusGeral && p.StatusGeral !== 'Ativo' && <span className="absolute top-2 left-2 bg-red-100 text-red-600 text-[8px] font-black px-2 py-1 rounded">{p.StatusGeral}</span>}
                                     {p.FotoURL ? <img src={fmtImg(p.FotoURL)} className="w-14 h-14 rounded-full object-cover shadow mb-2" /> : <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black text-white shadow mb-2" style={{backgroundColor:p.Cor||'#0ea5e9'}}>{safeStr(p.Nome)[0]}</div>}
-                                    <h3 className="font-black text-sm truncate w-full leading-tight text-slate-800 dark:text-white">{p.Nome}</h3>
+                                    
+                                    <h3 className="font-black text-sm truncate w-full leading-tight text-slate-800 dark:text-white flex justify-center items-center">
+                                        {p.Nome} 
+                                        <BadgeConvenio codUnimed={p.CodUnimed} configLogo={cfg?.logoConvenio} />
+                                    </h3>
+                                    
                                     <p className="text-[9px] font-bold opacity-60 uppercase mt-0.5">{p.Tipo === 'Médico' ? `CRM: ${p.CRM||'N/A'}` : p.Cargo}</p>
                                     <p className="text-[8px] font-black bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded mt-1 truncate max-w-full text-slate-700 dark:text-slate-300">{p.UnidadeBase||'S/ Unid'} • {p.Setor||'S/ Setor'}</p>
                                     {p.isGestor && <span className="mt-2 text-[8px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">Autorizado Supervisão</span>}
@@ -280,7 +314,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Nome</label><input type="text" value={fd.Nome} onChange={e=>setFd({...fd,Nome:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
-                                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Foto URL</label><input type="text" value={fd.FotoURL||''} onChange={e=>setFd({...fd,FotoURL:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
+                                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Foto URL (Links do Drive ou Imagens)</label><input type="text" value={fd.FotoURL||''} onChange={e=>setFd({...fd,FotoURL:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" placeholder="Cole aqui o link público da foto"/></div>
                                 <div><label className="text-[10px] font-black uppercase opacity-60">Unidade de Atendimento</label><select value={fd.UnidadeBase||''} onChange={e=>setFd({...fd,UnidadeBase:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800"><option value="">Selecione...</option>{u.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}</select></div>
                                 <div><label className="text-[10px] font-black uppercase opacity-60">Setor Base</label><select value={fd.Setor||''} onChange={e=>setFd({...fd,Setor:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800"><option value="">Selecione...</option>{s.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}</select></div>
 
@@ -289,7 +323,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                                         <h4 className="text-xs font-black uppercase text-blue-600 dark:text-blue-400 border-b border-slate-100 dark:border-slate-700 pb-2">Informações Médicas</h4>
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                             <div><label className="text-[9px] font-black uppercase opacity-60">CRM</label><input type="text" value={fd.CRM||''} onChange={e=>setFd({...fd,CRM:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
-                                            <div><label className="text-[9px] font-black uppercase opacity-60">Cód Unimed</label><input type="text" value={fd.CodUnimed||''} onChange={e=>setFd({...fd,CodUnimed:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
+                                            <div><label className="text-[9px] font-black uppercase opacity-60">Cód Unimed</label><input type="text" value={fd.CodUnimed||''} onChange={e=>setFd({...fd,CodUnimed:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" placeholder="Se preenchido, exibe a logo"/></div>
                                             <div><label className="text-[9px] font-black uppercase opacity-60">URA</label><input type="text" value={fd.URA||''} onChange={e=>setFd({...fd,URA:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
                                             <div><label className="text-[9px] font-black uppercase opacity-60">CBO</label><input type="text" value={fd.CBO||''} onChange={e=>setFd({...fd,CBO:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
                                             <div><label className="text-[9px] font-black uppercase opacity-60">Outro Doc/Registro</label><input type="text" value={fd.OutroDoc||''} onChange={e=>setFd({...fd,OutroDoc:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
@@ -305,7 +339,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                                 <div><label className="text-[10px] font-black uppercase opacity-60">Afastamentos / Folga Longa</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd,StatusGeral:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 text-red-500 font-bold"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{a.map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
                                 <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Observações Gerais</label><textarea value={fd.ObservacoesGerais||''} onChange={e=>setFd({...fd,ObservacoesGerais:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" rows="2" placeholder="Anotações sobre horários, preferências, restrições..."></textarea></div>
                                 
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor Destacada (Calendário)</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-9 cursor-pointer border dark:border-slate-700 rounded p-0.5" /></div>
+                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor Destacada (Calendário/Gantt)</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-9 cursor-pointer border dark:border-slate-700 rounded p-0.5" /></div>
                             </div>
                             <div><label className="text-[10px] font-black uppercase opacity-60 block mb-1">Competências</label>
                                 <div className="flex flex-wrap gap-1">{h.map((x,i)=><button type="button" key={i} onClick={()=>toggleHab(x)} className={`px-2 py-1 text-[10px] rounded border ${fd.Habilidades?.includes(x)?'bg-primary text-white border-primary':'bg-transparent dark:border-slate-700'}`}>{x}</button>)}</div>
@@ -324,9 +358,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
     const [mode, setMode] = useState('TIMELINE'); 
     
-    // NOVO ESTADO: Controla qual grupo o Admin quer montar a escala (Médico ou Colaborador)
     const [builderTipo, setBuilderTipo] = useState('Colaborador'); 
-    // NOVO ESTADO: Controla se estamos lançando Plantão ou Folga
     const [tipoLancamento, setTipoLancamento] = useState('PLANTAO');
     const [motivoAus, setMotivoAus] = useState('Folga');
 
@@ -356,7 +388,6 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         if(!selProf || dates.length===0) return alert("Preencha Profissional e as Datas no calendário!");
         const prof = profs.find(x=>x.ID===selProf || x.Nome===selProf);
         
-        // Regras de Preenchimento Automático
         let statusFinal = 'NO POSTO';
         let salaFinal = selSala || 'A DEFINIR';
         let horarioFinal = (hIn && hOut) ? `${hIn} às ${hOut}` : 'A DEFINIR';
@@ -569,6 +600,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 </div>
             )}
 
+            {/* MODAL DE EDIÇÃO AVANÇADA (COM TROCA DE TITULARIDADE) */}
             {editData && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setEditData(null)}>
                     <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
@@ -580,7 +612,23 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                             onRefresh();
                         }} className="space-y-4">
                             
-                            <div><label className="text-[10px] font-black uppercase opacity-60">Status da Escala</label>
+                            <div><label className="text-[10px] font-black uppercase opacity-60 text-primary">Transferir Titularidade (Opcional)</label>
+                                <select value={editData.Nome_Profissional} onChange={e=>{
+                                    if(e.target.value === "VAZIO") {
+                                        setEditData({...editData, Nome_Profissional: 'A DEFINIR', Status: 'NO POSTO', Cor: '#cbd5e1'});
+                                    } else {
+                                        const novoProf = profs.find(p => p.Nome === e.target.value);
+                                        if(novoProf) setEditData({...editData, Nome_Profissional: novoProf.Nome, Cargo: novoProf.Cargo, Cor: novoProf.Cor});
+                                    }
+                                }} className="w-full p-2 border border-blue-200 dark:border-blue-900/30 rounded bg-blue-50 dark:bg-blue-900/10 font-bold text-blue-700 dark:text-blue-400">
+                                    <option value={editData.Nome_Profissional}>Manter atual ({editData.Nome_Profissional})</option>
+                                    <option value="VAZIO">[ DEIXAR POSTO VAZIO ]</option>
+                                    <option disabled>──────────</option>
+                                    {profsOrdenadosParaBusca.filter(p => p.Nome !== editData.Nome_Profissional).map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+                                </select>
+                            </div>
+
+                            <div><label className="text-[10px] font-black uppercase opacity-60 mt-2 block">Status da Escala</label>
                                 <select value={editData.Status} onChange={e=>setEditData({...editData, Status:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 font-bold">
                                     <option value="NO POSTO">🟢 Turno Normal (Ativo)</option>
                                     <option value="FOLGA">⚪ Folga Agendada</option>
@@ -612,24 +660,18 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     );
 };
 
-// ================== ABA 4: MAPA DE PLANTÃO ==================
+// ================== ABA 4: MAPA DE PLANTÃO (REFORMULADO C/ BUSCA) ==================
 const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
-    const [now, setNow] = useState(Date.now()); const [actU, setActU] = useState(null);
+    const [now, setNow] = useState(Date.now()); 
+    const [actU, setActU] = useState(null);
+    const [buscaGlobal, setBuscaGlobal] = useState(''); // Estado para o super radar de nomes
+
     useEffect(() => { const t = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(t); }, []);
 
     const dStr = getStrDt(new Date()); 
     const escHjRaw = escalas.filter(e => e.Data === dStr);
     
-    // Contagens Otimizadas para o Dashboard
-    const nomesHjNoPosto = new Set(escHjRaw.filter(e => e.Status !== 'FOLGA' && e.Status !== 'AUSENTE').map(e => e.Nome_Profissional));
-    const nomesAusente = new Set(escHjRaw.filter(e => e.Status === 'AUSENTE').map(e => e.Nome_Profissional));
-    
-    const qAtivos = nomesHjNoPosto.size;
-    const qAfastados = profs.filter(p => (p.StatusGeral && p.StatusGeral !== 'Ativo') || nomesAusente.has(p.Nome)).length;
-    // Todo mundo que está ativo no geral, mas que não tem escala no posto hoje e não está ausente = Folga
-    const qFolga = profs.filter(p => (!p.StatusGeral || p.StatusGeral === 'Ativo') && !nomesHjNoPosto.has(p.Nome) && !nomesAusente.has(p.Nome)).length;
-
     const postosSis = cfg?.postos||[]; const setoresSis = cfg?.setores||[]; const unids = cfg?.unidades||[];
     const supervisorAtual = cfg?.supervisorAtual || 'Nenhum Assumiu';
     const [isAssumindo, setIsAssumindo] = useState(false);
@@ -649,11 +691,8 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             let pts = (o.Horario||'').split(' às '); let inH = pts[0]?.trim(); let outH = pts[1]?.trim();
             if(!inH || !outH || o.Horario === 'A DEFINIR') { currArr.push(o); continue; } 
             
-            if(hStr >= inH && hStr <= outH) {
-                currArr.push(o);
-            } else if (hStr < inH) {
-                nxtArr.push(o);
-            }
+            if(hStr >= inH && hStr <= outH) { currArr.push(o); } 
+            else if (hStr < inH) { nxtArr.push(o); }
         }
 
         if(currArr.length === 0 && nxtArr.length === 0) return <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-6"><i className="ph-bold ph-ghost text-3xl mb-2 opacity-30"></i><span className="text-[9px] font-black uppercase">Turno Encerrado</span></div>;
@@ -661,14 +700,26 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         return (
             <div className="flex-1 p-2 flex flex-col gap-2">
                 {currArr.map((curr, idx) => {
-                    const isInt = curr?.Status === 'LANCHE'; 
-                    // No mapa, ausente só aparece se alguém mudou o status dele AGORA. Mas como filtramos no loop de renderização, isso não deve ocorrer, mas mantemos por segurança.
-                    const isAus = curr?.Status === 'AUSENTE';
+                    const isInt = curr?.Status === 'LANCHE'; const isAus = curr?.Status === 'AUSENTE';
                     const isMe = checkIsMe(curr?.Nome_Profissional, user.email);
+                    // Puxa informações do profissional
+                    const pInfo = profs.find(p => p.Nome === curr.Nome_Profissional) || {};
 
                     return (
                         <div key={'c'+idx} className={`p-2.5 rounded-xl relative border shadow-sm transition-colors ${isInt?'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800':isAus?'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70':'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
-                            <div className="flex items-center gap-2 mb-2"><div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-md" style={{background:curr.Cor||'#0ea5e9'}}>{curr.Nome_Profissional[0]}</div><div className="truncate"><p className={`text-[11px] font-black truncate text-slate-800 dark:text-white ${isAus?'line-through text-red-500 dark:text-red-400':''}`}>{curr.Nome_Profissional}</p><p className={`text-[8px] font-bold opacity-60 truncate mt-0.5 text-slate-600 dark:text-slate-300 ${curr.Horario==='A DEFINIR'?'text-red-500':''}`}>{curr.Cargo} • <i className="ph-fill ph-clock"></i> {curr.Horario}</p></div></div>
+                            <div className="flex items-center gap-2 mb-2">
+                                {pInfo.FotoURL ? 
+                                    <img src={fmtImg(pInfo.FotoURL)} className="w-8 h-8 rounded-full object-cover shadow-md shrink-0" /> : 
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-md" style={{background:curr.Cor||'#0ea5e9'}}>{curr.Nome_Profissional[0]}</div>
+                                }
+                                <div className="truncate">
+                                    <div className={`text-[11px] font-black truncate text-slate-800 dark:text-white flex items-center ${isAus?'line-through text-red-500 dark:text-red-400':''}`}>
+                                        <span className="truncate">{curr.Nome_Profissional}</span>
+                                        <BadgeConvenio codUnimed={pInfo.CodUnimed} configLogo={cfg?.logoConvenio} />
+                                    </div>
+                                    <p className={`text-[8px] font-bold opacity-60 truncate mt-0.5 text-slate-600 dark:text-slate-300 ${curr.Horario==='A DEFINIR'?'text-red-500':''}`}>{curr.Cargo} • <i className="ph-fill ph-clock"></i> {curr.Horario}</p>
+                                </div>
+                            </div>
                             <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2 mt-1">
                                 <span className={`text-[8px] font-black px-2 py-1 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>{curr.Status === 'NO POSTO' ? 'ATIVO' : curr.Status}</span>
                                 
@@ -699,15 +750,72 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     );
                 })}
 
-                {nxtArr.map((nxt, idx) => (
-                    <div key={'n'+idx} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 fade-next relative overflow-hidden">
-                        <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-1">Próximo: {nxt.Horario.split(' ')[0]}</p>
-                        <div className="flex items-center gap-2 opacity-70"><div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px]" style={{background:nxt.Cor||'#000'}}>{nxt.Nome_Profissional[0]}</div><div><p className="text-[9px] font-black truncate max-w-[100px] text-slate-800 dark:text-white">{nxt.Nome_Profissional}</p></div></div>
-                    </div>
-                ))}
+                {nxtArr.map((nxt, idx) => {
+                    const pInfoNxt = profs.find(p => p.Nome === nxt.Nome_Profissional) || {};
+                    return (
+                        <div key={'n'+idx} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 fade-next relative overflow-hidden">
+                            <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-1">Próximo: {nxt.Horario.split(' ')[0]}</p>
+                            <div className="flex items-center gap-2 opacity-70">
+                                {pInfoNxt.FotoURL ? 
+                                    <img src={fmtImg(pInfoNxt.FotoURL)} className="w-5 h-5 rounded-full object-cover shrink-0" /> : 
+                                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px]" style={{background:nxt.Cor||'#000'}}>{nxt.Nome_Profissional[0]}</div>
+                                }
+                                <div className="truncate max-w-[100px] flex items-center gap-1">
+                                    <p className="text-[9px] font-black text-slate-800 dark:text-white truncate">{nxt.Nome_Profissional}</p>
+                                    {pInfoNxt.CodUnimed && <div className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></div>}
+                                </div>
+                            </div>
+                        </div>
+                    )
+                })}
             </div>
         );
     };
+
+    // MODO PESQUISA GLOBAL ATIVADO
+    if(buscaGlobal.trim() !== '') {
+        const termo = buscaGlobal.toLowerCase();
+        // Filtra todas as escalas de hoje (exceto folgas definitivas) que o nome bate
+        const escalasEncontradas = escHjRaw.filter(e => e.Status !== 'FOLGA' && safeStr(e.Nome_Profissional).toLowerCase().includes(termo));
+        
+        // Descobre quais postos precisam ser renderizados
+        const postosParaRenderizar = Array.from(new Set(escalasEncontradas.map(e => e.Sala)));
+
+        return (
+            <div className="animate-fade-in space-y-8 max-w-[1600px] mx-auto pb-10">
+                <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                    <h2 className="text-2xl font-black flex items-center gap-2"><i className="ph-bold ph-radar text-primary"></i> Radar de Pessoas</h2>
+                    <div className="relative w-full md:w-96">
+                        <i className="ph-bold ph-magnifying-glass absolute left-4 top-4 text-slate-400"></i>
+                        <input type="text" placeholder="Digite o nome..." value={buscaGlobal} onChange={e=>setBuscaGlobal(e.target.value)} className="w-full p-4 pl-12 rounded-2xl border-2 border-primary outline-none bg-white dark:bg-slate-900 font-bold shadow-lg" autoFocus/>
+                        <button onClick={()=>setBuscaGlobal('')} className="absolute right-4 top-4 text-slate-400 hover:text-red-500"><i className="ph-bold ph-x"></i></button>
+                    </div>
+                </div>
+
+                {postosParaRenderizar.length === 0 ? (
+                    <div className="p-20 text-center opacity-50 border-2 border-dashed rounded-2xl">
+                        <i className="ph-bold ph-ghost text-6xl mb-4"></i>
+                        <p className="font-bold text-lg">Nenhum plantão ativo hoje para "{buscaGlobal}"</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {postosParaRenderizar.map((nomeSala, i) => {
+                            const ocup = escHjRaw.filter(e => e.Sala === nomeSala && e.Status !== 'FOLGA');
+                            const postoInfo = postosSis.find(p => p.nome === nomeSala) || {setor: 'Geral'};
+                            return (
+                                <div key={i} className="clean-card flex flex-col p-1 min-h-[140px] border-t-4 border-t-primary shadow-md">
+                                    <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-t-xl font-black text-[11px] uppercase tracking-widest text-center border-b border-blue-100 dark:border-blue-900/30 truncate px-2">
+                                        {nomeSala} <span className="block text-[8px] opacity-50 font-normal">{postoInfo.setor}</span>
+                                    </div>
+                                    {renderPosto(nomeSala, ocup)}
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
+            </div>
+        )
+    }
 
     if(!actU) {
         return (
@@ -733,13 +841,12 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     )}
                 </div>
 
-                {cfg?.showDash !== false && (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                        <div className="clean-card p-5 text-center border-b-4 border-b-green-500"><p className="text-[10px] font-black opacity-50 uppercase tracking-widest">Em Plantão (Hoje)</p><h3 className="text-4xl font-black text-green-600 mt-1">{qAtivos}</h3></div>
-                        <div className="clean-card p-5 text-center border-b-4 border-b-slate-300 dark:border-b-slate-600"><p className="text-[10px] font-black opacity-50 uppercase tracking-widest">Folga</p><h3 className="text-4xl font-black text-slate-400 mt-1">{qFolga}</h3></div>
-                        <div className="clean-card p-5 text-center border-b-4 border-b-red-500"><p className="text-[10px] font-black opacity-50 uppercase tracking-widest">Licenças / Afastados</p><h3 className="text-4xl font-black text-red-500 mt-1">{qAfastados}</h3></div>
-                    </div>
-                )}
+                {/* BARRA DE PESQUISA RÁPIDA NA HOME */}
+                <div className="relative max-w-2xl mx-auto">
+                    <i className="ph-bold ph-magnifying-glass absolute left-4 top-4 text-slate-400 text-xl"></i>
+                    <input type="text" placeholder="Onde a pessoa está? Digite o nome aqui..." value={buscaGlobal} onChange={e=>setBuscaGlobal(e.target.value)} className="w-full p-4 pl-12 rounded-2xl border border-slate-200 dark:border-slate-700 outline-none bg-white dark:bg-slate-800 font-bold shadow-sm focus:border-primary transition" />
+                </div>
+
                 <h2 className="text-2xl font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-hospital text-primary"></i> Selecione a Unidade</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {unids.map((u,i) => (
@@ -771,7 +878,6 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                         <h3 className="text-lg font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2"><i className="ph-fill ph-squares-four opacity-50"></i> {setor}</h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                             {postosSetor.map((pst, i) => {
-                                // O FILTRO MÁGICO: Esconde quem está de Folga ou Ausente do Mapa
                                 const ocup = escHjRaw.filter(e => e.Sala === pst.nome && e.Status !== 'FOLGA' && e.Status !== 'AUSENTE');
                                 return (
                                     <div key={i} className={`clean-card flex flex-col p-1 min-h-[140px] border-t-4 ${ocup.length===0?'opacity-70 border-t-slate-300 dark:border-t-slate-600':'border-t-primary shadow-md'}`}>
@@ -839,6 +945,174 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     );
 };
 
+// ================== ABA 5: VISÃO AMPLA (MAPA DE GANTT) ==================
+const GanttView = ({ profs, escalas, cfg }) => {
+    const [viewMode, setViewMode] = useState('MENU');
+    const [diaAtual, setDiaAtual] = useState(new Date());
+    const [buscaGantt, setBuscaGantt] = useState('');
+
+    const dStr = getStrDt(diaAtual);
+    
+    // Função para converter "08:00" em número (ex: 8.5)
+    const parseHorario = (hStr) => {
+        if(!hStr) return null;
+        let parts = hStr.split(':');
+        if(parts.length < 2) return null;
+        return parseInt(parts[0]) + (parseInt(parts[1])/60);
+    }
+
+    // Filtra escalas do dia e do grupo selecionado
+    const escalasDiaGrupo = useMemo(() => {
+        if (viewMode === 'MENU') return [];
+        return escalas.filter(e => {
+            if (e.Data !== dStr) return false;
+            // Pega o tipo do profissional
+            const pInfo = profs.find(p => p.Nome === e.Nome_Profissional);
+            const tipo = pInfo ? pInfo.Tipo : (e.Cargo.toLowerCase().includes('médico') ? 'Médico' : 'Colaborador');
+            return tipo === viewMode;
+        });
+    }, [escalas, dStr, viewMode, profs]);
+
+    // Aplica o filtro de busca de nome
+    const escalasFiltradas = escalasDiaGrupo.filter(e => safeStr(e.Nome_Profissional).toLowerCase().includes(buscaGantt.toLowerCase()));
+
+    // Descobre o menor e o maior horário do dia para montar a régua
+    const limites = useMemo(() => {
+        let minH = 24; let maxH = 0;
+        escalasDiaGrupo.forEach(e => {
+            if (e.Horario && e.Horario !== 'A DEFINIR' && e.Status !== 'FOLGA') {
+                const [inH, outH] = e.Horario.split(' às ');
+                const valIn = parseHorario(inH?.trim());
+                const valOut = parseHorario(outH?.trim());
+                if(valIn !== null && valIn < minH) minH = Math.floor(valIn);
+                if(valOut !== null && valOut > maxH) maxH = Math.ceil(valOut);
+            }
+        });
+        if(minH === 24) minH = 6; // Default se vazio
+        if(maxH === 0) maxH = 20;
+        // Evita réguas muito pequenas
+        if(maxH - minH < 6) { minH = 8; maxH = 18; }
+        
+        // Garante que maxH não passe de 24. E se o turno vira a noite (ex sai as 02:00), precisa de ajuste complexo, mas assumimos dia atual por enquanto.
+        if (maxH <= minH) maxH = minH + 12;
+
+        return { min: minH, max: maxH, range: maxH - minH };
+    }, [escalasDiaGrupo]);
+
+    const horasRegua = Array.from({length: limites.range + 1}, (_, i) => limites.min + i);
+
+    return (
+        <div className="animate-fade-in space-y-6 max-w-[1600px] mx-auto pb-10">
+            {viewMode === 'MENU' && (
+                <div>
+                    <h2 className="text-2xl font-black mb-6">Visão Ampla (Gráfico Temporal)</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-primary hover:shadow-lg transition-all">
+                            <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-chart-gantt"></i></div>
+                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Equipe Base</h3>
+                        </div>
+                        <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-red-500 hover:shadow-lg transition-all">
+                            <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-chart-gantt"></i></div>
+                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Corpo Clínico</h3>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {viewMode !== 'MENU' && (
+                <div className="animate-fade-in space-y-4">
+                    <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
+                        <div className="flex items-center gap-4">
+                            <button onClick={()=>{setViewMode('MENU'); setBuscaGantt('');}} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button>
+                            <div>
+                                <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Painel Gantt</p>
+                                <h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Corpo Clínico' : 'Colaboradores'}</h2>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-4 bg-white dark:bg-slate-800 p-2 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                            <button onClick={()=>setDiaAtual(new Date(diaAtual.setDate(diaAtual.getDate() - 1)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded"><i className="ph-bold ph-caret-left"></i></button>
+                            <span className="font-black text-sm uppercase tracking-widest min-w-[100px] text-center">{dStr}</span>
+                            <button onClick={()=>setDiaAtual(new Date(diaAtual.setDate(diaAtual.getDate() + 1)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded"><i className="ph-bold ph-caret-right"></i></button>
+                        </div>
+
+                        <div className="relative md:w-64">
+                            <input type="text" placeholder="Filtrar por nome..." value={buscaGantt} onChange={e=>setBuscaGantt(e.target.value)} className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-white dark:bg-slate-800 font-bold" />
+                        </div>
+                    </div>
+
+                    <div className="clean-card bg-white dark:bg-slate-900 overflow-x-auto">
+                        <div className="min-w-[800px] gantt-grid">
+                            {/* Cabeçalho */}
+                            <div className="gantt-header border-r border-slate-200 dark:border-slate-700">Local / Unidade</div>
+                            <div className="gantt-header border-r border-slate-200 dark:border-slate-700">Setor / Posto</div>
+                            <div className="gantt-header flex justify-between relative">
+                                {horasRegua.map((hr, i) => (
+                                    <div key={i} className="absolute text-[9px] opacity-40 font-black" style={{left: `${(i/limites.range)*100}%`, transform: 'translateX(-50%)'}}>{String(hr).padStart(2,'0')}:00</div>
+                                ))}
+                            </div>
+
+                            {/* Linhas */}
+                            {escalasFiltradas.length === 0 ? (
+                                <div className="col-span-3 p-10 text-center font-bold opacity-50">Nenhum plantão registrado para esta data.</div>
+                            ) : (
+                                escalasFiltradas.sort((a,b)=> safeStr(a.Unidade).localeCompare(safeStr(b.Unidade))).map((e, idx) => {
+                                    
+                                    const pInfo = profs.find(p => p.Nome === e.Nome_Profissional) || {};
+                                    const isFolga = e.Status === 'FOLGA';
+                                    
+                                    // Cálculo de posicionamento da barra
+                                    let leftPerc = 0; let widthPerc = 100;
+                                    let barColor = isFolga ? '#94a3b8' : (e.Cor || '#0ea5e9');
+
+                                    if (!isFolga && e.Horario && e.Horario !== 'A DEFINIR') {
+                                        const [inH, outH] = e.Horario.split(' às ');
+                                        const valIn = parseHorario(inH?.trim());
+                                        let valOut = parseHorario(outH?.trim());
+                                        
+                                        if (valIn !== null && valOut !== null) {
+                                            if(valOut < valIn) valOut += 24; // Virada de noite simples
+                                            
+                                            leftPerc = ((valIn - limites.min) / limites.range) * 100;
+                                            widthPerc = ((valOut - valIn) / limites.range) * 100;
+                                            
+                                            // Trava visual para não estourar a tela
+                                            if(leftPerc < 0) { widthPerc += leftPerc; leftPerc = 0; }
+                                            if(leftPerc + widthPerc > 100) widthPerc = 100 - leftPerc;
+                                        }
+                                    }
+
+                                    return (
+                                        <React.Fragment key={e.ID || idx}>
+                                            <div className="gantt-cell uppercase text-[10px] opacity-70">{e.Unidade || 'Geral'}</div>
+                                            <div className="gantt-cell uppercase text-[11px] truncate" title={e.Sala}>{e.Sala}</div>
+                                            <div className="gantt-cell p-0 gantt-timeline-container">
+                                                {e.Horario === 'A DEFINIR' ? (
+                                                    <div className="text-[10px] text-red-500 font-black pl-4">HORÁRIO A DEFINIR</div>
+                                                ) : (
+                                                    <div className="gantt-bar shadow-md" style={{left: `${leftPerc}%`, width: `${widthPerc}%`, backgroundColor: barColor}} title={`${e.Nome_Profissional} (${e.Horario})`}>
+                                                        <div className="flex items-center gap-1.5 w-full">
+                                                            {pInfo.FotoURL ? <img src={fmtImg(pInfo.FotoURL)} className="w-4 h-4 rounded-full object-cover shrink-0" /> : <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center shrink-0">{e.Nome_Profissional[0]}</div>}
+                                                            <span className="truncate">{e.Nome_Profissional}</span>
+                                                            <BadgeConvenio codUnimed={pInfo.CodUnimed} configLogo={cfg?.logoConvenio} />
+                                                            {!isFolga && <span className="opacity-70 ml-auto shrink-0 font-normal">{e.Horario}</span>}
+                                                            {isFolga && <span className="opacity-70 ml-auto shrink-0 font-normal">FOLGA</span>}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </React.Fragment>
+                                    )
+                                })
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 // ================== APP ROOT ==================
 const App = () => {
     const [u, setU] = useState(null); const [l, setL] = useState(true); const [t, setT] = useState('HOJE');
@@ -876,9 +1150,11 @@ const App = () => {
 
     const isAd = u.nivel === 'Admin' || u.nivel === 'Supervisor';
     
+    // NOVO MENU COM VISÃO AMPLA GANTT
     const menu = [ 
         {id:'HOJE', i:'ph-kanban', n:'Plantão'}, 
         {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas'}, 
+        {id:'GANTT', i:'ph-chart-gantt', n:'Visão Ampla'}, 
         {id:'EQUIPE', i:'ph-users', n:'Equipe', adminOnly:true}, 
         {id:'CONFIG', i:'ph-gear', n:'Ajustes', adminOnly:true} 
     ];
@@ -893,10 +1169,11 @@ const App = () => {
             <nav className="md:hidden fixed bottom-0 inset-x-0 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around p-2 pb-safe bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">{menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`flex flex-col items-center gap-1 p-2 rounded-xl w-16 transition ${t===m.id?'text-primary':'text-slate-400'}`}><i className={`ph-fill ${m.i} text-2xl`}></i><span className="text-[9px] font-black uppercase">{m.n}</span></button>)}</nav>
             
             <main className="flex-1 transition-all p-4 md:p-8 w-full md:ml-64">
-                {(t==='HOJE'||t==='CALENDARIO') && <div className="max-w-[1600px] mx-auto"><TopHeader user={u} isDark={isD} toggleDark={()=>setIsD(!isD)} /></div>}
+                {(t==='HOJE'||t==='CALENDARIO'||t==='GANTT') && <div className="max-w-[1600px] mx-auto"><TopHeader user={u} isDark={isD} toggleDark={()=>setIsD(!isD)} /></div>}
                 
                 {t==='HOJE' && <PainelHojeView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
                 {t==='CALENDARIO' && <CalendarioView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
+                {t==='GANTT' && <GanttView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} />}
                 {t==='EQUIPE' && isAd && <EquipeView data={dbD.PROFISSIONAIS} cfg={dbD.CONFIGURACOES || {}} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={f} />}
                 {t==='CONFIG' && isAd && <AjustesView cfg={dbD.CONFIGURACOES || {}} onSave={api.saveRecord} onRefresh={f} />}
             </main>
@@ -905,4 +1182,3 @@ const App = () => {
 };
 const root = ReactDOM.createRoot(document.getElementById('root')); root.render(<ErrorBoundary><App /></ErrorBoundary>);
 </script></body></html>
-
