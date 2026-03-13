@@ -16,14 +16,20 @@
     document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
     document.getElementById('pwa-icon').href = svgIcon;
   });
-  window.addEventListener('error', e => { 
-    document.body.innerHTML = `<div style="background:#fee2e2;color:#991b1b;padding:40px;text-align:center;"><h1>Erro Detectado</h1><p>${e.message} (Linha ${e.lineno})</p><button onclick="location.reload()" style="padding:10px 20px; background:#991b1b; color:white; border-radius:8px; margin-top:20px;">Recarregar</button></div>`; 
-  });
 </script>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
-  tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:'#0ea5e9',secondary:'#1E40AF',accent:'#10b981'},animation:{'fade-in':'fadeIn 0.3s ease-out'},keyframes:{fadeIn:{'0%':{opacity:'0',transform:'translateY(10px)'},'100%':{opacity:'1',transform:'translateY(0)'}}}}}}
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: { primary: '#0ea5e9', secondary: '#1E40AF', accent: '#10b981' },
+        animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
+        keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+      }
+    }
+  }
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -36,44 +42,41 @@
 
 <style>
   body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; background: transparent; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
-  .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
-  .hide-scroll::-webkit-scrollbar { display: none; }
-  .clean-card { background-color: #ffffff; border-radius: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.2s ease; }
-  .dark .clean-card { background-color: #1e293b; border-color: #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); color: #f8fafc; }
+  .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+  
+  .clean-card { 
+    background-color: #ffffff; border-radius: 1.5rem; border: 1px solid #e2e8f0; 
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.2s ease; 
+  }
+  .dark .clean-card { 
+    background-color: #1e293b; border-color: #334155; 
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); color: #f8fafc; 
+  }
   .clean-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08); }
   .dark .clean-card:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
-  
-  /* MATRIZ DE GANTT VERTICAL */
-  .matrix-container { display: flex; overflow-x: auto; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; max-height: 75vh; }
-  .dark .matrix-container { background: #0f172a; border-color: #334155; }
-  .matrix-time-col { position: sticky; left: 0; width: 60px; min-width: 60px; background: #f8fafc; z-index: 40; border-right: 2px solid #e2e8f0; }
-  .dark .matrix-time-col { background: #1e293b; border-color: #334155; }
-  .matrix-header { height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; font-size: 11px; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; background: #f8fafc; z-index: 50; }
-  .dark .matrix-header { border-color: #334155; background: #1e293b; }
-  .matrix-time-cell { height: 60px; display: flex; align-items: flex-start; justify-content: center; padding-top: 4px; font-size: 10px; font-weight: 900; color: #94a3b8; border-bottom: 1px solid #f1f5f9; }
-  .dark .matrix-time-cell { border-color: #334155; color: #64748b; }
-  .matrix-data-col { min-width: 140px; flex: 1; border-right: 1px solid #f1f5f9; position: relative; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #f1f5f9 59px, #f1f5f9 60px); }
-  .dark .matrix-data-col { border-color: #334155; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #1e293b 59px, #1e293b 60px); }
-  .matrix-block { position: absolute; left: 4px; right: 4px; border-radius: 8px; padding: 6px; color: white; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s; z-index: 10; border: 1px solid rgba(255,255,255,0.2); }
-  .matrix-block:hover { transform: scale(1.02); z-index: 25; filter: brightness(1.1); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
-  .matrix-now-line { position: absolute; left: 0; right: 0; height: 2px; background-color: #ef4444; z-index: 20; pointer-events: none; box-shadow: 0 0 5px rgba(239,68,68,0.5); }
-  .matrix-now-line::before { content: ''; position: absolute; left: 0; top: -4px; width: 10px; height: 10px; border-radius: 50%; background-color: #ef4444; }
+
+  /* CSS Otimizado para o Gantt Vertical */
+  .agenda-scroll { max-height: 70vh; overflow-y: auto; overflow-x: auto; }
+  .col-hora { position: sticky; left: 0; min-width: 60px; z-index: 30; }
+  .header-fixo { position: sticky; top: 0; z-index: 40; }
+  .cruzamento-fixo { position: sticky; top: 0; left: 0; z-index: 50; }
 </style>
 <script>
-  const VERSAO_ATUAL = "47.0.0";
-  if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { 
+  if (localStorage.getItem('escalas_versao') !== "50.0.0") { 
     localStorage.clear(); sessionStorage.clear(); 
-    localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); 
+    localStorage.setItem('escalas_versao', "50.0.0"); window.location.reload(); 
   }
 </script>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300">
 <div id="root"></div>
+
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, Component, useMemo } = React;
 
+// CONFIGURAÇÃO FIREBASE
 const firebaseConfig = { 
   apiKey: "AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c", 
   authDomain: "escalas-sao-vicente.firebaseapp.com", 
@@ -82,12 +85,11 @@ const firebaseConfig = {
   messagingSenderId: "256697542067", 
   appId: "1:256697542067:web:b8087390bb57d74def97c6" 
 };
+
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore(); 
 const auth = firebase.auth();
-
-// LIGA O MODO ECONÔMICO DE LEITURAS (CACHE LOCAL)
-db.enablePersistence({synchronizeTabs:true}).catch(e => console.log("Aviso de Cache: ", e));
+db.enablePersistence({synchronizeTabs:true}).catch(e => console.log(e));
 
 const api = {
   fetch: async (c) => { 
@@ -95,8 +97,12 @@ const api = {
     catch(e){ return []; } 
   },
   saveRecord: async (c, d) => { 
-    try { let o={...d}; let id=o.ID; delete o.ID; if(id) await db.collection(c).doc(id).set(o,{merge:true}); else await db.collection(c).add(o); return true; } 
-    catch(e){ return false; } 
+    try { 
+      let o = {...d}; let id = o.ID; delete o.ID; 
+      if(id) await db.collection(c).doc(id).set(o, {merge:true}); 
+      else await db.collection(c).add(o); 
+      return true; 
+    } catch(e){ return false; } 
   },
   deleteRecord: async (c, id) => { 
     try { await db.collection(c).doc(id).delete(); return true; } 
@@ -104,110 +110,107 @@ const api = {
   }
 };
 
+// FUNÇÕES AUXILIARES GERAIS
 const safeStr = (v) => v == null ? '' : String(v);
-
 const fmtImg = (u) => { 
   let s = safeStr(u).trim(); if(!s) return ''; 
   const match = s.match(/(?:file\/d\/|id=|v\/|u\/\d+\/p\/)([a-zA-Z0-9_-]{25,})/);
   if(match) return `https://drive.google.com/uc?export=view&id=${match[1]}`; 
   return s; 
 };
-
-const getStrDt = (d) => { 
-  if(!d) return ''; 
-  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); 
+const getStrDt = (d) => d ? String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear() : '';
+const ordenarPorNome = (lista) => [...lista].sort((a, b) => safeStr(a.Nome).localeCompare(safeStr(b.Nome)));
+const checkIsMe = (nome, email) => {
+  if(!nome || !email) return false;
+  const p = safeStr(email).toLowerCase().split('@')[0].split(/[.\-_]/);
+  const n = safeStr(nome).toLowerCase();
+  return p.some(x => x.length > 2 && n.includes(x));
 };
 
-const ordenarPorNome = (lista) => {
-  return [...lista].sort((a, b) => safeStr(a.Nome).localeCompare(safeStr(b.Nome)));
-};
-
-const checkIsMe = (nomeProfissional, userEmail) => {
-  if(!nomeProfissional || !userEmail) return false;
-  const norm = (s) => safeStr(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const parts = norm(userEmail).split('@')[0].split(/[.\-_]/);
-  const nProf = norm(nomeProfissional);
-  return parts.some(p => p.length > 2 && nProf.includes(p));
-};
-
-// O NOVO FILTRO CAÇA-FANTASMAS
+// FILTRO CAÇA-FANTASMAS
 const isEscalaValida = (esc, postosCfg) => {
   const sala = safeStr(esc.Sala).trim().toUpperCase();
-  const salasOficiais = ['A DEFINIR', 'FOLGA', 'FÉRIAS', 'ATESTADO', 'TRABALHO EXTERNO', 'OUTROS'];
-  if (salasOficiais.includes(sala)) return true;
-  const postosList = postosCfg || [];
-  return postosList.some(p => safeStr(p.nome).trim().toUpperCase() === sala);
+  if (['A DEFINIR', 'FOLGA', 'FÉRIAS', 'ATESTADO', 'TRABALHO EXTERNO', 'OUTROS'].includes(sala)) return true;
+  return (postosCfg || []).some(p => safeStr(p.nome).trim().toUpperCase() === sala);
 };
 
-// OBTEM A COR DO SETOR PARA O GANTT
 const getCorDaSala = (salaNome, cfg) => {
-  const psts = cfg?.postos || []; const sets = cfg?.setores || [];
-  const p = psts.find(x => safeStr(x.nome).trim().toUpperCase() === safeStr(salaNome).trim().toUpperCase());
+  const p = (cfg?.postos || []).find(x => safeStr(x.nome).trim().toUpperCase() === safeStr(salaNome).trim().toUpperCase());
   if(!p) return '#94a3b8'; 
-  const s = sets.find(x => safeStr(x.nome).trim().toUpperCase() === safeStr(p.setor).trim().toUpperCase());
+  const s = (cfg?.setores || []).find(x => safeStr(x.nome).trim().toUpperCase() === safeStr(p.setor).trim().toUpperCase());
   return s?.cor || '#0ea5e9';
 };
 
+// LOGICA DE TEMPO
 const parseHorario = (hStr) => {
   if(!hStr || hStr === 'A DEFINIR') return null;
   let parts = hStr.split(':'); if(parts.length < 2) return null;
   return parseInt(parts[0]) + (parseInt(parts[1])/60);
 };
 
-const BadgeConvenio = ({ codUnimed, configLogo }) => {
-  if(!codUnimed) return null;
-  if(configLogo) return <img src={fmtImg(configLogo)} className="h-4 w-auto inline-block ml-2 rounded-sm bg-white" title={`Unimed: ${codUnimed}`} />;
-  return <span className="ml-2 bg-green-500 text-white text-[8px] px-1.5 py-0.5 rounded font-black">CONVÊNIO</span>;
+// COMPONENTES MENORES
+const BadgeConvenio = ({ cod, logo }) => {
+  if(!cod) return null;
+  if(logo) return <img src={fmtImg(logo)} className="h-4 w-auto inline-block ml-1 rounded-sm bg-white" title={`Unimed: ${cod}`} />;
+  return <span className="ml-1 bg-green-500 text-white text-[8px] px-1 rounded font-black">CONV.</span>;
 };
 
 class ErrorBoundary extends Component {
-  constructor(props) { super(props); this.state = { hasError: false, e: '' }; } 
-  static getDerivedStateFromError(e) { return { hasError: true }; } 
-  componentDidCatch(e) { this.setState({ e: String(e) }); }
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError(error) { return { hasError: true }; }
   render() { 
-    if (this.state.hasError) return <div className="p-10 text-center text-red-500 font-bold">Erro detectado. Recarregue a página.<br/><button onClick={()=>location.reload()} className="mt-4 bg-red-500 text-white p-2 rounded">Recarregar</button></div>; 
+    if (this.state.hasError) return <div className="p-10 text-center text-red-500 font-bold">Ocorreu um erro na tela. <button onClick={()=>location.reload()} className="underline ml-2">Recarregar</button></div>; 
     return this.props.children; 
   }
 }
 
 const TopHeader = ({ user, isDark, toggleDark }) => {
-  const [t, setT] = useState(new Date()); 
+  const [t, setT] = useState(new Date());
   useEffect(() => { const i = setInterval(() => setT(new Date()), 1000); return () => clearInterval(i); }, []);
   return (
     <div className="clean-card p-6 mb-6 flex justify-between items-center">
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-3xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"><i className="ph-fill ph-hospital"></i></div>
-        <div><h2 className="text-2xl font-black">{t.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</h2><p className="text-[10px] font-bold uppercase opacity-60 mt-1">Olá, {user?.nome?.split(' ')[0]}</p></div>
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-3xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+          <i className="ph-fill ph-hospital"></i>
+        </div>
+        <div>
+          <h2 className="text-2xl font-black">{t.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</h2>
+          <p className="text-[10px] font-bold uppercase opacity-60 mt-1">Olá, {user?.nome?.split(' ')[0]}</p>
+        </div>
       </div>
       <div className="flex items-center gap-4">
-        <button onClick={toggleDark} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex justify-center items-center text-xl"><i className={isDark ? "ph-fill ph-sun text-yellow-400" : "ph-fill ph-moon"}></i></button>
-        <button onClick={() => auth.signOut()} className="md:hidden w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 flex justify-center items-center text-xl text-red-500"><i className="ph-bold ph-sign-out"></i></button>
+        <button onClick={toggleDark} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex justify-center items-center text-xl hover:scale-110 transition">
+          <i className={isDark ? "ph-fill ph-sun text-yellow-400" : "ph-fill ph-moon"}></i>
+        </button>
+        <button onClick={() => auth.signOut()} className="md:hidden w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 flex justify-center items-center text-xl text-red-500 hover:scale-110 transition">
+          <i className="ph-bold ph-sign-out"></i>
+        </button>
       </div>
     </div>
   );
 };
 
-// ================== SUPER MODAL ==================
+// ================== SUPER MODAL (GERENCIAR ESCALA) ==================
 const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd }) => {
   const [fd, setFd] = useState({...escala});
   const isMedico = fd.Cargo?.toLowerCase().includes('médico') || profs.find(p=>p.Nome===fd.Nome_Profissional)?.Tipo === 'Médico';
-  const profsOrdenados = ordenarPorNome(profs);
-  const colabsL = profsOrdenados.filter(p => p.Tipo === 'Colaborador' && p.StatusGeral === 'Ativo');
-  const medsA = profsOrdenados.filter(p => p.Tipo === 'Médico' && p.StatusGeral === 'Ativo');
+  const pOrd = ordenarPorNome(profs);
 
   const handleSave = async (e) => {
     e.preventDefault();
     if (fd.Nome_Profissional === "VAZIO") {
-      if (confirm("Deseja realmente excluir este plantão?")) { await api.deleteRecord('ESCALAS', fd.ID); onRefresh(); onClose(); }
+      if (confirm("Excluir este plantão permanentemente?")) { await api.deleteRecord('ESCALAS', fd.ID); onRefresh(); onClose(); }
       return;
     }
     const pInfo = profs.find(p => p.Nome === fd.Nome_Profissional);
     if(pInfo) { fd.Cor = pInfo.Cor; fd.Cargo = pInfo.Cargo; }
-    await onSave('ESCALAS', fd); onRefresh(); onClose();
+    await onSave('ESCALAS', fd); 
+    onRefresh(); 
+    onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 animate-fade-in" onClick={onClose}>
       <div className="clean-card w-full max-w-md p-6 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e=>e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4 border-b dark:border-slate-700 pb-2">
           <h3 className="text-xl font-black text-primary flex items-center gap-2"><i className="ph-fill ph-sliders"></i> Gerenciar Escala</h3>
@@ -215,16 +218,16 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
         </div>
         <form onSubmit={handleSave} className="space-y-4">
           <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700">
-            <p className="text-[10px] font-black uppercase opacity-60">Data</p><p className="font-bold">{fd.Data}</p>
+            <p className="text-[10px] font-black uppercase opacity-60">Data Ref.</p><p className="font-bold">{fd.Data}</p>
           </div>
           {isAd && (
             <div>
-              <label className="text-[10px] font-black uppercase opacity-60 text-blue-600 dark:text-blue-400">Transferir Plantão</label>
+              <label className="text-[10px] font-black uppercase opacity-60 text-blue-600 dark:text-blue-400">Transferir Plantão / Substituir</label>
               <select value={fd.Nome_Profissional} onChange={e=>setFd({...fd, Nome_Profissional: e.target.value})} className="w-full p-3 border rounded-xl bg-blue-50 dark:bg-slate-900 text-blue-700 dark:text-blue-400 font-bold dark:border-slate-700 outline-none">
                 <option value={fd.Nome_Profissional}>Manter: {fd.Nome_Profissional}</option>
                 <option value="VAZIO">🗑️ DEIXAR POSTO VAZIO (Excluir)</option>
                 <option disabled>──────────</option>
-                {profsOrdenados.filter(p => p.Nome !== fd.Nome_Profissional).map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+                {pOrd.filter(p => p.Nome !== fd.Nome_Profissional).map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
               </select>
             </div>
           )}
@@ -254,28 +257,28 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
           </div>
           {isMedico ? (
             <div className="bg-purple-50 dark:bg-purple-900/10 p-3 rounded-xl border border-purple-200 dark:border-purple-900/30">
-              <label className="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase mb-1 flex"><i className="ph-fill ph-user-plus mr-1"></i> Auxiliar</label>
-              <select value={fd.Auxiliar||''} onChange={e=>setFd({...fd, Auxiliar:e.target.value})} className="w-full p-2 border rounded dark:bg-slate-800 font-bold text-sm">
+              <label className="text-[10px] font-black text-purple-600 dark:text-purple-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-user-plus mr-1"></i> Auxiliar de Sala</label>
+              <select value={fd.Auxiliar||''} onChange={e=>setFd({...fd, Auxiliar:e.target.value})} className="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-700 text-sm font-bold outline-none">
                 <option value="">Sem auxiliar</option>
-                {colabsL.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+                {pOrd.filter(p=>p.Tipo==='Colaborador').map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
               </select>
             </div>
           ) : (
             <div className="bg-indigo-50 dark:bg-indigo-900/10 p-3 rounded-xl border border-indigo-200 dark:border-indigo-900/30">
-              <label className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase mb-1 flex"><i className="ph-fill ph-stethoscope mr-1"></i> Apoio a Médico</label>
-              <select value={fd.MedicoApoio||''} onChange={e=>setFd({...fd, MedicoApoio:e.target.value})} className="w-full p-2 border rounded dark:bg-slate-800 font-bold text-sm">
-                <option value="">Geral</option>
-                {medsA.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+              <label className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-stethoscope mr-1"></i> Prestando Apoio Ao Médico</label>
+              <select value={fd.MedicoApoio||''} onChange={e=>setFd({...fd, MedicoApoio:e.target.value})} className="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-700 text-sm font-bold outline-none">
+                <option value="">Atendimento Geral</option>
+                {pOrd.filter(p=>p.Tipo==='Médico').map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
               </select>
             </div>
           )}
           <div>
-            <label className="text-[10px] font-black uppercase opacity-60">Anotações / Obs</label>
+            <label className="text-[10px] font-black uppercase opacity-60">Anotações / Motivo da Falta</label>
             <input type="text" value={fd.ObsDia||''} onChange={e=>setFd({...fd, ObsDia:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 outline-none"/>
           </div>
           <div className="flex justify-end gap-2 pt-4 border-t dark:border-slate-700">
-            <button type="button" onClick={onClose} className="px-4 py-3 font-bold opacity-60">Cancelar</button>
-            <button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black">Salvar</button>
+            <button type="button" onClick={onClose} className="px-4 py-3 font-bold opacity-60 hover:opacity-100 transition">Cancelar</button>
+            <button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black hover:bg-blue-600 transition">Salvar</button>
           </div>
         </form>
       </div>
@@ -284,58 +287,54 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
 };
 
 // ================== CRACHÁ VIRTUAL ==================
-const CrachaVirtual = ({ profInfo, cfg, onClose }) => {
-  return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 animate-fade-in" onClick={onClose}>
-      <div className="clean-card w-full max-w-sm p-0 overflow-hidden shadow-2xl relative" onClick={e=>e.stopPropagation()}>
-        <div className="h-24 bg-gradient-to-r from-primary to-blue-400 relative">
-          <button onClick={onClose} className="absolute top-4 right-4 text-white hover:scale-110"><i className="ph-bold ph-x text-xl"></i></button>
+const CrachaVirtual = ({ profInfo, cfg, onClose }) => (
+  <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 animate-fade-in" onClick={onClose}>
+    <div className="clean-card w-full max-w-sm p-0 overflow-hidden shadow-2xl relative" onClick={e=>e.stopPropagation()}>
+      <div className="h-24 bg-gradient-to-r from-primary to-blue-400 relative">
+        <button onClick={onClose} className="absolute top-4 right-4 text-white hover:scale-110"><i className="ph-bold ph-x text-xl"></i></button>
+      </div>
+      <div className="px-6 pb-6 pt-0 relative flex flex-col items-center text-center">
+        <div className="w-24 h-24 rounded-full border-4 border-white dark:border-slate-800 shadow-lg -mt-12 bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden mb-3" style={{backgroundColor:profInfo.FotoURL?'':(profInfo.Cor||'#0ea5e9')}}>
+          {profInfo.FotoURL ? <img src={fmtImg(profInfo.FotoURL)} className="w-full h-full object-cover" /> : <span className="text-4xl font-black text-white">{profInfo.Nome?.[0]}</span>}
         </div>
-        <div className="px-6 pb-6 pt-0 relative flex flex-col items-center text-center">
-          <div className="w-24 h-24 rounded-full border-4 border-white dark:border-slate-800 shadow-lg -mt-12 bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden mb-3" style={{backgroundColor:profInfo.FotoURL?'':(profInfo.Cor||'#0ea5e9')}}>
-            {profInfo.FotoURL ? <img src={fmtImg(profInfo.FotoURL)} className="w-full h-full object-cover" /> : <span className="text-4xl font-black text-white">{profInfo.Nome?.[0]}</span>}
+        <h3 className="text-xl font-black leading-tight flex items-center justify-center gap-1">
+          {profInfo.Nome} <BadgeConvenio cod={profInfo.CodUnimed} logo={cfg?.logoConvenio} />
+        </h3>
+        <p className="text-xs font-bold text-primary uppercase mt-1">{profInfo.Cargo}</p>
+        <div className="w-full mt-6 space-y-2 text-left">
+          <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700">
+            <p className="text-[9px] font-bold opacity-50 uppercase tracking-widest">Lotação Base</p>
+            <p className="text-xs font-black">{profInfo.UnidadeBase||'Geral'} • {profInfo.Setor||'-'}</p>
           </div>
-          <h3 className="text-xl font-black leading-tight flex items-center justify-center gap-2">
-            {profInfo.Nome} <BadgeConvenio codUnimed={profInfo.CodUnimed} configLogo={cfg?.logoConvenio} />
-          </h3>
-          <p className="text-xs font-bold text-primary uppercase mt-1">{profInfo.Cargo}</p>
-
-          <div className="w-full mt-6 space-y-2 text-left">
-            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700 flex items-center gap-3">
-              <i className="ph-fill ph-map-pin text-slate-400 text-xl"></i>
-              <div>
-                <p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Lotação Base</p>
-                <p className="text-xs font-black">{profInfo.UnidadeBase || 'Geral'} • {profInfo.Setor || '-'}</p>
-              </div>
+          {(profInfo.CRM || profInfo.CodUnimed) && (
+            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700 flex gap-4">
+              {profInfo.CRM && <div className="flex-1"><p className="text-[9px] font-bold opacity-50 uppercase tracking-widest">CRM</p><p className="text-xs font-black">{profInfo.CRM}</p></div>}
+              {profInfo.CodUnimed && <div className="flex-1"><p className="text-[9px] font-bold opacity-50 uppercase tracking-widest">Unimed</p><p className="text-xs font-black">{profInfo.CodUnimed}</p></div>}
             </div>
-            {(profInfo.CRM || profInfo.CodUnimed) && (
-              <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700 flex gap-4">
-                {profInfo.CRM && <div className="flex-1"><p className="text-[9px] uppercase font-bold opacity-50">CRM</p><p className="text-xs font-black">{profInfo.CRM}</p></div>}
-                {profInfo.CodUnimed && <div className="flex-1"><p className="text-[9px] uppercase font-bold opacity-50">Unimed</p><p className="text-xs font-black">{profInfo.CodUnimed}</p></div>}
-              </div>
-            )}
-            {profInfo.TipoContrato && (
-              <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700">
-                <p className="text-[9px] uppercase font-bold opacity-50">Contrato</p>
-                <p className="text-xs font-black">{profInfo.TipoContrato}</p>
-              </div>
-            )}
-            {profInfo.ObservacoesGerais && (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-xl border border-yellow-100 dark:border-yellow-900/30">
-                <p className="text-[9px] uppercase font-bold text-yellow-600 mb-0.5"><i className="ph-fill ph-info"></i> Obs</p>
-                <p className="text-xs text-yellow-800 dark:text-yellow-400">{profInfo.ObservacoesGerais}</p>
-              </div>
-            )}
-          </div>
+          )}
+          {profInfo.TipoContrato && (
+            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700">
+              <p className="text-[9px] font-bold opacity-50 uppercase tracking-widest">Vínculo</p>
+              <p className="text-xs font-black">{profInfo.TipoContrato}</p>
+            </div>
+          )}
+          {profInfo.ObservacoesGerais && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-xl border border-yellow-100 dark:border-yellow-900/30">
+              <p className="text-[9px] font-bold text-yellow-600 uppercase tracking-widest"><i className="ph-fill ph-info"></i> Observações</p>
+              <p className="text-xs text-yellow-800 dark:text-yellow-400">{profInfo.ObservacoesGerais}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
-  );
-};
-    // ================== ABA 1: AJUSTES ==================
+  </div>
+);
+
+// ================== ABA 1: AJUSTES (CONFIGURAÇÕES GERAIS) ==================
 const AjustesView = ({ cfg, onSave, onRefresh }) => {
   const [u, setU] = useState([]); const [s, setS] = useState([]); const [p, setP] = useState([]); 
-  const [h, setH] = useState([]); const [a, setA] = useState([]); const [logoConv, setLogoConv] = useState(''); 
+  const [h, setH] = useState([]); const [a, setA] = useState([]); 
+  const [logoConv, setLogoConv] = useState(''); 
   const [loading, setL] = useState(false); const [mod, setMod] = useState(null); 
 
   useEffect(() => { 
@@ -344,33 +343,37 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
     setH(cfg?.habilidades||[]); setA(cfg?.ausencias||[]); setLogoConv(cfg?.logoConvenio||''); 
   }, [cfg]);
 
-  const salvar = async () => { setL(true); await onSave('CONFIGURACOES',{ID:'parametros',unidades:u,setores:s,postos:p,habilidades:h,ausencias:a,logoConvenio:logoConv}); onRefresh(); setL(false); alert("Salvo com sucesso!"); };
+  const salvar = async () => { 
+    setL(true); 
+    await onSave('CONFIGURACOES',{ID:'parametros',unidades:u,setores:s,postos:p,habilidades:h,ausencias:a,logoConvenio:logoConv}); 
+    onRefresh(); setL(false); alert("Salvo com sucesso no Banco de Dados!"); 
+  };
 
-  const confirmMod = (e) => {
+  const confirmMod = (e) => { 
     e.preventDefault(); const { t, act, idx, v1, v2, v3 } = mod; 
-    let n1 = v1.trim().toUpperCase(); let n2 = v2.trim().toUpperCase();
+    let n1 = v1.trim().toUpperCase(); let n2 = v2.trim().toUpperCase(); 
     if(t==='p'||t==='h'||t==='a') n1 = v1.trim(); 
     
-    if(act === 'add') {
-      if(t==='u') setU([...u, {nome:n1}]); if(t==='s') setS([...s, {nome:n1, unidade:n2, cor:v3}]); if(t==='p') setP([...p, {nome:n1, setor:n2}]);
-      if(t==='h') setH([...h, n1]); if(t==='a') setA([...a, n1]);
-    } else {
+    if(act === 'add') { 
+      if(t==='u') setU([...u, {nome:n1}]); if(t==='s') setS([...s, {nome:n1, unidade:n2, cor:v3}]); if(t==='p') setP([...p, {nome:n1, setor:n2}]); 
+      if(t==='h') setH([...h, n1]); if(t==='a') setA([...a, n1]); 
+    } else { 
       if(t==='u'){ let arr=[...u]; arr[idx].nome=n1; setU(arr); } 
       if(t==='s'){ let arr=[...s]; arr[idx].nome=n1; arr[idx].unidade=n2; arr[idx].cor=v3; setS(arr); } 
       if(t==='p'){ let arr=[...p]; arr[idx].nome=n1; arr[idx].setor=n2; setP(arr); } 
       if(t==='h'){ let arr=[...h]; arr[idx]=n1; setH(arr); } 
-      if(t==='a'){ let arr=[...a]; arr[idx]=n1; setA(arr); }
-    }
-    setMod(null);
+      if(t==='a'){ let arr=[...a]; arr[idx]=n1; setA(arr); } 
+    } 
+    setMod(null); 
   };
 
-  const del = (t, i) => {
-    if(!confirm("Excluir item permanentemente?")) return;
-    if(t==='u') setU(u.filter((_,x)=>x!==i)); if(t==='s') setS(s.filter((_,x)=>x!==i)); if(t==='p') setP(p.filter((_,x)=>x!==i));
-    if(t==='h') setH(h.filter((_,x)=>x!==i)); if(t==='a') setA(a.filter((_,x)=>x!==i));
+  const del = (t, i) => { 
+    if(!confirm("Excluir item permanentemente?")) return; 
+    if(t==='u') setU(u.filter((_,x)=>x!==i)); if(t==='s') setS(s.filter((_,x)=>x!==i)); if(t==='p') setP(p.filter((_,x)=>x!==i)); 
+    if(t==='h') setH(h.filter((_,x)=>x!==i)); if(t==='a') setA(a.filter((_,x)=>x!==i)); 
   };
 
-  const List = ({title, arr, tipo}) => (
+  const Lst = ({title, arr, tipo}) => (
     <div className="clean-card p-5">
       <div className="flex justify-between items-center mb-2">
         <h3 className="font-black text-sm">{title}</h3>
@@ -379,17 +382,17 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
       <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
         {arr.map((item, i) => (
           <div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-2 rounded text-xs border dark:border-slate-700">
-            <div className="flex items-center gap-2">
-              {item.cor && <div className="w-3 h-3 rounded-full shadow-sm" style={{background:item.cor}}></div>}
-              <div>
-                <p className="font-bold">{item.nome||item}</p>
-                {item.unidade && <p className="text-[8px] opacity-60">Em: {item.unidade}</p>}
-                {item.setor && <p className="text-[8px] opacity-60">Setor: {item.setor}</p>}
+            <div className="flex items-center gap-2 overflow-hidden">
+              {item.cor && <div className="w-3 h-3 rounded-full shadow-sm shrink-0" style={{background:item.cor}}></div>}
+              <div className="truncate">
+                <p className="font-bold truncate">{item.nome||item}</p>
+                {item.unidade && <p className="text-[8px] opacity-60 truncate">Em: {item.unidade}</p>}
+                {item.setor && <p className="text-[8px] opacity-60 truncate">Setor: {item.setor}</p>}
               </div>
             </div>
-            <div className="flex gap-1 shrink-0">
-              <button onClick={()=>setMod({t:tipo, act:'edit', idx:i, v1:item.nome||item, v2:item.unidade||item.setor||'', v3:item.cor||'#0ea5e9'})} className="text-yellow-600 bg-yellow-100 p-1 rounded"><i className="ph-bold ph-pencil"></i></button>
-              <button onClick={()=>del(tipo, i)} className="text-red-600 bg-red-100 p-1 rounded"><i className="ph-bold ph-trash"></i></button>
+            <div className="flex gap-1 shrink-0 ml-2">
+              <button onClick={()=>setMod({t:tipo, act:'edit', idx:i, v1:item.nome||item, v2:item.unidade||item.setor||'', v3:item.cor||'#0ea5e9'})} className="text-yellow-600 bg-yellow-100 p-1.5 rounded hover:bg-yellow-200"><i className="ph-bold ph-pencil"></i></button>
+              <button onClick={()=>del(tipo, i)} className="text-red-600 bg-red-100 p-1.5 rounded hover:bg-red-200"><i className="ph-bold ph-trash"></i></button>
             </div>
           </div>
         ))}
@@ -398,47 +401,52 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
   );
 
   return (
-    <div className="animate-fade-in space-y-6 max-w-6xl mx-auto">
+    <div className="animate-fade-in space-y-6 max-w-6xl mx-auto pb-10">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-black">Ajustes & Parâmetros</h2>
-        <button onClick={salvar} disabled={loading} className="bg-primary text-white px-6 py-2 rounded-xl font-bold">Salvar Servidor</button>
+        <h2 className="text-2xl font-black">Ajustes & Configurações</h2>
+        <button onClick={salvar} disabled={loading} className="bg-primary text-white px-6 py-2 rounded-xl font-bold shadow hover:bg-blue-600 transition">Salvar Servidor</button>
       </div>
-      <div className="clean-card p-4 flex flex-col md:flex-row justify-between items-center bg-blue-50/50 dark:bg-slate-800/50 gap-4">
-        <div><h4 className="font-bold text-sm">Logo Convênio (UNIMED)</h4><p className="text-[10px] opacity-60">URL da imagem (Drive/Imgur) para exibir no card dos médicos</p></div>
-        <input type="text" value={logoConv} onChange={e=>setLogoConv(e.target.value)} placeholder="URL Imagem" className="p-3 rounded-xl border dark:border-slate-700 dark:bg-slate-900 w-full md:w-96 text-sm font-bold outline-none" />
+      <div className="clean-card p-4 flex flex-col md:flex-row justify-between md:items-center bg-blue-50/50 dark:bg-slate-800/50 gap-4">
+        <div><h4 className="font-bold text-sm">Logo Convênio (Ex: UNIMED)</h4><p className="text-[10px] opacity-60">Cole a URL pública da imagem para exibir no card dos médicos</p></div>
+        <input type="text" value={logoConv} onChange={e=>setLogoConv(e.target.value)} placeholder="Link Drive / Imgur" className="p-3 border rounded-xl dark:border-slate-700 dark:bg-slate-900 w-full md:w-96 text-sm outline-none" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <List title="1. Unidades/Prédios" arr={u} tipo="u"/>
-        <List title="2. Setores (Cores no Gantt)" arr={s} tipo="s"/>
-        <List title="3. Salas/Postos" arr={p} tipo="p"/>
-        <List title="Afastamentos/Licenças" arr={a} tipo="a"/>
-        <List title="Competências/Habilidades" arr={h} tipo="h"/>
+        <Lst title="1. Unidades/Prédios" arr={u} tipo="u"/>
+        <Lst title="2. Setores (Cores da Matriz)" arr={s} tipo="s"/>
+        <Lst title="3. Salas/Postos" arr={p} tipo="p"/>
+        <Lst title="Afastamentos e Licenças" arr={a} tipo="a"/>
+        <Lst title="Competências" arr={h} tipo="h"/>
       </div>
       {mod && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 animate-fade-in" onClick={()=>setMod(null)}>
           <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
-            <h3 className="text-xl font-black mb-4">Registro</h3>
+            <h3 className="text-xl font-black mb-4">Adicionar/Editar</h3>
             <form onSubmit={confirmMod} className="space-y-4">
-              <input type="text" value={mod.v1} onChange={e=>setMod({...mod, v1:e.target.value})} className="w-full p-3 rounded-xl border dark:border-slate-700 dark:bg-slate-900 font-bold text-sm" placeholder="Nome" required autoFocus/>
+              <input type="text" value={mod.v1} onChange={e=>setMod({...mod, v1:e.target.value})} className="w-full p-3 rounded-xl border dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" placeholder="Nome" required autoFocus/>
+              
               {mod.t === 's' && (
                 <>
-                  <select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 rounded-xl border dark:border-slate-700 dark:bg-slate-900 font-bold text-sm" required>
-                    <option value="">Unidade...</option>
+                  <select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 rounded-xl border dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required>
+                    <option value="">Vincular a qual Unidade?</option>
                     {u.map((x,i) => <option key={i} value={x.nome}>{x.nome}</option>)}
                   </select>
-                  <div><label className="text-[10px] font-black uppercase opacity-60">Cor do Setor</label>
-                  <input type="color" value={mod.v3} onChange={e=>setMod({...mod, v3:e.target.value})} className="w-full h-12 p-1 border rounded-xl dark:border-slate-700 cursor-pointer"/></div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase opacity-60">Cor dos blocos na Matriz Gantt</label>
+                    <input type="color" value={mod.v3} onChange={e=>setMod({...mod, v3:e.target.value})} className="w-full h-12 p-1 border rounded-xl dark:border-slate-700 cursor-pointer"/>
+                  </div>
                 </>
               )}
+              
               {mod.t === 'p' && (
-                <select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 rounded-xl border dark:border-slate-700 dark:bg-slate-900 font-bold text-sm" required>
-                  <option value="">Setor...</option>
+                <select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 rounded-xl border dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required>
+                  <option value="">Vincular a qual Setor?</option>
                   {s.map((x,i) => <option key={i} value={x.nome}>{x.nome}</option>)}
                 </select>
               )}
+              
               <div className="flex justify-end gap-2 pt-4 border-t dark:border-slate-700">
                 <button type="button" onClick={()=>setMod(null)} className="px-4 opacity-60 font-bold">Cancelar</button>
-                <button type="submit" className="bg-primary text-white p-3 rounded-xl font-bold">Confirmar</button>
+                <button type="submit" className="bg-primary text-white p-3 px-6 rounded-xl font-bold">Confirmar</button>
               </div>
             </form>
           </div>
@@ -467,16 +475,20 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
   const filtrados = ordenarPorNome(data).filter(p => viewMode === 'MENU' ? true : p.Tipo === viewMode).filter(p => safeStr(p.Nome).toLowerCase().includes(busca.toLowerCase()));
 
   return (
-    <div className="animate-fade-in space-y-6 max-w-7xl mx-auto">
+    <div className="animate-fade-in space-y-6 max-w-7xl mx-auto pb-10">
       {viewMode === 'MENU' ? (
         <div>
           <h2 className="text-2xl font-black mb-6">Gestão de Equipe</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center cursor-pointer hover:border-primary hover:shadow-lg transition">
-              <i className="ph-fill ph-users-three text-5xl mb-4 text-blue-500"></i><h3 className="font-black text-xl uppercase">Colaboradores</h3><p className="text-xs font-bold opacity-60">Equipe Base, Recepção, Apoio</p>
+              <i className="ph-fill ph-users-three text-5xl mb-4 text-blue-500"></i>
+              <h3 className="font-black text-xl uppercase">Colaboradores</h3>
+              <p className="text-xs font-bold opacity-60">Equipe Base, Recepção, Apoio</p>
             </div>
             <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center cursor-pointer hover:border-red-500 hover:shadow-lg transition">
-              <i className="ph-fill ph-stethoscope text-5xl mb-4 text-red-500"></i><h3 className="font-black text-xl uppercase">Corpo Clínico</h3><p className="text-xs font-bold opacity-60">Médicos e Especialistas</p>
+              <i className="ph-fill ph-stethoscope text-5xl mb-4 text-red-500"></i>
+              <h3 className="font-black text-xl uppercase">Corpo Clínico</h3>
+              <p className="text-xs font-bold opacity-60">Médicos e Especialistas</p>
             </div>
           </div>
         </div>
@@ -484,7 +496,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
         <div>
           <div className="flex flex-col md:flex-row justify-between mb-6 border-b dark:border-slate-700 pb-4 gap-4">
             <div className="flex items-center gap-4">
-              <button onClick={()=>{setViewMode('MENU'); setBusca('');}} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100"><i className="ph-bold ph-arrow-left"></i></button>
+              <button onClick={()=>{setViewMode('MENU'); setBusca('');}} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 transition"><i className="ph-bold ph-arrow-left"></i></button>
               <div><p className="text-[10px] font-bold uppercase opacity-50">Pasta Ativa</p><h2 className="text-2xl font-black">{viewMode}s</h2></div>
             </div>
             <div className="flex gap-2 w-full md:w-auto">
@@ -492,38 +504,49 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
               <button onClick={()=>openModal()} className="bg-primary text-white px-6 rounded-xl font-bold shadow hover:bg-blue-600 transition"><i className="ph-bold ph-plus"></i> Novo</button>
             </div>
           </div>
+
           {filtrados.length === 0 ? (
-            <div className="p-10 text-center border-2 border-dashed rounded-xl opacity-50 font-bold">Nenhum profissional encontrado nesta categoria.</div>
+            <div className="p-10 text-center border-2 border-dashed rounded-xl opacity-50 font-bold dark:border-slate-700">Nenhum profissional encontrado nesta categoria.</div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filtrados.map((p, i) => (
                 <div key={i} onClick={()=>openModal(p)} className="clean-card p-5 flex flex-col items-center text-center cursor-pointer relative border-t-4 border-primary hover:shadow-md transition">
                   {p.StatusGeral !== 'Ativo' && <span className="absolute top-2 left-2 bg-red-100 text-red-600 text-[8px] font-black px-2 py-0.5 rounded shadow-sm">{p.StatusGeral}</span>}
+                  
                   {p.FotoURL ? <img src={fmtImg(p.FotoURL)} className="w-14 h-14 rounded-full object-cover mb-2 shadow" /> : <div className="w-14 h-14 rounded-full text-white flex items-center justify-center font-black mb-2 text-xl shadow" style={{background:p.Cor||'#0ea5e9'}}>{p.Nome[0]}</div>}
-                  <h3 className="font-black text-sm w-full truncate flex justify-center items-center gap-1">{p.Nome} <BadgeConvenio codUnimed={p.CodUnimed} configLogo={cfg?.logoConvenio}/></h3>
+                  
+                  <h3 className="font-black text-sm w-full truncate flex justify-center items-center gap-1">
+                    {p.Nome} <BadgeConvenio cod={p.CodUnimed} logo={cfg?.logoConvenio}/>
+                  </h3>
+                  
                   <p className="text-[9px] opacity-60 uppercase font-bold mt-0.5">{p.Tipo==='Médico' ? `CRM: ${p.CRM||'N/A'}` : p.Cargo}</p>
                   <p className="text-[8px] font-black bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded mt-1 truncate max-w-full">{p.UnidadeBase||'S/ Unid'} • {p.Setor||'S/ Setor'}</p>
+                  
                   {p.isGestor && <span className="mt-2 text-[8px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Gestor / Supervisor</span>}
-                  <button onClick={(e)=>{e.stopPropagation(); if(confirm('Tem certeza que deseja excluir?')) { onDelete('PROFISSIONAIS', p.ID); onRefresh(); }}} className="absolute top-2 right-2 text-red-500 bg-red-50 p-1 rounded hover:bg-red-100 transition"><i className="ph-fill ph-trash"></i></button>
+                  
+                  <button onClick={(e)=>{e.stopPropagation(); if(confirm('Tem certeza que deseja excluir permanentemente?')) { onDelete('PROFISSIONAIS', p.ID); onRefresh(); }}} className="absolute top-2 right-2 text-red-500 bg-red-50 dark:bg-red-900/20 p-1.5 rounded hover:bg-red-100 transition"><i className="ph-fill ph-trash"></i></button>
                 </div>
               ))}
             </div>
           )}
         </div>
       )}
+
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 animate-fade-in" onClick={()=>setModal(false)}>
           <div className="clean-card w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6" onClick={e=>e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4 border-b dark:border-slate-700 pb-2"><h3 className="text-xl font-black">Ficha Cadastral</h3><button onClick={()=>setModal(false)}><i className="ph-bold ph-x text-xl"></i></button></div>
             <form onSubmit={save} className="space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 flex gap-4 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700">
+                <div className="col-span-2 flex flex-wrap gap-4 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700">
                   <label className="font-bold cursor-pointer"><input type="radio" checked={fd.Tipo==='Colaborador'} onChange={()=>setFd({...fd, Tipo:'Colaborador'})} className="mr-1"/> Colaborador</label>
                   <label className="font-bold text-blue-600 cursor-pointer"><input type="radio" checked={fd.Tipo==='Médico'} onChange={()=>setFd({...fd, Tipo:'Médico'})} className="mr-1"/> Médico</label>
-                  <label className="ml-auto font-bold cursor-pointer"><input type="checkbox" checked={fd.isGestor||false} onChange={e=>setFd({...fd, isGestor:e.target.checked})} className="mr-1"/> É Gestor/Líder?</label>
+                  <label className="md:ml-auto font-bold cursor-pointer"><input type="checkbox" checked={fd.isGestor||false} onChange={e=>setFd({...fd, isGestor:e.target.checked})} className="mr-1"/> É Gestor/Líder?</label>
                 </div>
+                
                 <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Nome Completo</label><input type="text" value={fd.Nome} onChange={e=>setFd({...fd, Nome:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required/></div>
-                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Foto URL (Drive/Imgur)</label><input type="text" value={fd.FotoURL||''} onChange={e=>setFd({...fd, FotoURL:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 outline-none" placeholder="Cole o link público"/></div>
+                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Foto URL (Drive/Imgur)</label><input type="text" value={fd.FotoURL||''} onChange={e=>setFd({...fd, FotoURL:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 outline-none" placeholder="Link público"/></div>
+                
                 <div><label className="text-[10px] font-black uppercase opacity-60">Unidade Base</label><select value={fd.UnidadeBase||''} onChange={e=>setFd({...fd, UnidadeBase:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 font-bold outline-none"><option value="">Selecione...</option>{(cfg?.unidades||[]).map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
                 <div><label className="text-[10px] font-black uppercase opacity-60">Setor Base</label><select value={fd.Setor||''} onChange={e=>setFd({...fd, Setor:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 font-bold outline-none"><option value="">Selecione...</option>{(cfg?.setores||[]).map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
                 
@@ -531,18 +554,18 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                   <div className="col-span-2 grid grid-cols-2 md:grid-cols-3 gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border dark:border-slate-700 mt-2">
                     <div><label className="text-[9px] font-black uppercase opacity-60">CRM</label><input type="text" value={fd.CRM||''} onChange={e=>setFd({...fd, CRM:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required/></div>
                     <div><label className="text-[9px] font-black uppercase opacity-60">Cód Unimed (Exibe Logo)</label><input type="text" value={fd.CodUnimed||''} onChange={e=>setFd({...fd, CodUnimed:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 font-bold outline-none"/></div>
-                    <div><label className="text-[9px] font-black uppercase opacity-60">Especialidade / Cargo</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd, Cargo:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required/></div>
+                    <div><label className="text-[9px] font-black uppercase opacity-60">Especialidade</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd, Cargo:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required/></div>
                     <div><label className="text-[9px] font-black uppercase opacity-60">URA</label><input type="text" value={fd.URA||''} onChange={e=>setFd({...fd, URA:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 outline-none"/></div>
                     <div><label className="text-[9px] font-black uppercase opacity-60">CBO</label><input type="text" value={fd.CBO||''} onChange={e=>setFd({...fd, CBO:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 outline-none"/></div>
                     <div><label className="text-[9px] font-black uppercase opacity-60">Outro Doc</label><input type="text" value={fd.OutroDoc||''} onChange={e=>setFd({...fd, OutroDoc:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 outline-none"/></div>
-                    <div className="col-span-2 md:col-span-3"><label className="text-[9px] font-black uppercase opacity-60">Segmento / Anotação Clínica</label><textarea value={fd.Segmento||''} onChange={e=>setFd({...fd, Segmento:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 outline-none" rows="2"></textarea></div>
+                    <div className="col-span-2 md:col-span-3"><label className="text-[9px] font-black uppercase opacity-60">Observação Clínica</label><textarea value={fd.Segmento||''} onChange={e=>setFd({...fd, Segmento:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 outline-none" rows="2"></textarea></div>
                   </div>
                 ) : (
                   <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Cargo</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd, Cargo:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required/></div>
                 )}
                 
                 <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Tipo Contrato (PJ, CLT...)</label><input type="text" value={fd.TipoContrato||''} onChange={e=>setFd({...fd, TipoContrato:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 outline-none"/></div>
-                <div><label className="text-[10px] font-black uppercase opacity-60">Status de Licença</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd, StatusGeral:e.target.value})} className="w-full p-2 border rounded-lg font-bold text-red-500 dark:border-slate-700 dark:bg-slate-900 outline-none"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{(cfg?.ausencias||[]).map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
+                <div><label className="text-[10px] font-black uppercase opacity-60">Status Geral</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd, StatusGeral:e.target.value})} className="w-full p-2 border rounded-lg font-bold text-red-500 dark:border-slate-700 dark:bg-slate-900 outline-none"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{(cfg?.ausencias||[]).map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
                 
                 <div><label className="text-[10px] font-black uppercase opacity-60">Cor Pessoal (Matriz/Calendário)</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd, Cor:e.target.value})} className="w-full h-10 border rounded p-1 cursor-pointer dark:border-slate-700"/></div>
                 <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Observações Gerais</label><textarea value={fd.ObservacoesGerais||''} onChange={e=>setFd({...fd, ObservacoesGerais:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 outline-none" placeholder="Anotações para a gestão..." rows="2"></textarea></div>
@@ -560,8 +583,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
     </div>
   );
 };
-
-// ================== ABA 3: CALENDÁRIO / BUILDER ==================
+  // ================== ABA 3: CALENDÁRIO / BUILDER ==================
 const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
   const [mode, setMode] = useState('TIMELINE'); 
@@ -587,9 +609,19 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     if(!selProf || dates.length === 0) return alert("Preencha Profissional e as Datas no calendário!");
     const prof = profs.find(x => x.ID === selProf || x.Nome === selProf);
     let st = 'NO POSTO'; let s = selSala || 'A DEFINIR'; let h = (hIn && hOut) ? `${hIn} às ${hOut}` : 'A DEFINIR'; let o = obs;
-    if(tipoLancamento === 'AUSENCIA') { st = motivoAus === 'Folga' ? 'FOLGA' : 'AUSENTE'; s = motivoAus.toUpperCase(); h = '--:--'; o = obs ? `${motivoAus} - ${obs}` : motivoAus; }
-    for(let d of dates) { await onSave('ESCALAS', { Data: d, Unidade: tipoLancamento==='AUSENCIA'?'':selUnd, Sala: s, Nome_Profissional: prof.Nome, Cargo: prof.Cargo, Horario: h, Status: st, Cor: prof.Cor, ObsDia: o }); }
-    alert("Escalas geradas com sucesso!"); setDates([]); setMode('TIMELINE'); onRefresh();
+    
+    if(tipoLancamento === 'AUSENCIA') { 
+      st = motivoAus === 'Folga' ? 'FOLGA' : 'AUSENTE'; 
+      s = motivoAus.toUpperCase(); 
+      h = '--:--'; 
+      o = obs ? `${motivoAus} - ${obs}` : motivoAus; 
+    }
+    
+    for(let d of dates) { 
+      await onSave('ESCALAS', { Data: d, Unidade: tipoLancamento==='AUSENCIA'?'':selUnd, Sala: s, Nome_Profissional: prof.Nome, Cargo: prof.Cargo, Horario: h, Status: st, Cor: prof.Cor, ObsDia: o }); 
+    }
+    alert("Escalas geradas com sucesso!"); 
+    setDates([]); setMode('TIMELINE'); onRefresh();
   };
 
   const bGrid = (dRef) => {
@@ -709,7 +741,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                   )}
                   <div>
                     <h2 className="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2 leading-tight">
-                      {pSel.Nome} <BadgeConvenio codUnimed={pSel.CodUnimed} configLogo={cfg?.logoConvenio}/>
+                      {pSel.Nome} <BadgeConvenio cod={pSel.CodUnimed} logo={cfg?.logoConvenio}/>
                     </h2>
                     <p className="text-sm font-bold text-primary uppercase mt-1">{pSel.Cargo}</p>
                     <p className="text-[10px] font-black opacity-50 mt-1 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded inline-block"><i className="ph-fill ph-map-pin"></i> Lotação: {pSel.UnidadeBase||'Geral'} • {pSel.Setor||'-'}</p>
@@ -795,7 +827,6 @@ const TrabalhandoHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) =
   const [editData, setEditData] = useState(null);
   
   const dStr = getStrDt(new Date()); 
-  // Pega as escalas de hoje que não são folga e são válidas (Caça Fantasmas On)
   const escHjRaw = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos) && e.Status !== 'FOLGA');
 
   const pC = []; const pM = [];
@@ -855,7 +886,7 @@ const TrabalhandoHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) =
                     )}
                     
                     <h3 className="font-black text-xs truncate w-full flex justify-center items-center gap-1 cursor-pointer hover:text-primary" onClick={()=>setInfoProfModal(p)}>
-                      {p.Nome} <BadgeConvenio codUnimed={p.CodUnimed} configLogo={cfg?.logoConvenio} />
+                      {p.Nome} <BadgeConvenio cod={p.CodUnimed} logo={cfg?.logoConvenio} />
                     </h3>
                     
                     <div className="w-full bg-white dark:bg-slate-800 p-2 rounded-lg mt-2 border border-slate-100 dark:border-slate-700 text-left">
@@ -893,7 +924,8 @@ const TrabalhandoHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) =
     </div>
   )
 };
-    // ================== ABA 4: MAPA DE PLANTÃO (REFORMULADO C/ RADAR E CRACHÁ) ==================
+
+// ================== ABA 4: MAPA DE PLANTÃO (RADAR/UNIDADES) ==================
 const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
   const [now, setNow] = useState(Date.now()); 
@@ -905,7 +937,6 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(t); }, []);
 
   const dStr = getStrDt(new Date()); 
-  // Pega as escalas de hoje E aplica o Filtro Caça-Fantasmas
   const escHjRaw = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
   
   const unids = cfg?.unidades||[]; const setoresSis = cfg?.setores||[]; const postosSis = cfg?.postos||[];
@@ -913,7 +944,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
 
   const renderPosto = (sala, ocupantes) => {
     ocupantes.sort((a,b)=> (a.Horario||'').localeCompare(b.Horario||''));
-    const d=new Date(now); const hStr=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    const hStr = `${new Date(now).getHours().toString().padStart(2,'0')}:${new Date(now).getMinutes().toString().padStart(2,'0')}`;
     let currArr = []; let nxtArr = [];
 
     for(let o of ocupantes) {
@@ -939,13 +970,13 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 <div className="truncate">
                   <div className={`text-[11px] font-black truncate text-slate-800 dark:text-white flex items-center gap-1 ${isAus?'line-through text-red-500 dark:text-red-400':''}`}>
                     <span className="truncate">{curr.Nome_Profissional}</span>
-                    <BadgeConvenio codUnimed={pInfo.CodUnimed} configLogo={cfg?.logoConvenio} />
+                    <BadgeConvenio cod={pInfo.CodUnimed} logo={cfg?.logoConvenio} />
                   </div>
                   <p className={`text-[8px] font-bold opacity-60 truncate mt-0.5 text-slate-600 dark:text-slate-300 ${curr.Horario==='A DEFINIR'?'text-red-500':''}`}>{curr.Cargo} • <i className="ph-fill ph-clock"></i> {curr.Horario}</p>
                 </div>
               </div>
               
-              {curr.Auxiliar && <p className="text-[8px] font-black text-purple-600 bg-purple-100 dark:bg-purple-900/30 px-1.5 py-0.5 rounded inline-block mb-1"><i className="ph-fill ph-user-plus"></i> Auxiliar: {curr.Auxiliar}</p>}
+              {curr.Auxiliar && <p className="text-[8px] font-black text-purple-600 bg-purple-100 dark:bg-purple-900/30 px-1.5 py-0.5 rounded inline-block mb-1"><i className="ph-fill ph-user-plus"></i> Aux: {curr.Auxiliar}</p>}
               {curr.MedicoApoio && <p className="text-[8px] font-black text-indigo-600 bg-indigo-100 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded inline-block mb-1"><i className="ph-fill ph-stethoscope"></i> Apoio: {curr.MedicoApoio}</p>}
 
               <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2 mt-1">
@@ -953,8 +984,8 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 <div className="flex gap-1">
                   {(!isInt && !isAus) ? (
                     <>
-                      {(isAd || isMe) && <button onClick={(e)=>{e.stopPropagation(); setStatus(curr, 'LANCHE');}} title="Ir para o Lanche/Pausa" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 hover:text-orange-600 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button>}
-                      {isAd && <button onClick={(e)=>{e.stopPropagation(); setEditData({...curr});}} title="Ações Avançadas" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 hover:text-blue-600 transition text-slate-500"><i className="ph-fill ph-sliders"></i></button>}
+                      {(isAd || isMe) && <button onClick={(e)=>{e.stopPropagation(); setStatus(curr, 'LANCHE');}} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 hover:text-orange-600 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button>}
+                      {isAd && <button onClick={(e)=>{e.stopPropagation(); setEditData({...curr});}} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 hover:text-blue-600 transition text-slate-500"><i className="ph-fill ph-sliders"></i></button>}
                     </>
                   ) : (
                     <>
@@ -977,7 +1008,6 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 {pInfoNxt.FotoURL ? <img src={fmtImg(pInfoNxt.FotoURL)} className="w-5 h-5 rounded-full object-cover shrink-0" /> : <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px]" style={{background:nxt.Cor||'#000'}}>{nxt.Nome_Profissional[0]}</div>}
                 <div className="truncate max-w-[100px] flex items-center gap-1">
                   <p className="text-[9px] font-black text-slate-800 dark:text-white truncate">{nxt.Nome_Profissional}</p>
-                  <BadgeConvenio codUnimed={pInfoNxt.CodUnimed} configLogo={cfg?.logoConvenio} />
                 </div>
               </div>
             </div>
@@ -989,8 +1019,8 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
 
   if(buscaGlobal.trim() !== '') {
     const termo = buscaGlobal.toLowerCase();
-    const escalasEncontradas = escHjRaw.filter(e => e.Status !== 'FOLGA' && safeStr(e.Nome_Profissional).toLowerCase().includes(termo));
-    const postosParaRenderizar = Array.from(new Set(escalasEncontradas.map(e => e.Sala)));
+    const escEnc = escHjRaw.filter(e => e.Status !== 'FOLGA' && safeStr(e.Nome_Profissional).toLowerCase().includes(termo));
+    const pRend = Array.from(new Set(escEnc.map(e => e.Sala)));
 
     return (
       <div className="animate-fade-in space-y-8 max-w-[1600px] mx-auto pb-10">
@@ -1003,21 +1033,21 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
           </div>
         </div>
 
-        {postosParaRenderizar.length === 0 ? (
+        {pRend.length === 0 ? (
           <div className="p-20 text-center opacity-50 border-2 border-dashed rounded-2xl dark:border-slate-700">
             <i className="ph-bold ph-ghost text-6xl mb-4"></i><p className="font-bold text-lg">Nenhum plantão ativo hoje para "{buscaGlobal}"</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {postosParaRenderizar.map((nomeSala, i) => {
-              const ocup = escHjRaw.filter(e => e.Sala === nomeSala && e.Status !== 'FOLGA');
-              const postoInfo = postosSis.find(p => p.nome === nomeSala) || {setor: 'Geral'};
+            {pRend.map((nomeS, i) => {
+              const ocup = escHjRaw.filter(e => e.Sala === nomeS && e.Status !== 'FOLGA');
+              const pInfo = postosSis.find(p => p.nome === nomeS) || {setor: 'Geral'};
               return (
                 <div key={i} className="clean-card flex flex-col p-1 min-h-[140px] border-t-4 border-t-primary shadow-md">
                   <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-t-xl font-black text-[11px] uppercase tracking-widest text-center border-b border-blue-100 dark:border-blue-900/30 truncate px-2">
-                    {nomeSala} <span className="block text-[8px] opacity-50 font-normal">{postoInfo.setor}</span>
+                    {nomeS} <span className="block text-[8px] opacity-50 font-normal">{pInfo.setor}</span>
                   </div>
-                  {renderPosto(nomeSala, ocup)}
+                  {renderPosto(nomeS, ocup)}
                 </div>
               )
             })}
@@ -1050,21 +1080,21 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     );
   }
 
-  const setoresDaUnidade = setoresSis.filter(s => safeStr(s.unidade).trim().toUpperCase() === safeStr(actU).trim().toUpperCase()).map(s => s.nome);
+  const setD = setoresSis.filter(s => safeStr(s.unidade).trim().toUpperCase() === safeStr(actU).trim().toUpperCase()).map(s => s.nome);
   
   return (
     <div className="animate-fade-in space-y-8 max-w-[1600px] mx-auto pb-10">
       <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-4"><button onClick={()=>setActU(null)} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button><div><p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Unidade Ativa</p><h2 className="text-2xl font-black">{actU}</h2></div></div>
       
-      {setoresDaUnidade.map(setor => {
-        const postosSetor = postosSis.filter(p => safeStr(p.setor).trim().toUpperCase() === safeStr(setor).trim().toUpperCase());
-        if(postosSetor.length === 0) return null; 
+      {setD.map(st => {
+        const psts = postosSis.filter(p => safeStr(p.setor).trim().toUpperCase() === safeStr(st).trim().toUpperCase());
+        if(psts.length === 0) return null; 
         
         return (
-          <div key={setor} className="space-y-4">
-            <h3 className="text-lg font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2"><i className="ph-fill ph-squares-four opacity-50"></i> {setor}</h3>
+          <div key={st} className="space-y-4">
+            <h3 className="text-lg font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2"><i className="ph-fill ph-squares-four opacity-50"></i> {st}</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {postosSetor.map((pst, i) => {
+              {psts.map((pst, i) => {
                 const ocup = escHjRaw.filter(e => e.Sala === pst.nome && e.Status !== 'FOLGA' && e.Status !== 'AUSENTE');
                 return (
                   <div key={i} className={`clean-card flex flex-col p-1 min-h-[140px] border-t-4 ${ocup.length===0?'opacity-70 border-t-slate-300 dark:border-t-slate-600':'border-t-primary shadow-md'}`}>
@@ -1084,7 +1114,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   );
 };
 
-// ================== ABA 5: MATRIZ DE PLANTÃO VERTICAL (GANTT) ==================
+// ================== ABA 5: MATRIZ DE GANTT VERTICAL ==================
 const GanttModernoView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
   const [viewMode, setViewMode] = useState('MENU');
@@ -1095,17 +1125,17 @@ const GanttModernoView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
 
   useEffect(() => { const timer = setInterval(() => setAgora(new Date()), 60000); return () => clearInterval(timer); }, []);
 
-  // Matriz vai de 06:00 às 23:00
+  // HORÁRIOS: 06h às 23h
   const H_INICIO = 6; const H_FIM = 23; const H_TOTAL = H_FIM - H_INICIO + 1;
   const HORAS_REGUA = Array.from({length: H_TOTAL}, (_, i) => H_INICIO + i);
-  const PX_HORA = 60; // Altura de 1 hora em pixels
+  const PX_HORA = 60; 
 
   const diasRender = Array.from({length: rangeDias}, (_, i) => { let d = new Date(dataBase); d.setDate(d.getDate() + i); return d; });
 
   const TimeGrid = ({ dateObj }) => {
     const dStr = getStrDt(dateObj);
     const isToday = getStrDt(agora) === dStr;
-    const escalasDia = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
+    const escDia = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
 
     let linhaAgora = null;
     if (isToday) {
@@ -1113,42 +1143,42 @@ const GanttModernoView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
       if (hDecimal >= H_INICIO && hDecimal <= H_FIM + 1) linhaAgora = (hDecimal - H_INICIO) * PX_HORA;
     }
 
-    // --- MATRIZ MÉDICOS (Colunas = Salas) ---
+    // --- VISÃO MÉDICOS (Agrupado por Unidade, Colunas = Salas) ---
     if (viewMode === 'Médico') {
-      const escMedicos = escalasDia.filter(e => {
+      const eMed = escDia.filter(e => {
         const pInfo = profs.find(p=>p.Nome === e.Nome_Profissional);
         return (pInfo && pInfo.Tipo === 'Médico') || e.Cargo?.toLowerCase().includes('médico');
       });
-      const unidadesAtivas = Array.from(new Set(escMedicos.map(e=>e.Unidade))).filter(Boolean).sort();
+      const undsA = Array.from(new Set(eMed.map(e=>e.Unidade))).filter(Boolean).sort();
 
-      if(unidadesAtivas.length === 0) return <div className="mb-6"><h3 className="text-md font-black text-primary">{dStr}</h3><p className="opacity-50 text-xs">Nenhum médico escalado nesta data.</p></div>
+      if(undsA.length === 0) return <div className="mb-6"><h3 className="text-md font-black text-primary">{dStr}</h3><p className="opacity-50 text-xs">Nenhum médico escalado.</p></div>
 
       return (
         <div className="mb-10 animate-fade-in">
           <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-blank text-primary"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'}).toUpperCase()}</h3>
-          {unidadesAtivas.map(und => {
-            const escUnd = escMedicos.filter(e=>e.Unidade === und);
-            const salasUsadas = Array.from(new Set(escUnd.map(e=>e.Sala))).sort();
+          {undsA.map(uNome => {
+            const eU = eMed.filter(e=>e.Unidade === uNome);
+            const sUsadas = Array.from(new Set(eU.map(e=>e.Sala))).sort();
             
             return (
-              <div key={und} className="mb-8">
-                <h4 className="text-sm font-black text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-widest pl-2 border-l-4 border-slate-300">{und}</h4>
-                <div className="matriz-wrap shadow-md">
-                  <div className="matriz-col-horas">
-                    <div className="matriz-header-hora">H</div>
-                    {HORAS_REGUA.map(h => <div key={h} className="matriz-celula-hora">{String(h).padStart(2,'0')}:00</div>)}
+              <div key={uNome} className="mb-8">
+                <h4 className="text-sm font-black text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-widest pl-2 border-l-4 border-slate-300">{uNome}</h4>
+                <div className="matrix-container shadow-md">
+                  <div className="matrix-time-col">
+                    <div className="matrix-header">HORA</div>
+                    {HORAS_REGUA.map(h => <div key={h} className="matrix-time-cell">{String(h).padStart(2,'0')}:00</div>)}
                   </div>
-                  {salasUsadas.map(salaNome => {
-                    const blocos = escUnd.filter(e=>e.Sala === salaNome);
-                    const pCfg = cfg?.postos?.find(p=>p.nome === salaNome);
+                  {sUsadas.map(sN => {
+                    const blocos = eU.filter(e=>e.Sala === sN);
+                    const pCfg = cfg?.postos?.find(p=>p.nome === sN);
                     return (
-                      <div key={salaNome} className="matriz-col-dados">
-                        <div className="matriz-header-dados">
-                          <span className="font-black text-xs truncate w-full">{salaNome}</span>
-                          <span className="text-[8px] opacity-50 truncate font-normal w-full">{pCfg?.setor || 'Geral'}</span>
+                      <div key={sN} className="matrix-data-col">
+                        <div className="matrix-header">
+                          <span className="font-black text-xs truncate w-full text-center px-1">{sN}</span>
+                          <span className="text-[8px] opacity-50 truncate font-normal w-full text-center">{pCfg?.setor || 'Geral'}</span>
                         </div>
                         <div className="relative" style={{height: `${H_TOTAL * PX_HORA}px`}}>
-                          {linhaAgora !== null && <div className="matriz-linha-agora" style={{top: `${linhaAgora}px`}}></div>}
+                          {linhaAgora !== null && <div className="matrix-now-line" style={{top: `${linhaAgora}px`}}></div>}
                           {blocos.map((b, bIdx) => {
                             const isFolga = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
                             let top = 0; let height = PX_HORA;
@@ -1163,12 +1193,12 @@ const GanttModernoView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                               }
                             }
                             let bgColor = isFolga ? '#94a3b8' : getCorDaSala(b.Sala, cfg);
-                            const pInfo = profs.find(p => p.Nome === b.Nome_Profissional) || {};
+                            const pI = profs.find(p => p.Nome === b.Nome_Profissional) || {};
 
                             return (
-                              <div key={bIdx} onClick={()=> isAd && setEditData({...b})} className="matriz-bloco" style={{top:`${top}px`, height:`${height-2}px`, backgroundColor: bgColor}}>
+                              <div key={bIdx} onClick={()=> isAd && setEditData({...b})} className="matrix-block" style={{top:`${top}px`, height:`${height-2}px`, backgroundColor: bgColor}}>
                                 <span className="truncate w-full font-black text-[10px] leading-tight flex items-center gap-1">
-                                  {b.Nome_Profissional} {pInfo.CodUnimed && <div className="w-1.5 h-1.5 bg-white rounded-full shrink-0 shadow"></div>}
+                                  {b.Nome_Profissional} {pI.CodUnimed && <div className="w-1.5 h-1.5 bg-white rounded-full shrink-0 shadow"></div>}
                                 </span>
                                 {!isFolga && b.Horario !== 'A DEFINIR' && <span className="text-[9px] font-medium opacity-90">{b.Horario}</span>}
                                 {b.Auxiliar && <span className="text-[8px] bg-black/20 px-1 rounded mt-1 truncate w-max">Aux: {b.Auxiliar}</span>}
@@ -1188,36 +1218,36 @@ const GanttModernoView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
       )
     }
 
-    // --- MATRIZ COLABORADOR (Colunas = Nomes) ---
-    const escColab = escalasDia.filter(e => {
+    // --- MATRIZ COLABORADOR (Colunas = Nomes de Pessoas) ---
+    const eC = escDia.filter(e => {
       const pInfo = profs.find(p=>p.Nome === e.Nome_Profissional);
       return pInfo ? pInfo.Tipo === 'Colaborador' : !e.Cargo?.toLowerCase().includes('médico');
     });
-    const nomesColab = Array.from(new Set(escColab.map(e=>e.Nome_Profissional))).sort();
+    const nC = Array.from(new Set(eC.map(e=>e.Nome_Profissional))).sort();
 
-    if(nomesColab.length === 0) return null; 
+    if(nC.length === 0) return null; 
 
     return (
       <div className="mb-10 animate-fade-in">
         <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-blank text-primary"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'}).toUpperCase()}</h3>
-        <div className="matriz-wrap shadow-md">
-          <div className="matriz-col-horas">
-            <div className="matriz-header-hora">H</div>
-            {HORAS_REGUA.map(h => <div key={h} className="matriz-celula-hora">{String(h).padStart(2,'0')}:00</div>)}
+        <div className="matrix-container shadow-md">
+          <div className="matrix-time-col">
+            <div className="matrix-header">HORA</div>
+            {HORAS_REGUA.map(h => <div key={h} className="matrix-time-cell">{String(h).padStart(2,'0')}:00</div>)}
           </div>
 
-          {nomesColab.map((nome, idx) => {
-            const blocos = escColab.filter(e=>e.Nome_Profissional === nome);
-            const pInfo = profs.find(p=>p.Nome === nome) || {};
+          {nC.map((nNome, idx) => {
+            const blocos = eC.filter(e=>e.Nome_Profissional === nNome);
+            const pInfo = profs.find(p=>p.Nome === nNome) || {};
             
             return (
-              <div key={idx} className="matriz-col-dados">
-                <div className="matriz-header-dados" title={nome}>
-                  <span className="font-black text-[11px] truncate w-full">{nome.split(' ')[0] + ' ' + (nome.split(' ')[1]||'')}</span>
-                  <span className="block text-[8px] font-normal opacity-50 truncate w-full">{pInfo.Cargo || 'Geral'}</span>
+              <div key={idx} className="matrix-data-col">
+                <div className="matrix-header" title={nNome}>
+                  <span className="font-black text-[11px] truncate w-full text-center px-1">{nNome.split(' ')[0] + ' ' + (nNome.split(' ')[1]||'')}</span>
+                  <span className="block text-[8px] font-normal opacity-50 truncate w-full text-center">{pInfo.Cargo || 'Geral'}</span>
                 </div>
                 <div className="relative" style={{height: `${H_TOTAL * PX_HORA}px`}}>
-                  {linhaAgora !== null && <div className="matriz-linha-agora" style={{top: `${linhaAgora}px`}}></div>}
+                  {linhaAgora !== null && <div className="matrix-now-line" style={{top: `${linhaAgora}px`}}></div>}
                   {blocos.map((b, bIdx) => {
                     const isFolga = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
                     let top = 0; let height = PX_HORA; 
@@ -1234,7 +1264,7 @@ const GanttModernoView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     let bgColor = isFolga ? '#94a3b8' : getCorDaSala(b.Sala, cfg);
 
                     return (
-                      <div key={bIdx} onClick={()=> isAd && setEditData({...b})} className="matriz-bloco" style={{top:`${top}px`, height:`${height-2}px`, backgroundColor: bgColor}}>
+                      <div key={bIdx} onClick={()=> isAd && setEditData({...b})} className="matrix-block" style={{top:`${top}px`, height:`${height-2}px`, backgroundColor: bgColor}}>
                         <span className="truncate w-full font-black text-[11px] leading-tight">{isFolga?'FOLGA':b.Sala}</span>
                         {!isFolga && b.Horario !== 'A DEFINIR' && <span className="text-[9px] font-medium opacity-90">{b.Horario}</span>}
                         {b.MedicoApoio && <span className="text-[8px] bg-black/20 px-1 py-0.5 rounded mt-1 truncate">Apoio: {b.MedicoApoio}</span>}
@@ -1255,7 +1285,7 @@ const GanttModernoView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     <div className="animate-fade-in space-y-6 max-w-[1600px] mx-auto pb-10">
       {viewMode === 'MENU' ? (
         <div>
-          <h2 className="text-2xl font-black mb-6">Matriz de Plantão (Visão Ampla Vertical)</h2>
+          <h2 className="text-2xl font-black mb-6">Visão Ampla (Gantt Vertical)</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-primary hover:shadow-lg transition-all">
               <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-table"></i></div>
@@ -1276,7 +1306,7 @@ const GanttModernoView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
               <button onClick={()=>setViewMode('MENU')} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button>
               <div>
                 <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Matriz Vertical</p>
-                <h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Ocupação de Salas' : 'Painel de Colaboradores'}</h2>
+                <h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Ocupação de Salas' : 'Rota de Colaboradores'}</h2>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-4">
@@ -1342,22 +1372,20 @@ const App = () => {
       <div className="w-full max-w-md clean-card p-10">
         <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6"><i className="ph-fill ph-hospital"></i></div>
         <h1 className="text-3xl font-black text-center mb-8">Escalas SV</h1>
-        <form onSubmit={async e=>{e.preventDefault();setL(true);try{await auth.signInWithEmailAndPassword(e.target.e.value, e.target.p.value);}catch(err){alert('Acesso Negado');setL(false);}}} className="space-y-4">
-          <input name="e" type="email" placeholder="E-mail" className="w-full p-4 rounded-xl border dark:border-slate-700 text-slate-800 dark:text-white outline-none bg-slate-50 dark:bg-slate-800" required />
-          <input name="p" type="password" placeholder="Senha" className="w-full p-4 rounded-xl border dark:border-slate-700 text-slate-800 dark:text-white outline-none bg-slate-50 dark:bg-slate-800" required />
+        <form onSubmit={async e=>{e.preventDefault();setL(true);try{await auth.signInWithEmailAndPassword(e.target.e.value, e.target.p.value);}catch(err){alert('Acesso Negado. Verifique os dados.');setL(false);}}} className="space-y-4">
+          <input name="e" type="email" placeholder="E-mail" className="w-full p-4 rounded-xl border dark:border-slate-700 dark:bg-slate-800 outline-none font-bold" required />
+          <input name="p" type="password" placeholder="Senha" className="w-full p-4 rounded-xl border dark:border-slate-700 dark:bg-slate-800 outline-none font-bold" required />
           <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-xl shadow-lg hover:bg-blue-600 transition">Entrar no Sistema</button>
         </form>
       </div>
-      <button onClick={()=>setIsD(!isD)} className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow flex items-center justify-center text-slate-500"><i className={isD?"ph-fill ph-sun text-yellow-500":"ph-fill ph-moon"}></i></button>
     </div>
   );
 
   const isAd = u.nivel === 'Admin' || u.nivel === 'Supervisor';
-  
   const menu = [ 
     {id:'HOJE', i:'ph-kanban', n:'Plantão'}, 
     {id:'DIARIO', i:'ph-users-three', n:'Lista Dia'}, 
-    {id:'MATRIZ', i:'ph-table', n:'Matriz/Gantt'}, 
+    {id:'MATRIZ', i:'ph-table', n:'Gantt'}, 
     {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas'}, 
     {id:'EQUIPE', i:'ph-address-book', n:'Equipe', adminOnly:true}, 
     {id:'CONFIG', i:'ph-gear', n:'Ajustes', adminOnly:true} 
@@ -1370,10 +1398,13 @@ const App = () => {
         <nav className="flex-1 px-4 py-6 space-y-2">{menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition ${t===m.id?'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400':'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><i className={`ph-fill ${m.i} text-xl`}></i> {m.n}</button>)}</nav>
         <div className="p-4 border-t border-slate-100 dark:border-slate-800"><button onClick={()=>auth.signOut()} className="text-red-500 font-bold flex items-center gap-2 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded w-full transition"><i className="ph-bold ph-sign-out text-lg"></i> Sair do App</button></div>
       </aside>
-      <nav className="md:hidden fixed bottom-0 inset-x-0 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around p-2 pb-safe bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] overflow-x-auto hide-scroll">{menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[64px] transition ${t===m.id?'text-primary':'text-slate-400'}`}><i className={`ph-fill ${m.i} text-2xl`}></i><span className="text-[9px] font-black uppercase">{m.n}</span></button>)}</nav>
       
-      <main className="flex-1 transition-all p-4 md:p-8 w-full md:ml-64">
-        {(t==='HOJE'||t==='CALENDARIO'||t==='MATRIZ'||t==='DIARIO') && <TopHeader user={u} isDark={isD} toggleDark={()=>setIsD(!isD)} />}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around p-2 pb-safe bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] overflow-x-auto hide-scroll">
+        {menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[64px] transition ${t===m.id?'text-primary':'text-slate-400'}`}><i className={`ph-fill ${m.i} text-2xl`}></i><span className="text-[9px] font-black uppercase">{m.n}</span></button>)}
+      </nav>
+      
+      <main className="flex-1 transition-all p-4 md:p-8 w-full md:ml-64 overflow-x-hidden">
+        <TopHeader user={u} isDark={isD} toggleDark={()=>setIsD(!isD)} />
         
         {t==='HOJE' && <PainelHojeView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
         {t==='DIARIO' && <TrabalhandoHojeView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
@@ -1385,5 +1416,9 @@ const App = () => {
     </div>
   );
 };
-const root = ReactDOM.createRoot(document.getElementById('root')); root.render(<ErrorBoundary><App /></ErrorBoundary>);
-</script></body></html>
+
+const root = ReactDOM.createRoot(document.getElementById('root')); 
+root.render(<ErrorBoundary><App /></ErrorBoundary>);
+</script>
+</body>
+</html>
