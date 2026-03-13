@@ -26,27 +26,25 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .clean-card{background-color:#ffffff;border-radius:1.5rem;border:1px solid #e2e8f0;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);transition:all 0.2s ease;}
 .dark .clean-card{background-color:#1e293b;border-color:#334155;box-shadow:0 4px 6px -1px rgba(0,0,0,0.2);color:#f8fafc;}
 .clean-card:hover{transform:translateY(-2px);box-shadow:0 10px 15px -3px rgba(0,0,0,0.08);}.dark .clean-card:hover{box-shadow:0 10px 15px -3px rgba(0,0,0,0.3);}
-.fade-next{background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(248,250,252,0.8) 100%);}
-.dark .fade-next{background:linear-gradient(180deg, rgba(30,41,59,0) 0%, rgba(15,23,42,0.8) 100%);}
 
-/* Estilos da Matriz de Tempo (Time-Grid) */
-.time-grid-container { display: flex; overflow-x: auto; background: #fff; border-radius: 1rem; border: 1px solid #e2e8f0; position: relative; }
-.dark .time-grid-container { background: #0f172a; border-color: #334155; }
-.time-col-header { padding: 12px 8px; text-align: center; font-weight: 900; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; border-right: 1px solid #f1f5f9; min-width: 140px; background: #f8fafc; z-index: 20; position: sticky; top: 0; }
-.dark .time-col-header { background: #1e293b; border-color: #334155; }
-.time-col-hours { min-width: 60px; max-width: 60px; position: sticky; left: 0; background: #fff; z-index: 30; border-right: 2px solid #e2e8f0; box-shadow: 2px 0 5px rgba(0,0,0,0.02); }
-.dark .time-col-hours { background: #0f172a; border-color: #334155; }
-.time-cell-hour { height: 60px; display: flex; align-items: flex-start; justify-content: center; font-size: 10px; font-weight: 900; color: #94a3b8; border-bottom: 1px solid #f1f5f9; padding-top: 4px; }
-.dark .time-cell-hour { border-color: #1e293b; color: #64748b; }
-.time-col-data { min-width: 140px; position: relative; border-right: 1px solid #f1f5f9; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #f1f5f9 59px, #f1f5f9 60px); }
-.dark .time-col-data { border-color: #1e293b; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #1e293b 59px, #1e293b 60px); }
-.time-block { position: absolute; left: 4px; right: 4px; border-radius: 8px; padding: 6px; font-size: 10px; font-weight: 800; color: white; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s; z-index: 10; display: flex; flex-direction: column; line-height: 1.2; }
-.time-block:hover { transform: scale(1.02); z-index: 40; filter: brightness(1.1); box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
-.time-line-now { position: absolute; left: 0; right: 0; height: 2px; background-color: #ef4444; z-index: 35; pointer-events: none; box-shadow: 0 0 4px rgba(239,68,68,0.5); }
-.time-line-now::before { content: ''; position: absolute; left: -4px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background-color: #ef4444; }
+/* Estilos da Nova Matriz de Tempo (Excel Style) */
+.matrix-container { display: flex; overflow-x: auto; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; }
+.dark .matrix-container { background: #0f172a; border-color: #334155; }
+.matrix-time-col { min-width: 60px; max-width: 60px; position: sticky; left: 0; background: #f8fafc; z-index: 30; border-right: 2px solid #e2e8f0; }
+.dark .matrix-time-col { background: #1e293b; border-color: #334155; }
+.matrix-header-cell { height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; padding: 4px; text-align: center; line-height: 1.1; }
+.dark .matrix-header-cell { border-color: #334155; }
+.matrix-time-cell { height: 60px; display: flex; align-items: flex-start; justify-content: center; font-size: 10px; font-weight: 900; color: #94a3b8; border-bottom: 1px solid #f1f5f9; padding-top: 4px; }
+.dark .matrix-time-cell { border-color: #334155; color: #64748b; }
+.matrix-data-col { min-width: 140px; flex: 1; border-right: 1px solid #f1f5f9; position: relative; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #f1f5f9 59px, #f1f5f9 60px); }
+.dark .matrix-data-col { border-color: #334155; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #1e293b 59px, #1e293b 60px); }
+.matrix-block { position: absolute; left: 0; right: 0; padding: 6px; font-size: 9px; font-weight: 800; color: white; overflow: hidden; cursor: pointer; transition: all 0.2s; z-index: 10; display: flex; flex-direction: column; line-height: 1.2; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); border-radius: 4px; }
+.matrix-block:hover { z-index: 40; filter: brightness(1.1); transform: scale(1.02); box-shadow: 0 4px 10px rgba(0,0,0,0.3); border-radius: 8px; }
+.matrix-now-line { position: absolute; left: 0; right: 0; height: 2px; background-color: #ef4444; z-index: 35; pointer-events: none; box-shadow: 0 0 4px rgba(239,68,68,0.5); }
+.matrix-now-line::before { content: ''; position: absolute; left: 0; top: -4px; width: 10px; height: 10px; border-radius: 50%; background-color: #ef4444; }
 </style>
 <script>
-    const VERSAO_ATUAL = "42.0.0"; 
+    const VERSAO_ATUAL = "43.0.0"; 
     if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { 
         localStorage.clear(); 
         sessionStorage.clear(); 
@@ -82,7 +80,6 @@ const fmtImg = (u) => {
 };
 
 const getStrDt = (d) => { if(!d) return ''; return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); };
-
 const ordenarPorNome = (lista) => { return [...lista].sort((a, b) => safeStr(a.Nome).localeCompare(safeStr(b.Nome))); };
 
 const checkIsMe = (nomeProfissional, userEmail) => {
@@ -100,6 +97,16 @@ const isEscalaValida = (esc, postosCfg) => {
     const postosList = postosCfg || [];
     return postosList.some(p => safeStr(p.nome).trim().toUpperCase() === sala);
 };
+
+// HELPER: Busca a cor do SETOR para pintar os blocos
+const getCorDaSala = (salaNome, cfg) => {
+    const psts = cfg?.postos || [];
+    const sets = cfg?.setores || [];
+    const p = psts.find(x => safeStr(x.nome).trim().toUpperCase() === safeStr(salaNome).trim().toUpperCase());
+    if(!p) return '#94a3b8'; // default
+    const s = sets.find(x => safeStr(x.nome).trim().toUpperCase() === safeStr(p.setor).trim().toUpperCase());
+    return s?.cor || '#3b82f6';
+}
 
 const parseHorario = (hStr) => {
     if(!hStr || hStr === 'A DEFINIR') return null;
@@ -138,14 +145,14 @@ const TopHeader = ({ user, isDark, toggleDark }) => {
 const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd }) => {
     const [fd, setFd] = useState({...escala});
     
+    // Identifica se é médico (para abrir opções de auxiliar) ou colaborador (para abrir opção de apoiar médico)
     const isMedico = fd.Cargo?.toLowerCase().includes('médico') || profs.find(p=>p.Nome===fd.Nome_Profissional)?.Tipo === 'Médico';
     const profsOrdenados = ordenarPorNome(profs);
     const colaboradoresLivres = profsOrdenados.filter(p => p.Tipo === 'Colaborador' && p.StatusGeral === 'Ativo');
+    const medicosAtivos = profsOrdenados.filter(p => p.Tipo === 'Médico' && p.StatusGeral === 'Ativo');
 
     const handleSave = async (e) => {
         e.preventDefault();
-        
-        // Se transferir titularidade para VAZIO, apaga o documento.
         if (fd.Nome_Profissional === "VAZIO") {
             if(confirm("Deseja realmente deixar este posto vazio (excluir escala)?")) {
                 await api.deleteRecord('ESCALAS', fd.ID);
@@ -155,7 +162,6 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
             return;
         }
 
-        // Atualiza a cor se mudou a pessoa
         const pInfo = profs.find(p => p.Nome === fd.Nome_Profissional);
         if(pInfo) { fd.Cor = pInfo.Cor; fd.Cargo = pInfo.Cargo; }
 
@@ -212,12 +218,20 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
                         </div>
                     </div>
 
-                    {isMedico && (
+                    {isMedico ? (
                         <div className="border border-purple-200 dark:border-purple-900/30 rounded-xl p-3 bg-purple-50 dark:bg-purple-900/10">
                             <label className="text-[10px] font-black uppercase text-purple-600 dark:text-purple-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-user-plus"></i> Auxiliar de Sala</label>
                             <select value={fd.Auxiliar||''} onChange={e=>setFd({...fd, Auxiliar:e.target.value})} className="w-full p-2 border border-purple-200 dark:border-purple-900/30 rounded bg-white dark:bg-slate-800 font-bold outline-none text-sm">
                                 <option value="">Sem auxiliar vinculado</option>
                                 {colaboradoresLivres.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+                            </select>
+                        </div>
+                    ) : (
+                        <div className="border border-indigo-200 dark:border-indigo-900/30 rounded-xl p-3 bg-indigo-50 dark:bg-indigo-900/10">
+                            <label className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-stethoscope"></i> Prestando Apoio Ao Médico:</label>
+                            <select value={fd.MedicoApoio||''} onChange={e=>setFd({...fd, MedicoApoio:e.target.value})} className="w-full p-2 border border-indigo-200 dark:border-indigo-900/30 rounded bg-white dark:bg-slate-800 font-bold outline-none text-sm">
+                                <option value="">Atendimento Geral (Sem vínculo)</option>
+                                {medicosAtivos.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
                             </select>
                         </div>
                     )}
@@ -302,10 +316,10 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
 
     const salvar = async () => { setL(true); await onSave('CONFIGURACOES',{ID:'parametros',unidades:u,setores:s,postos:p,habilidades:h,ausencias:a,logoConvenio:logoConv}); onRefresh(); setL(false); alert("Configurações Salvas!"); };
 
-    const openAdd = (t) => setMod({ t, act: 'add', v1: '', v2: '' });
+    const openAdd = (t) => setMod({ t, act: 'add', v1: '', v2: '', v3: '#0ea5e9' });
     const openEdit = (t, idx) => {
         if(t==='u') setMod({ t, act: 'edit', idx, v1: u[idx].nome, v2: '' });
-        if(t==='s') setMod({ t, act: 'edit', idx, v1: s[idx].nome, v2: s[idx].unidade||'' });
+        if(t==='s') setMod({ t, act: 'edit', idx, v1: s[idx].nome, v2: s[idx].unidade||'', v3: s[idx].cor||'#0ea5e9' });
         if(t==='p') setMod({ t, act: 'edit', idx, v1: p[idx].nome, v2: p[idx].setor||'' });
         if(t==='h') setMod({ t, act: 'edit', idx, v1: h[idx], v2: '' });
         if(t==='a') setMod({ t, act: 'edit', idx, v1: a[idx], v2: '' });
@@ -313,15 +327,15 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
 
     const confirmMod = (e) => {
         e.preventDefault();
-        const { t, act, idx, v1, v2 } = mod;
+        const { t, act, idx, v1, v2, v3 } = mod;
         let n1 = v1.trim().toUpperCase(); let n2 = v2.trim().toUpperCase();
         if(t==='p' || t==='h' || t==='a') n1 = v1.trim(); 
         
         if(act === 'add') {
-            if(t==='u') setU([...u, {id:Date.now(), nome:n1}]); if(t==='s') setS([...s, {id:Date.now(), nome:n1, unidade:n2}]); if(t==='p') setP([...p, {id:Date.now(), nome:n1, setor:n2}]);
+            if(t==='u') setU([...u, {id:Date.now(), nome:n1}]); if(t==='s') setS([...s, {id:Date.now(), nome:n1, unidade:n2, cor:v3}]); if(t==='p') setP([...p, {id:Date.now(), nome:n1, setor:n2}]);
             if(t==='h') setH([...h, n1]); if(t==='a') setA([...a, n1]);
         } else {
-            if(t==='u'){ let arr=[...u]; arr[idx].nome=n1; setU(arr); } if(t==='s'){ let arr=[...s]; arr[idx].nome=n1; arr[idx].unidade=n2; setS(arr); }
+            if(t==='u'){ let arr=[...u]; arr[idx].nome=n1; setU(arr); } if(t==='s'){ let arr=[...s]; arr[idx].nome=n1; arr[idx].unidade=n2; arr[idx].cor=v3; setS(arr); }
             if(t==='p'){ let arr=[...p]; arr[idx].nome=n1; arr[idx].setor=n2; setP(arr); } if(t==='h'){ let arr=[...h]; arr[idx]=n1; setH(arr); }
             if(t==='a'){ let arr=[...a]; arr[idx]=n1; setA(arr); }
         }
@@ -341,7 +355,10 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                 {arr.map((item, i) => (
                     <div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-2 rounded text-xs border border-slate-100 dark:border-slate-700">
-                        <div className="truncate pr-2"><p className="font-bold text-slate-800 dark:text-white">{item.nome || item}</p>{item.unidade && <p className="text-[8px] opacity-60">Em: {item.unidade}</p>}{item.setor && <p className="text-[8px] opacity-60">Setor: {item.setor}</p>}</div>
+                        <div className="truncate pr-2 flex items-center gap-2">
+                            {item.cor && <div className="w-3 h-3 rounded-full shrink-0" style={{backgroundColor: item.cor}}></div>}
+                            <div><p className="font-bold text-slate-800 dark:text-white">{item.nome || item}</p>{item.unidade && <p className="text-[8px] opacity-60">Em: {item.unidade}</p>}{item.setor && <p className="text-[8px] opacity-60">Setor: {item.setor}</p>}</div>
+                        </div>
                         <div className="flex gap-1 shrink-0"><button onClick={()=>openEdit(tipo, i)} className="text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 p-1 rounded hover:bg-yellow-200 transition"><i className="ph-bold ph-pencil"></i></button><button onClick={()=>del(tipo, i)} className="text-red-600 bg-red-100 dark:bg-red-900/30 p-1 rounded hover:bg-red-200 transition"><i className="ph-bold ph-trash"></i></button></div>
                     </div>
                 ))}
@@ -360,7 +377,7 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <ListRender title="1. Unidades/Prédios" arr={u} tipo="u" desc="Estruturas físicas (Ex: Matriz)." />
-                <ListRender title="2. Setores" arr={s} tipo="s" desc="Departamentos (Precisa de Unidade)." />
+                <ListRender title="2. Setores / Depart." arr={s} tipo="s" desc="Áreas com cores próprias na Matriz." />
                 <ListRender title="3. Postos/Salas" arr={p} tipo="p" desc="Locais exatos (Precisa de Setor)." />
                 <ListRender title="Motivos de Afastamento" arr={a} tipo="a" desc="Férias, Licenças." />
                 <ListRender title="Competências" arr={h} tipo="h" desc="Habilidades da equipe." />
@@ -372,7 +389,12 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
                         <h3 className="text-xl font-black mb-4">{mod.act==='add'?'Adicionar':'Editar'} Registro</h3>
                         <form onSubmit={confirmMod} className="space-y-4">
                             <div><label className="text-[10px] font-black uppercase opacity-60">Nome / Descrição</label><input type="text" value={mod.v1} onChange={e=>setMod({...mod, v1:e.target.value})} className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 font-bold text-sm text-slate-800 dark:text-white" required autoFocus/></div>
-                            {mod.t === 's' && <div><label className="text-[10px] font-black uppercase opacity-60">Vincular a qual Unidade?</label><select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 font-bold text-sm text-slate-800 dark:text-white" required><option value="">Selecione a Unidade...</option>{u.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>}
+                            {mod.t === 's' && (
+                                <>
+                                    <div><label className="text-[10px] font-black uppercase opacity-60">Vincular a qual Unidade?</label><select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 font-bold text-sm text-slate-800 dark:text-white" required><option value="">Selecione a Unidade...</option>{u.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
+                                    <div><label className="text-[10px] font-black uppercase opacity-60">Cor do Setor na Matriz</label><input type="color" value={mod.v3} onChange={e=>setMod({...mod, v3:e.target.value})} className="w-full h-12 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer p-1" required/></div>
+                                </>
+                            )}
                             {mod.t === 'p' && <div><label className="text-[10px] font-black uppercase opacity-60">Vincular a qual Setor?</label><select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 font-bold text-sm text-slate-800 dark:text-white" required><option value="">Selecione o Setor...</option>{s.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>}
                             <div className="flex justify-end gap-2 pt-4"><button type="button" onClick={()=>setMod(null)} className="px-4 py-2 opacity-60 font-bold">Cancelar</button><button type="submit" className="bg-primary text-white px-6 py-2 rounded-xl font-bold">Confirmar</button></div>
                         </form>
@@ -390,21 +412,14 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
     const u = cfg?.unidades||[]; const s = cfg?.setores||[]; const h = cfg?.habilidades||[]; const a = cfg?.ausencias||[];
 
     const openModal = (i=null) => { 
-        setFd(i ? {...i} : { 
-            Nome:'', Cargo:'', 
-            Tipo: viewMode !== 'MENU' ? viewMode : 'Colaborador',
-            UnidadeBase:'', Setor:'', Habilidades:[], Cor:'#0ea5e9', CRM:'', CodUnimed:'', URA:'', CBO:'', OutroDoc:'', Segmento:'', isGestor: false, StatusGeral:'Ativo',
-            TipoContrato: '', ObservacoesGerais: '' 
-        }); 
+        setFd(i ? {...i} : { Nome:'', Cargo:'', Tipo: viewMode !== 'MENU' ? viewMode : 'Colaborador', UnidadeBase:'', Setor:'', Habilidades:[], Cor:'#0ea5e9', CRM:'', CodUnimed:'', URA:'', CBO:'', OutroDoc:'', Segmento:'', isGestor: false, StatusGeral:'Ativo', TipoContrato: '', ObservacoesGerais: '' }); 
         setModal(true); 
     };
     
     const toggleHab = (hab) => { let arr = fd.Habilidades||[]; setFd({...fd, Habilidades: arr.includes(hab)?arr.filter(x=>x!==hab):[...arr, hab]}); };
     const save = async (e) => { e.preventDefault(); await onSave('PROFISSIONAIS', fd); setModal(false); onRefresh(); };
 
-    const filtrados = ordenarPorNome(data)
-        .filter(p => viewMode === 'MENU' ? true : p.Tipo === viewMode)
-        .filter(p => safeStr(p.Nome).toLowerCase().includes(busca.toLowerCase()));
+    const filtrados = ordenarPorNome(data).filter(p => viewMode === 'MENU' ? true : p.Tipo === viewMode).filter(p => safeStr(p.Nome).toLowerCase().includes(busca.toLowerCase()));
 
     return (
         <div className="animate-fade-in space-y-6 max-w-7xl mx-auto">
@@ -431,10 +446,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
                         <div className="flex items-center gap-4">
                             <button onClick={()=>{setViewMode('MENU'); setBusca('');}} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button>
-                            <div>
-                                <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Visualizando Equipe</p>
-                                <h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Corpo Clínico (Médicos)' : 'Colaboradores'}</h2>
-                            </div>
+                            <div><p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Visualizando Equipe</p><h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Corpo Clínico (Médicos)' : 'Colaboradores'}</h2></div>
                         </div>
                         <div className="flex gap-2 w-full md:w-auto">
                             <input type="text" placeholder="Buscar por nome..." value={busca} onChange={e=>setBusca(e.target.value)} className="p-2.5 rounded-xl border dark:border-slate-700 outline-none text-sm bg-transparent text-slate-800 dark:text-white flex-1 md:w-64 font-bold" />
@@ -455,7 +467,6 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                                         {p.Nome} 
                                         <BadgeConvenio codUnimed={p.CodUnimed} configLogo={cfg?.logoConvenio} />
                                     </h3>
-                                    
                                     <p className="text-[9px] font-bold opacity-60 uppercase mt-0.5">{p.Tipo === 'Médico' ? `CRM: ${p.CRM||'N/A'}` : p.Cargo}</p>
                                     <p className="text-[8px] font-black bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded mt-1 truncate max-w-full text-slate-700 dark:text-slate-300">{p.UnidadeBase||'S/ Unid'} • {p.Setor||'S/ Setor'}</p>
                                     {p.isGestor && <span className="mt-2 text-[8px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">Autorizado Supervisão</span>}
@@ -507,7 +518,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                                 <div><label className="text-[10px] font-black uppercase opacity-60">Afastamentos / Folga Longa</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd,StatusGeral:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 text-red-500 font-bold"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{a.map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
                                 <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Observações Gerais</label><textarea value={fd.ObservacoesGerais||''} onChange={e=>setFd({...fd,ObservacoesGerais:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" rows="2" placeholder="Anotações sobre horários, preferências, restrições..."></textarea></div>
                                 
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor Destacada (Calendário/Matriz)</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-9 cursor-pointer border dark:border-slate-700 rounded p-0.5" /></div>
+                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor Pessoal (Aparece se sem setor)</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-9 cursor-pointer border dark:border-slate-700 rounded p-0.5" /></div>
                             </div>
                             <div><label className="text-[10px] font-black uppercase opacity-60 block mb-1">Competências</label>
                                 <div className="flex flex-wrap gap-1">{h.map((x,i)=><button type="button" key={i} onClick={()=>toggleHab(x)} className={`px-2 py-1 text-[10px] rounded border ${fd.Habilidades?.includes(x)?'bg-primary text-white border-primary':'bg-transparent dark:border-slate-700'}`}>{x}</button>)}</div>
@@ -519,6 +530,110 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
             )}
         </div>
     );
+};
+
+// ================== NOVA ABA: TRABALHANDO HOJE (LISTA DIÁRIA) ==================
+const TrabalhandoHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
+    const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
+    const [viewMode, setViewMode] = useState('MENU');
+    const [infoProfModal, setInfoProfModal] = useState(null);
+    const [editData, setEditData] = useState(null);
+    
+    const dStr = getStrDt(new Date()); 
+    // Só pega as válidas e sem ser folga do dia
+    const escHjRaw = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos) && e.Status !== 'FOLGA');
+
+    const profsHjColab = [];
+    const profsHjMedico = [];
+
+    escHjRaw.forEach(esc => {
+        const pInfo = profs.find(p => p.Nome === esc.Nome_Profissional) || {Nome: esc.Nome_Profissional, Cargo: esc.Cargo, Cor: esc.Cor};
+        const pCompleto = {...pInfo, escalaHj: esc};
+        if (pInfo.Tipo === 'Médico') profsHjMedico.push(pCompleto);
+        else profsHjColab.push(pCompleto);
+    });
+
+    const setStatus = async (esc, st) => { await api.saveRecord('ESCALAS', {...esc, Status:st}); onRefresh(); };
+
+    return (
+        <div className="animate-fade-in space-y-6 max-w-7xl mx-auto pb-10">
+            {viewMode === 'MENU' && (
+                <div>
+                    <h2 className="text-2xl font-black mb-6">Trabalhando Hoje (Lista Diária)</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-primary hover:shadow-lg transition-all">
+                            <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-users-three"></i></div>
+                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Colaboradores no Plantão</h3>
+                            <p className="text-sm font-black text-primary mt-2">{profsHjColab.length} Ativos</p>
+                        </div>
+                        <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-red-500 hover:shadow-lg transition-all">
+                            <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-stethoscope"></i></div>
+                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Médicos no Plantão</h3>
+                            <p className="text-sm font-black text-red-500 mt-2">{profsHjMedico.length} Ativos</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {viewMode !== 'MENU' && (
+                <div className="animate-fade-in space-y-6">
+                    <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
+                        <button onClick={()=>setViewMode('MENU')} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button>
+                        <div>
+                            <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Resumo do Dia</p>
+                            <h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Corpo Clínico Ativo' : 'Colaboradores Ativos'}</h2>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {(viewMode === 'Colaborador' ? profsHjColab : profsHjMedico).map((p, i) => {
+                            const esc = p.escalaHj;
+                            const isInt = esc.Status === 'LANCHE'; const isAus = esc.Status === 'AUSENTE';
+                            const isMe = checkIsMe(esc.Nome_Profissional, user.email);
+
+                            return (
+                                <div key={i} className={`clean-card p-4 flex flex-col items-center text-center relative shadow-sm border-t-4 ${isInt?'border-t-orange-500 bg-orange-50 dark:bg-orange-900/10':isAus?'border-t-red-500 bg-red-50 dark:bg-red-900/10':'border-t-primary'}`}>
+                                    {p.FotoURL ? <img src={fmtImg(p.FotoURL)} onClick={()=>setInfoProfModal(p)} className="w-14 h-14 rounded-full object-cover shadow mb-2 cursor-pointer hover:scale-105" /> : <div onClick={()=>setInfoProfModal(p)} className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black text-white shadow mb-2 cursor-pointer hover:scale-105" style={{backgroundColor:p.Cor||'#0ea5e9'}}>{safeStr(p.Nome)[0]}</div>}
+                                    
+                                    <h3 className="font-black text-xs truncate w-full leading-tight text-slate-800 dark:text-white flex justify-center items-center gap-1 cursor-pointer" onClick={()=>setInfoProfModal(p)}>
+                                        {p.Nome}
+                                        <BadgeConvenio codUnimed={p.CodUnimed} configLogo={cfg?.logoConvenio} />
+                                    </h3>
+                                    
+                                    <div className="w-full bg-white dark:bg-slate-800 p-2 rounded-lg mt-2 border border-slate-100 dark:border-slate-700 text-left">
+                                        <p className="text-[10px] font-black uppercase truncate text-primary">{esc.Sala}</p>
+                                        <p className="text-[8px] font-bold opacity-60 mt-0.5"><i className="ph-fill ph-clock"></i> {esc.Horario}</p>
+                                        {esc.MedicoApoio && <p className="text-[8px] font-bold text-indigo-600 bg-indigo-50 mt-1 px-1 rounded truncate">Apoio: {esc.MedicoApoio}</p>}
+                                        {esc.Auxiliar && <p className="text-[8px] font-bold text-purple-600 bg-purple-50 mt-1 px-1 rounded truncate">Auxiliar: {esc.Auxiliar}</p>}
+                                    </div>
+
+                                    <div className="flex w-full justify-between items-center mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                                        <span className={`text-[8px] font-black px-2 py-1 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600'}`}>{esc.Status === 'NO POSTO' ? 'ATIVO' : esc.Status}</span>
+                                        <div className="flex gap-1">
+                                            {(!isInt && !isAus) ? (
+                                                <>
+                                                    {(isAd || isMe) && <button onClick={()=>setStatus(esc, 'LANCHE')} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 text-slate-500"><i className="ph-fill ph-coffee"></i></button>}
+                                                    {isAd && <button onClick={()=>setEditData(esc)} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 text-slate-500"><i className="ph-fill ph-sliders"></i></button>}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {(isAd || (isMe && isInt)) && <button onClick={()=>setStatus(esc, 'NO POSTO')} className="px-2 py-1 bg-slate-800 text-white rounded text-[8px] font-black"><i className="ph-bold ph-arrow-u-down-left"></i> VOLTAR</button>}
+                                                    {isAus && isAd && <button onClick={()=>setEditData(esc)} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black ml-1"><i className="ph-bold ph-magic-wand"></i> OPÇÕES</button>}
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                    {(viewMode === 'Colaborador' ? profsHjColab : profsHjMedico).length === 0 && <div className="p-10 text-center border-2 border-dashed rounded-2xl opacity-50 font-bold">Ninguém escalado ativo nesta categoria hoje.</div>}
+                </div>
+            )}
+            {infoProfModal && <CrachaVirtual profInfo={infoProfModal} cfg={cfg} onClose={()=>setInfoProfModal(null)} />}
+            {editData && <SuperActionModal escala={editData} profs={profs} cfg={cfg} onClose={()=>setEditData(null)} onSave={onSave} onRefresh={onRefresh} isAd={isAd} />}
+        </div>
+    )
 };
 
 // ================== ABA 3: CALENDÁRIO / BUILDER ==================
@@ -758,7 +873,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                                     
                                                     return (
                                                     <div key={j} className={`p-4 rounded-xl shadow-sm border relative overflow-hidden ${isFolga?'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-80':isAus?'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/30':'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-700'}`}>
-                                                        <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{backgroundColor: isFolga ? '#94a3b8' : isAus ? '#ef4444' : (esc.Cor||'#0ea5e9')}}></div>
+                                                        <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{backgroundColor: isFolga ? '#94a3b8' : isAus ? '#ef4444' : getCorDaSala(esc.Sala, cfg)}}></div>
                                                         
                                                         {(!isFolga && !isAus && esc.Unidade) && <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1 pl-1">{esc.Unidade}</p>}
                                                         
@@ -812,6 +927,8 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const escHjRaw = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
     
     const unids = cfg?.unidades||[]; const setoresSis = cfg?.setores||[]; const postosSis = cfg?.postos||[];
+
+    const setStatus = async (esc, st) => { await api.saveRecord('ESCALAS', {...esc, Status:st}); onRefresh(); };
 
     const renderPosto = (sala, ocupantes) => {
         ocupantes.sort((a,b)=> (a.Horario||'').localeCompare(b.Horario||''));
@@ -1063,73 +1180,128 @@ const MatrixBoardView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             }
         }
 
+        // Se for médico, agrupa colunas por Unidade
+        if (viewMode === 'Médico') {
+            const unidadesAtivas = Array.from(new Set(escalasDia.map(e=>e.Unidade))).filter(Boolean);
+            
+            if(unidadesAtivas.length === 0) return <div className="mb-8"><h3 className="text-lg font-black mb-3 text-primary">{dStr}</h3><p className="opacity-50 font-bold p-4 border border-dashed rounded-xl">Sem plantões médicos hoje.</p></div>
+
+            return (
+                <div className="mb-10">
+                    <h3 className="text-lg font-black mb-3 text-primary flex items-center gap-2"><i className="ph-fill ph-calendar-blank"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'short', year: 'numeric'}).toUpperCase()}</h3>
+                    
+                    {unidadesAtivas.map(und => {
+                        // Só pega as salas desta unidade que tem alguem
+                        const escUnid = escalasDia.filter(e=>e.Unidade === und);
+                        const salasUsadasNestaUnidadeNesteDia = Array.from(new Set(escUnid.map(e=>e.Sala)));
+                        
+                        return (
+                            <div key={und} className="mb-6">
+                                <h4 className="text-sm font-black text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-widest pl-2 border-l-4 border-slate-300">{und}</h4>
+                                <div className="time-grid-container shadow-md">
+                                    <div className="matrix-time-col">
+                                        <div className="matrix-header-cell">H</div>
+                                        {HORAS_REGUA.map(h => <div key={h} className="matrix-time-cell">{String(h).padStart(2,'0')}:00</div>)}
+                                    </div>
+                                    {salasUsadasNestaUnidadeNesteDia.map(salaNome => {
+                                        const blocos = escUnid.filter(e=>e.Sala === salaNome);
+                                        return (
+                                            <div key={salaNome} className="matrix-data-col">
+                                                <div className="matrix-header-cell truncate" title={salaNome}>{salaNome}</div>
+                                                <div className="relative" style={{height: `${(H_FIM - H_INICIO + 1) * PIXELS_POR_HORA}px`}}>
+                                                    {linhaAgora !== null && <div className="matrix-now-line" style={{top: `${linhaAgora}px`}}></div>}
+                                                    {blocos.map((b, bIdx) => {
+                                                        const isFolga = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
+                                                        let top = 0; let height = PIXELS_POR_HORA;
+                                                        
+                                                        if (isFolga || b.Horario === 'A DEFINIR') { top = 4; height = 40; } 
+                                                        else {
+                                                            const vIn = parseHorario(b.Horario.split(' às ')[0]?.trim());
+                                                            let vOut = parseHorario(b.Horario.split(' às ')[1]?.trim());
+                                                            if(vIn !== null && vOut !== null) {
+                                                                if(vOut <= vIn) vOut += 24; 
+                                                                top = (vIn - H_INICIO) * PIXELS_POR_HORA;
+                                                                height = (vOut - vIn) * PIXELS_POR_HORA;
+                                                                if(top < 0) { height += top; top = 0; } 
+                                                            }
+                                                        }
+                                                        let bgColor = isFolga ? '#94a3b8' : getCorDaSala(b.Sala, cfg);
+                                                        const pInfo = profs.find(p => p.Nome === b.Nome_Profissional) || {};
+
+                                                        return (
+                                                            <div key={bIdx} onClick={()=> isAd && setEditData({...b})} className="matrix-block" style={{top:`${top}px`, height:`${height}px`, backgroundColor: bgColor}}>
+                                                                <span className="truncate w-full font-black text-[11px] flex items-center gap-1">
+                                                                    {b.Nome_Profissional} {pInfo.CodUnimed && <div className="w-1.5 h-1.5 bg-white rounded-full shrink-0 shadow"></div>}
+                                                                </span>
+                                                                {!isFolga && b.Horario !== 'A DEFINIR' && <span className="text-[9px] font-medium opacity-90">{b.Horario}</span>}
+                                                                {b.Auxiliar && <span className="text-[8px] bg-black/20 px-1 rounded mt-1 truncate w-max">Aux: {b.Auxiliar}</span>}
+                                                                {(isFolga || b.Horario==='A DEFINIR') && <span className="text-[9px] font-black text-red-100 mt-auto">{b.Status==='FOLGA'?'FOLGA':'A DEFINIR'}</span>}
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            )
+        }
+
+        // Visão Colaborador (Padrao)
         return (
             <div className="mb-10">
                 <h3 className="text-lg font-black mb-3 text-primary flex items-center gap-2"><i className="ph-fill ph-calendar-blank"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'short', year: 'numeric'}).toUpperCase()}</h3>
                 
                 <div className="time-grid-container shadow-md">
-                    {/* Coluna da Esquerda (Horas Fixo) */}
-                    <div className="time-col-hours">
-                        <div className="time-col-header" style={{minWidth:'60px'}}>H</div>
+                    <div className="matrix-time-col">
+                        <div className="matrix-header-cell">H</div>
                         {HORAS_REGUA.map(h => (
-                            <div key={h} className="time-cell-hour">{String(h).padStart(2,'0')}:00</div>
+                            <div key={h} className="matrix-time-cell">{String(h).padStart(2,'0')}:00</div>
                         ))}
                     </div>
 
-                    {/* Colunas de Dados */}
                     {colunas.map((col, idx) => {
-                        const blocos = getBloqueios(viewMode === 'Colaborador' ? col.Nome : col.nome, viewMode === 'Colaborador');
+                        const blocos = getBloqueios(col.Nome, true);
+                        if(blocos.length === 0) return null; // Esconde colaborador que nao trabalha no dia
                         
                         return (
-                            <div key={idx} className="time-col-data">
-                                <div className="time-col-header truncate" title={viewMode === 'Colaborador' ? col.Nome : col.nome}>
-                                    {viewMode === 'Colaborador' ? col.Nome.split(' ')[0] + ' ' + (col.Nome.split(' ')[1]||'') : col.nome}
-                                    <span className="block text-[8px] font-normal opacity-50 truncate">{viewMode === 'Colaborador' ? col.Cargo : col.setor}</span>
+                            <div key={idx} className="matrix-data-col">
+                                <div className="matrix-header-cell truncate" title={col.Nome}>
+                                    {col.Nome.split(' ')[0] + ' ' + (col.Nome.split(' ')[1]||'')}
+                                    <span className="block text-[8px] font-normal opacity-50 truncate">{col.Cargo}</span>
                                 </div>
                                 
                                 <div className="relative" style={{height: `${(H_FIM - H_INICIO + 1) * PIXELS_POR_HORA}px`}}>
-                                    {linhaAgora !== null && <div className="time-line-now" style={{top: `${linhaAgora}px`}}></div>}
+                                    {linhaAgora !== null && <div className="matrix-now-line" style={{top: `${linhaAgora}px`}}></div>}
 
                                     {blocos.map((b, bIdx) => {
                                         const isFolga = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
-                                        let top = 0; let height = PIXELS_POR_HORA; // Default
+                                        let top = 0; let height = PIXELS_POR_HORA; 
                                         
-                                        if (isFolga || b.Horario === 'A DEFINIR') {
-                                            // Mostra no topo
-                                            top = 4; height = 40;
-                                        } else {
+                                        if (isFolga || b.Horario === 'A DEFINIR') { top = 4; height = 40; } 
+                                        else {
                                             const vIn = parseHorario(b.Horario.split(' às ')[0]?.trim());
                                             let vOut = parseHorario(b.Horario.split(' às ')[1]?.trim());
-                                            
                                             if(vIn !== null && vOut !== null) {
-                                                if(vOut < vIn) vOut += 24; 
+                                                if(vOut <= vIn) vOut += 24; 
                                                 top = (vIn - H_INICIO) * PIXELS_POR_HORA;
                                                 height = (vOut - vIn) * PIXELS_POR_HORA;
-                                                if(top < 0) { height += top; top = 0; } // corta o topo se começou antes
+                                                if(top < 0) { height += top; top = 0; } 
                                             }
                                         }
 
-                                        let bgColor = isFolga ? '#94a3b8' : (b.Cor || '#0ea5e9');
-                                        const pInfo = profs.find(p => p.Nome === b.Nome_Profissional) || {};
+                                        let bgColor = isFolga ? '#94a3b8' : getCorDaSala(b.Sala, cfg);
 
                                         return (
-                                            <div key={bIdx} onClick={()=> isAd && setEditData({...b})} className="time-block" style={{top:`${top}px`, height:`${height-4}px`, backgroundColor: bgColor}}>
-                                                {viewMode === 'Colaborador' ? (
-                                                    <>
-                                                        <span className="truncate w-full">{b.Sala}</span>
-                                                        <span className="text-[8px] opacity-70 font-normal uppercase flex items-center gap-1"><i className="ph-fill ph-map-pin"></i> {b.Unidade || 'Geral'}</span>
-                                                        {!isFolga && b.Horario !== 'A DEFINIR' && <span className="text-[8px] font-normal mt-auto opacity-70">{b.Horario}</span>}
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <span className="truncate w-full flex items-center gap-1">
-                                                            {b.Nome_Profissional} {pInfo.CodUnimed && <div className="w-1.5 h-1.5 bg-green-400 rounded-full shrink-0"></div>}
-                                                        </span>
-                                                        {!isFolga && b.Horario !== 'A DEFINIR' && <span className="text-[8px] font-normal opacity-70">{b.Horario}</span>}
-                                                        {b.Auxiliar && <span className="text-[8px] bg-white/20 px-1 rounded mt-1 truncate">Aux: {b.Auxiliar}</span>}
-                                                    </>
-                                                )}
-                                                {(isFolga || b.Horario==='A DEFINIR') && <span className="text-[8px] font-black text-red-100 mt-auto">{b.Status==='FOLGA'?'FOLGA':'A DEFINIR'}</span>}
+                                            <div key={bIdx} onClick={()=> isAd && setEditData({...b})} className="matrix-block" style={{top:`${top}px`, height:`${height}px`, backgroundColor: bgColor}}>
+                                                <span className="truncate w-full font-black text-[11px] leading-tight">{b.Sala}</span>
+                                                {b.MedicoApoio && <span className="text-[8px] bg-black/20 px-1 py-0.5 rounded mt-1 truncate">Apoio: {b.MedicoApoio}</span>}
+                                                {!isFolga && b.Horario !== 'A DEFINIR' && <span className="text-[9px] font-medium mt-auto opacity-90">{b.Horario}</span>}
+                                                {(isFolga || b.Horario==='A DEFINIR') && <span className="text-[9px] font-black text-red-100 mt-auto">{b.Status==='FOLGA'?'FOLGA':'A DEFINIR'}</span>}
                                             </div>
                                         )
                                     })}
@@ -1146,7 +1318,7 @@ const MatrixBoardView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         <div className="animate-fade-in space-y-6 max-w-[1600px] mx-auto pb-10">
             {viewMode === 'MENU' && (
                 <div>
-                    <h2 className="text-2xl font-black mb-6">Matriz de Plantão (Múltiplos Dias)</h2>
+                    <h2 className="text-2xl font-black mb-6">Matriz de Plantão (Visão Ampla)</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-primary hover:shadow-lg transition-all">
                             <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-table"></i></div>
@@ -1176,7 +1348,7 @@ const MatrixBoardView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                         <div className="flex flex-wrap items-center gap-4">
                             <div className="flex items-center bg-white dark:bg-slate-800 p-1.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                                 <button onClick={()=>setDataBase(new Date(dataBase.setDate(dataBase.getDate() - rangeDias)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded"><i className="ph-bold ph-caret-left"></i></button>
-                                <span className="font-black text-xs uppercase px-2">Início: {dataBase.toLocaleDateString('pt-BR')}</span>
+                                <span className="font-black text-xs uppercase px-2 text-center min-w-[120px]">Início: {dataBase.toLocaleDateString('pt-BR')}</span>
                                 <button onClick={()=>setDataBase(new Date(dataBase.setDate(dataBase.getDate() + rangeDias)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded"><i className="ph-bold ph-caret-right"></i></button>
                             </div>
                             
@@ -1238,11 +1410,13 @@ const App = () => {
 
     const isAd = u.nivel === 'Admin' || u.nivel === 'Supervisor';
     
+    // MENU ATUALIZADO COM A NOVA ABA
     const menu = [ 
         {id:'HOJE', i:'ph-kanban', n:'Plantão'}, 
+        {id:'DIARIO', i:'ph-users-three', n:'Trabalhando'}, 
         {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas'}, 
-        {id:'GANTT', i:'ph-table', n:'Matriz/Visão Ampla'}, 
-        {id:'EQUIPE', i:'ph-users', n:'Equipe', adminOnly:true}, 
+        {id:'MATRIZ', i:'ph-table', n:'Visão Ampla'}, 
+        {id:'EQUIPE', i:'ph-address-book', n:'Equipe', adminOnly:true}, 
         {id:'CONFIG', i:'ph-gear', n:'Ajustes', adminOnly:true} 
     ];
 
@@ -1253,14 +1427,15 @@ const App = () => {
                 <nav className="flex-1 px-4 py-6 space-y-2">{menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition ${t===m.id?'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400':'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><i className={`ph-fill ${m.i} text-xl`}></i> {m.n}</button>)}</nav>
                 <div className="p-4 border-t border-slate-100 dark:border-slate-800"><button onClick={()=>auth.signOut()} className="text-red-500 font-bold flex items-center gap-2 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded w-full transition"><i className="ph-bold ph-sign-out text-lg"></i> Sair do App</button></div>
             </aside>
-            <nav className="md:hidden fixed bottom-0 inset-x-0 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around p-2 pb-safe bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">{menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`flex flex-col items-center gap-1 p-2 rounded-xl w-16 transition ${t===m.id?'text-primary':'text-slate-400'}`}><i className={`ph-fill ${m.i} text-2xl`}></i><span className="text-[9px] font-black uppercase">{m.n}</span></button>)}</nav>
+            <nav className="md:hidden fixed bottom-0 inset-x-0 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around p-2 pb-safe bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] overflow-x-auto hide-scroll">{menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[64px] transition ${t===m.id?'text-primary':'text-slate-400'}`}><i className={`ph-fill ${m.i} text-2xl`}></i><span className="text-[9px] font-black uppercase">{m.n}</span></button>)}</nav>
             
             <main className="flex-1 transition-all p-4 md:p-8 w-full md:ml-64">
-                {(t==='HOJE'||t==='CALENDARIO'||t==='GANTT') && <div className="max-w-[1600px] mx-auto"><TopHeader user={u} isDark={isD} toggleDark={()=>setIsD(!isD)} /></div>}
+                {(t==='HOJE'||t==='CALENDARIO'||t==='MATRIZ'||t==='DIARIO') && <div className="max-w-[1600px] mx-auto"><TopHeader user={u} isDark={isD} toggleDark={()=>setIsD(!isD)} /></div>}
                 
                 {t==='HOJE' && <PainelHojeView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
+                {t==='DIARIO' && <TrabalhandoHojeView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
                 {t==='CALENDARIO' && <CalendarioView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
-                {t==='GANTT' && <MatrixBoardView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
+                {t==='MATRIZ' && <MatrixBoardView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
                 {t==='EQUIPE' && isAd && <EquipeView data={dbD.PROFISSIONAIS} cfg={dbD.CONFIGURACOES || {}} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={f} />}
                 {t==='CONFIG' && isAd && <AjustesView cfg={dbD.CONFIGURACOES || {}} onSave={api.saveRecord} onRefresh={f} />}
             </main>
