@@ -13,7 +13,11 @@
     theme: {
       extend: {
         colors: { primary: '#0ea5e9', secondary: '#1E40AF', accent: '#10b981' },
-        animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'pulse-slow': 'pulse 3s infinite' }
+        animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'pulse-slow': 'pulse 3s infinite', 'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both' },
+        keyframes: {
+          fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+          shake: { '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' }, '20%, 80%': { transform: 'translate3d(2px, 0, 0)' }, '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' }, '40%, 60%': { transform: 'translate3d(4px, 0, 0)' } }
+        }
       }
     }
   }
@@ -38,34 +42,30 @@
   .dark .clean-card { background-color: #1e293b; border-color: #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); color: #f8fafc; }
   .clean-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08); }
   
-  /* CSS GANTT HORIZONTAL E VERTICAL */
+  /* CSS GANTT TIMELINE DRAG&DROP */
   .gantt-scroll-area { max-height: 70vh; overflow-y: auto; overflow-x: auto; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; }
   .dark .gantt-scroll-area { background: #0f172a; border-color: #334155; }
   
-  .g-h-row { display: flex; border-bottom: 1px solid #f1f5f9; min-height: 56px; }
+  .g-h-row { display: flex; border-bottom: 1px solid #e2e8f0; min-height: 60px; position: relative; }
   .dark .g-h-row { border-color: #334155; }
-  .g-h-label { width: 160px; min-width: 160px; position: sticky; left: 0; background: #f8fafc; z-index: 20; border-right: 2px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; padding: 8px; }
+  .g-h-label { width: 180px; min-width: 180px; position: sticky; left: 0; background: #f8fafc; z-index: 20; border-right: 2px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; padding: 8px; }
   .dark .g-h-label { background: #1e293b; border-color: #334155; }
-  .g-h-track { flex: 1; position: relative; min-width: 800px; background: repeating-linear-gradient(90deg, transparent, transparent calc(100%/18 - 1px), #f1f5f9 calc(100%/18 - 1px), #f1f5f9 calc(100%/18)); }
-  .dark .g-h-track { background: repeating-linear-gradient(90deg, transparent, transparent calc(100%/18 - 1px), #1e293b calc(100%/18 - 1px), #1e293b calc(100%/18)); }
+  
+  /* Fundo listrado a cada 30 minutos (Dynamic) */
+  .g-h-track { flex: 1; position: relative; display: flex; }
+  .g-h-cell { flex: 1; border-right: 1px dashed rgba(0,0,0,0.05); height: 100%; transition: background 0.2s; }
+  .dark .g-h-cell { border-right-color: rgba(255,255,255,0.05); }
+  .g-h-cell.drag-over { background: rgba(14, 165, 233, 0.1); }
+  
   .g-h-header { position: sticky; top: 0; z-index: 30; background: #fff; display: flex; border-bottom: 2px solid #e2e8f0; height: 40px; }
   .dark .g-h-header { background: #0f172a; border-color: #334155; }
-  .g-h-block { position: absolute; top: 6px; bottom: 6px; border-radius: 6px; padding: 4px 8px; color: white; font-size: 10px; font-weight: 800; display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; border: 1px solid rgba(255,255,255,0.2); z-index: 10; }
-  .g-h-block:hover { transform: scaleY(1.1); z-index: 15; filter: brightness(1.1); }
   
-  .m-v-time { width: 50px; min-width: 50px; position: sticky; left: 0; background: #f8fafc; z-index: 20; border-right: 2px solid #e2e8f0; }
-  .dark .m-v-time { background: #1e293b; border-color: #334155; }
-  .m-v-cell { height: 60px; display: flex; justify-content: center; padding-top: 4px; font-size: 10px; font-weight: 900; color: #94a3b8; border-bottom: 1px solid #f1f5f9; }
-  .dark .m-v-cell { border-color: #334155; color: #64748b; }
-  .m-v-col { min-width: 140px; flex: 1; border-right: 1px solid #f1f5f9; position: relative; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #f1f5f9 59px, #f1f5f9 60px); }
-  .dark .m-v-col { border-color: #334155; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #1e293b 59px, #1e293b 60px); }
-  .m-v-header { height: 50px; position: sticky; top: 0; z-index: 30; background: #fff; border-bottom: 2px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 4px; }
-  .dark .m-v-header { background: #0f172a; border-color: #334155; }
-  .m-v-block { position: absolute; left: 4px; right: 4px; border-radius: 8px; padding: 6px; color: white; font-size: 10px; font-weight: 800; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; z-index: 10; border: 1px solid rgba(255,255,255,0.2); line-height: 1.2; }
-  .m-v-block:hover { transform: scaleX(1.05); z-index: 15; filter: brightness(1.1); }
+  .g-h-block { position: absolute; top: 6px; bottom: 6px; border-radius: 6px; padding: 4px 8px; color: white; font-size: 10px; font-weight: 800; display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: grab; transition: filter 0.2s, transform 0.2s; border: 1px solid rgba(255,255,255,0.2); z-index: 10; }
+  .g-h-block:active { cursor: grabbing; opacity: 0.8; z-index: 50; }
+  .g-h-block:hover { filter: brightness(1.1); }
+  .g-h-block.conflict { border: 2px solid #ef4444; animation: pulse 2s infinite; }
   
-  .linha-agora-h { position: absolute; top: 0; bottom: 0; width: 2px; background: #ef4444; z-index: 18; }
-  .linha-agora-v { position: absolute; left: 0; right: 0; height: 2px; background: #ef4444; z-index: 18; }
+  .linha-agora-h { position: absolute; top: 0; bottom: 0; width: 2px; background: #ef4444; z-index: 18; pointer-events: none; }
   
   /* MURAL DE ANIVERSÁRIOS */
   .mural-bg { background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
@@ -75,9 +75,9 @@
   .dark .card-niver { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-color: #be185d; }
 </style>
 <script>
-  if (localStorage.getItem('escalas_versao') !== "53.0.0") { 
+  if (localStorage.getItem('escalas_versao') !== "54.0.0") { 
     localStorage.clear(); sessionStorage.clear(); 
-    localStorage.setItem('escalas_versao', "53.0.0"); window.location.reload(); 
+    localStorage.setItem('escalas_versao', "54.0.0"); window.location.reload(); 
   }
 </script>
 </head>
@@ -105,14 +105,14 @@ const api = {
   deleteRecord: async (c, id) => { try { await db.collection(c).doc(id).delete(); return true; } catch(e){ return false; } }
 };
 
-// ================== FUNÇÕES GLOBAIS BLINDADAS ==================
+// ================== FUNÇÕES GLOBAIS (BLINDADAS) ==================
 const safeStr = (v) => v == null ? '' : String(v);
 const fmtImg = (u) => { let s = safeStr(u).trim(); if(!s) return ''; const m = s.match(/(?:file\/d\/|id=|v\/|u\/\d+\/p\/)([a-zA-Z0-9_-]{25,})/); return m ? `https://drive.google.com/uc?export=view&id=${m[1]}` : s; };
 const getStrDt = (d) => d ? String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear() : '';
 const ordenarPorNome = (lista) => [...lista].sort((a, b) => safeStr(a.Nome).localeCompare(safeStr(b.Nome)));
 const checkIsMe = (nome, email) => { if(!nome || !email) return false; const p = safeStr(email).toLowerCase().split('@')[0].split(/[.\-_]/); const n = safeStr(nome).toLowerCase(); return p.some(x => x.length > 2 && n.includes(x)); };
 
-// LOGICA DE ANIVERSARIO
+// Lógica de Aniversário
 const checkNiver = (niverStr) => {
   if (!niverStr) return { isHoje: false, isSemana: false };
   const hj = new Date(); const hjD = hj.getDate(); const hjM = hj.getMonth() + 1;
@@ -138,13 +138,14 @@ const getCorDaSala = (salaNome, cfg) => {
   return s?.cor || '#0ea5e9';
 };
 
-// Funções de Horário Globais Garantidas
+// Funções de Tempo Matemáticas
 const parseHorario = (hStr) => {
   if(!hStr || hStr === 'A DEFINIR') return null;
   let pts = hStr.split(':'); if(pts.length < 2) return null;
   return parseInt(pts[0]) + (parseInt(pts[1])/60);
 };
 
+// Esta função garante que as horas noturnas passem para a frente no Gantt
 const parseHorarioParaGantt = (hStr, hInicio) => {
   if(!hStr || hStr === 'A DEFINIR') return null;
   let pts = hStr.split(':'); if(pts.length < 2) return null;
@@ -164,7 +165,7 @@ class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false }; }
   static getDerivedStateFromError() { return { hasError: true }; }
   render() { 
-    if (this.state.hasError) return <div className="p-10 text-center text-red-500 font-bold">Ocorreu um erro visual.<br/><button onClick={()=>location.reload()} className="mt-4 bg-red-500 text-white px-4 py-2 rounded-xl">Recarregar Sistema</button></div>; 
+    if (this.state.hasError) return <div className="p-10 text-center text-red-500 font-bold">Ocorreu um erro visual. <button onClick={()=>location.reload()} className="underline ml-2">Recarregar App</button></div>; 
     return this.props.children; 
   }
 }
@@ -186,7 +187,7 @@ const TopHeader = ({ user, isDark, toggleDark }) => {
   );
 };
 
-// ================== SUPER MODAL ==================
+// ================== SUPER MODAL (GERENCIAR ESCALA) ==================
 const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd }) => {
   const [fd, setFd] = useState({...escala});
   const isMedico = fd.Cargo?.toLowerCase().includes('médico') || profs.find(p=>p.Nome===fd.Nome_Profissional)?.Tipo === 'Médico';
@@ -228,7 +229,7 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
           <div>
             <label className="text-[10px] font-black uppercase opacity-60">Status</label>
             <select value={fd.Status} onChange={e=>setFd({...fd, Status:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none">
-              <option value="NO POSTO">🟢 Turno Normal</option><option value="LANCHE">☕ Lanche / Pausa</option><option value="FOLGA">⚪ Folga Agendada</option><option value="AUSENTE">🔴 Ausente / Falta</option>
+              <option value="NO POSTO">🟢 Turno Normal (Ativo)</option><option value="LANCHE">☕ Lanche / Pausa</option><option value="FOLGA">⚪ Folga Agendada</option><option value="AUSENTE">🔴 Ausente / Falta</option>
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -246,7 +247,7 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
           </div>
           {isMedico ? (
             <div className="bg-purple-50 dark:bg-purple-900/10 p-3 rounded-xl border border-purple-200 dark:border-purple-900/30">
-              <label className="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase mb-1 flex"><i className="ph-fill ph-user-plus mr-1"></i> Auxiliar de Sala</label>
+              <label className="text-[10px] font-black text-purple-600 dark:text-purple-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-user-plus mr-1"></i> Auxiliar de Sala</label>
               <select value={fd.Auxiliar||''} onChange={e=>setFd({...fd, Auxiliar:e.target.value})} className="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-700 text-sm font-bold outline-none">
                 <option value="">Sem auxiliar</option>
                 {colabsL.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
@@ -254,7 +255,7 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
             </div>
           ) : (
             <div className="bg-indigo-50 dark:bg-indigo-900/10 p-3 rounded-xl border border-indigo-200 dark:border-indigo-900/30">
-              <label className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase mb-1 flex"><i className="ph-fill ph-stethoscope mr-1"></i> Apoio a Médico</label>
+              <label className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-stethoscope mr-1"></i> Apoio a Médico</label>
               <select value={fd.MedicoApoio||''} onChange={e=>setFd({...fd, MedicoApoio:e.target.value})} className="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-700 text-sm font-bold outline-none">
                 <option value="">Atendimento Geral</option>
                 {medsA.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
@@ -331,8 +332,7 @@ const CrachaVirtual = ({ profInfo, cfg, onClose }) => {
     </div>
   );
 };
-
-// ================== ABA 1: AJUSTES (CONFIGURAÇÕES GERAIS) ==================
+  // ================== ABA 1: AJUSTES (CONFIGURAÇÕES GERAIS) ==================
 const AjustesView = ({ cfg, onSave, onRefresh }) => {
   const [u, setU] = useState([]); const [s, setS] = useState([]); const [p, setP] = useState([]); 
   const [h, setH] = useState([]); const [a, setA] = useState([]); 
@@ -347,7 +347,7 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
   const salvar = async () => { 
     setL(true); 
     await onSave('CONFIGURACOES',{ID:'parametros',unidades:u,setores:s,postos:p,habilidades:h,ausencias:a,logoConvenio:logoConv}); 
-    onRefresh(); setL(false); alert("Salvo com sucesso!"); 
+    onRefresh(); setL(false); alert("Salvo com sucesso no Banco de Dados!"); 
   };
 
   const confirmMod = (e) => { 
@@ -527,7 +527,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                     
                     {(niver.isHoje || niver.isSemana) && <p className="text-[9px] font-black text-pink-600 bg-pink-100 dark:bg-pink-900/30 px-2 py-0.5 rounded mt-1.5 shadow-sm">🎂 Niver {niver.strData}</p>}
 
-                    {p.isGestor && <span className="mt-2 text-[8px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Gestor</span>}
+                    {p.isGestor && <span className="mt-2 text-[8px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Gestor / Supervisor</span>}
                     
                     <button onClick={(e)=>{e.stopPropagation(); if(confirm('Tem certeza que deseja excluir permanentemente?')) { onDelete('PROFISSIONAIS', p.ID); onRefresh(); }}} className="absolute top-2 right-2 text-red-500 bg-red-50 dark:bg-red-900/20 p-1.5 rounded hover:bg-red-100 transition"><i className="ph-fill ph-trash"></i></button>
                   </div>
@@ -575,8 +575,9 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                 <div><label className="text-[10px] font-black uppercase opacity-60">Status Geral</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd, StatusGeral:e.target.value})} className="w-full p-2 border rounded-lg font-bold text-red-500 dark:border-slate-700 dark:bg-slate-900 outline-none"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{(cfg?.ausencias||[]).map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
                 
                 <div><label className="text-[10px] font-black uppercase opacity-60">Cor Pessoal (Matriz/Calendário)</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd, Cor:e.target.value})} className="w-full h-10 border rounded p-1 cursor-pointer dark:border-slate-700"/></div>
-                <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Observações Gerais</label><textarea value={fd.ObservacoesGerais||''} onChange={e=>setFd({...fd, ObservacoesGerais:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 outline-none" placeholder="Anotações..." rows="2"></textarea></div>
+                <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Observações Gerais</label><textarea value={fd.ObservacoesGerais||''} onChange={e=>setFd({...fd, ObservacoesGerais:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 outline-none" placeholder="Anotações para a gestão..." rows="2"></textarea></div>
                 
+                <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60 mb-1 block">Competências</label><div className="flex flex-wrap gap-1">{(cfg?.habilidades||[]).map((x,i)=><button type="button" key={i} onClick={()=>toggleHab(x)} className={`px-3 py-1.5 text-[10px] font-bold rounded-lg border transition ${fd.Habilidades?.includes(x)?'bg-primary text-white border-primary shadow':'bg-slate-50 dark:bg-slate-800 dark:border-slate-700'}`}>{x}</button>)}</div></div>
               </div>
               <div className="flex justify-end gap-2 pt-4 border-t dark:border-slate-700 mt-4">
                 <button type="button" onClick={()=>setModal(false)} className="px-4 py-2 opacity-60 font-bold">Cancelar</button>
@@ -589,7 +590,8 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
     </div>
   );
 };
-  // ================== ABA 3: CALENDÁRIO / CRIAR ESCALAS ==================
+
+// ================== ABA 3: CALENDÁRIO E MULTI-DATAS ==================
 const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
   const [mode, setMode] = useState('TIMELINE'); 
@@ -1126,15 +1128,15 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {pRend.map((nomeS, i) => {
-              const ocup = escHjRaw.filter(e => e.Sala === nomeS && e.Status !== 'FOLGA');
-              const postoInfo = postosSis.find(p => p.nome === nomeS) || {setor: 'Geral'};
+            {pRend.map((nomeSala, i) => {
+              const ocup = escHjRaw.filter(e => e.Sala === nomeSala && e.Status !== 'FOLGA');
+              const postoInfo = postosSis.find(p => p.nome === nomeSala) || {setor: 'Geral'};
               return (
                 <div key={i} className="clean-card flex flex-col p-1 min-h-[140px] border-t-4 border-t-primary shadow-md">
                   <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-t-xl font-black text-[11px] uppercase tracking-widest text-center border-b border-blue-100 dark:border-blue-900/30 truncate px-2">
-                    {nomeS} <span className="block text-[8px] opacity-50 font-normal">{postoInfo.setor}</span>
+                    {nomeSala} <span className="block text-[8px] opacity-50 font-normal">{postoInfo.setor}</span>
                   </div>
-                  {renderPosto(nomeS, ocup)}
+                  {renderPosto(nomeSala, ocup)}
                 </div>
               )
             })}
@@ -1274,6 +1276,8 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                       {blocos.map((b, bIdx) => {
                         const isF = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
                         let left = 0; let width = 100;
+                        let hasConflict = false;
+
                         if (isF || b.Horario === 'A DEFINIR') { left = 1; width = 98; }
                         else {
                           const vIn = parseHorarioParaGantt(b.Horario.split(' às ')[0], H_INICIO); let vOut = parseHorarioParaGantt(b.Horario.split(' às ')[1], H_INICIO);
@@ -1281,13 +1285,24 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                             if(vOut <= vIn) vOut += 24; 
                             left = ((vIn - H_INICIO)/H_TOTAL)*100; width = ((vOut - vIn)/H_TOTAL)*100;
                             if(left < 0) { width += left; left = 0; } if(left+width > 100) width = 100 - left;
+                            
+                            // Detecção de Conflito de Horário
+                            blocos.forEach((outB, oI) => {
+                              if(bIdx !== oI && !isF && outB.Horario !== 'A DEFINIR' && outB.Status !== 'FOLGA'){
+                                const oIn = parseHorarioParaGantt(outB.Horario.split(' às ')[0], H_INICIO);
+                                let oOut = parseHorarioParaGantt(outB.Horario.split(' às ')[1], H_INICIO);
+                                if(oOut <= oIn) oOut += 24;
+                                if((vIn >= oIn && vIn < oOut) || (vOut > oIn && vOut <= oOut)) hasConflict = true;
+                              }
+                            });
                           }
                         }
                         const bColor = isF ? '#94a3b8' : getCorDaSala(b.Sala, cfg);
                         const exNome = viewMode === 'Médico' ? b.Nome_Profissional : b.Sala;
                         
                         return (
-                          <div key={bIdx} onClick={()=>isAd && setEditData({...b})} className="g-h-block" style={{left: `${left}%`, width: `${width}%`, backgroundColor: bColor}}>
+                          <div key={bIdx} onClick={()=>isAd && setEditData({...b})} className={`g-h-block ${hasConflict ? 'conflict' : ''}`} style={{left: `${left}%`, width: `${width}%`, backgroundColor: bColor}}>
+                            {hasConflict && <span className="absolute -top-2 -right-2 text-xl z-50">⚠️</span>}
                             <span className="truncate w-full font-black text-[11px] leading-tight">{isF ? 'FOLGA' : exNome}</span>
                             {!isF && b.Horario !== 'A DEFINIR' && <span className="text-[8px] opacity-90 truncate w-full">{b.Horario}</span>}
                           </div>
@@ -1328,6 +1343,8 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     {blocos.map((b, bIdx) => {
                       const isF = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
                       let top = 0; let height = PX_HORA; 
+                      let hasConflict = false;
+
                       if (isF || b.Horario === 'A DEFINIR') { top = 4; height = 40; } 
                       else {
                         const vIn = parseHorarioParaGantt(b.Horario.split(' às ')[0], H_INICIO); let vOut = parseHorarioParaGantt(b.Horario.split(' às ')[1], H_INICIO);
@@ -1335,13 +1352,24 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                           if(vOut <= vIn) vOut += 24; 
                           top = (vIn - H_INICIO) * PX_HORA; height = (vOut - vIn) * PX_HORA;
                           if(top < 0) { height += top; top = 0; } 
+
+                          // Verificação de conflito
+                          blocos.forEach((outB, oI) => {
+                            if(bIdx !== oI && !isF && outB.Horario !== 'A DEFINIR' && outB.Status !== 'FOLGA'){
+                              const oIn = parseHorarioParaGantt(outB.Horario.split(' às ')[0], H_INICIO);
+                              let oOut = parseHorarioParaGantt(outB.Horario.split(' às ')[1], H_INICIO);
+                              if(oOut <= oIn) oOut += 24;
+                              if((vIn >= oIn && vIn < oOut) || (vOut > oIn && vOut <= oOut)) hasConflict = true;
+                            }
+                          });
                         }
                       }
                       const bColor = isF ? '#94a3b8' : getCorDaSala(b.Sala, cfg);
                       const exNome = viewMode === 'Médico' ? b.Nome_Profissional : b.Sala;
 
                       return (
-                        <div key={bIdx} onClick={()=>isAd && setEditData({...b})} className="m-v-block" style={{top: `${top}px`, height: `${height-2}px`, backgroundColor: bColor}}>
+                        <div key={bIdx} onClick={()=>isAd && setEditData({...b})} className={`m-v-block ${hasConflict ? 'conflict' : ''}`} style={{top: `${top}px`, height: `${height-2}px`, backgroundColor: bColor}}>
+                          {hasConflict && <span className="absolute top-1 right-1 text-lg z-50">⚠️</span>}
                           <span className="truncate w-full font-black text-[10px] leading-tight">{isF ? 'FOLGA' : exNome}</span>
                           {!isF && b.Horario !== 'A DEFINIR' && <span className="text-[9px] font-medium opacity-90">{b.Horario}</span>}
                           {b.Auxiliar && <span className="text-[8px] bg-black/20 px-1 py-0.5 rounded mt-1 truncate">Aux: {b.Auxiliar}</span>}
@@ -1515,7 +1543,7 @@ const MuralAniversarioView = ({ profs, cfg }) => {
   );
 };
 
-// ================== APP ROOT E ROTEAMENTO ==================
+// ================== APP ROOT ==================
 const App = () => {
   const [u, setU] = useState(null); const [l, setL] = useState(true); const [t, setT] = useState('HOJE');
   const [dbD, setDb] = useState({ PROFISSIONAIS:[], ESCALAS:[], CONFIGURACOES:{} });
