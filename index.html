@@ -72,6 +72,95 @@
   @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
   .card-niver { animation: float 3s ease-in-out infinite; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border: 2px solid #fbcfe8; }
   .dark .card-niver { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-color: #be185d; }
+  /* VISÃO AMPLA - LAYOUT VERTICAL */
+.m-v-time {
+  width: 70px;
+  min-width: 70px;
+  position: sticky;
+  left: 0;
+  background: #f8fafc;
+  z-index: 20;
+  border-right: 2px solid #e2e8f0;
+}
+
+.dark .m-v-time {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.m-v-header {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  height: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 2px solid #e2e8f0;
+  font-weight: 900;
+  padding: 4px;
+}
+
+.dark .m-v-header {
+  border-color: #334155;
+}
+
+.m-v-col {
+  min-width: 140px;
+  border-right: 1px solid #e2e8f0;
+  position: relative;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.dark .m-v-col {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.m-v-block {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  border-radius: 8px;
+  padding: 6px;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  cursor: grab;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 10;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.m-v-block:active {
+  cursor: grabbing;
+}
+
+.m-v-block.conflict {
+  border: 2px solid #ef4444;
+  animation: pulse 2s infinite;
+  z-index: 20;
+}
+
+.linha-agora-v {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #ef4444;
+  z-index: 18;
+  pointer-events: none;
+}
+
+.fade-next {
+  opacity: 0.72;
+}
 </style>
 <script>
   if (localStorage.getItem('escalas_versao') !== "58.0.0") { 
@@ -1243,174 +1332,700 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
 const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
   const [viewMode, setViewMode] = useState('MENU');
-  const [layout, setLayout] = useState('HORIZONTAL'); 
+  const [layout, setLayout] = useState('HORIZONTAL');
   const [dataBase, setDataBase] = useState(new Date());
   const [condensed, setCondensed] = useState(false);
-  const [rangeDias, setRangeDias] = useState(1); 
+  const [rangeDias, setRangeDias] = useState(1);
   const [busca, setBusca] = useState('');
   const [editData, setEditData] = useState(null);
   const [agora, setAgora] = useState(new Date());
-  
+
   const [dragItem, setDragItem] = useState(null);
   const [dragOverEnt, setDragOverEnt] = useState(null);
 
-  useEffect(() => { const timer = setInterval(() => setAgora(new Date()), 60000); return () => clearInterval(timer); }, []);
+  useEffect(() => {
+    const timer = setInterval(() => setAgora(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
-  const dStr = getStrDt(dataBase);
-  const isToday = getStrDt(agora) === dStr;
-  const escDia = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
-
-  let entidades = [];
-  if (viewMode === 'Médico') {
-    const eMed = escDia.filter(e => { const p = profs.find(x=>x.Nome === e.Nome_Profissional); return (p && p.Tipo === 'Médico') || e.Cargo?.toLowerCase().includes('médico'); });
-    entidades = Array.from(new Set(eMed.map(e=>e.Sala))).sort();
-  } else if (viewMode === 'Colaborador') {
-    const eCol = escDia.filter(e => { const p = profs.find(x=>x.Nome === e.Nome_Profissional); return p ? p.Tipo === 'Colaborador' : !e.Cargo?.toLowerCase().includes('médico'); });
-    entidades = Array.from(new Set(eCol.map(e=>e.Nome_Profissional))).sort();
-  }
-  
-  const entExibidas = entidades.filter(ent => ent.toLowerCase().includes(busca.toLowerCase()));
-
-  // TEMPO DINÂMICO SEGURO
-  let minH = 7; let maxH = 19;
-  escDia.forEach(e => {
-    if(e.Status !== 'FOLGA' && e.Status !== 'AUSENTE' && e.Horario && !e.Horario.includes('DEFINIR')) {
-      const vIn = parseHorario(e.Horario.split(' às ')[0]);
-      let vOut = parseHorario(e.Horario.split(' às ')[1]);
-      if(vIn !== null && vIn < minH) minH = Math.floor(vIn);
-      if(vOut !== null) { if(vOut < vIn) vOut += 24; if(vOut > maxH) maxH = Math.ceil(vOut); }
-    }
-  });
-  if(minH >= maxH) { minH = 7; maxH = 19; } 
-
-  const HORAS_TOTAIS = maxH - minH;
-  const arrayHoras = []; for(let i = minH; i <= maxH; i += 0.5) arrayHoras.push(i);
-
-  let percAgora = null; let pxAgora = null;
-  if (isToday) {
-    const hDec = agora.getHours() + (agora.getMinutes() / 60);
-    if (hDec >= minH && hDec <= maxH) {
-       percAgora = ((hDec - minH) / HORAS_TOTAIS) * 100;
-       pxAgora = (hDec - minH) * 60;
-    }
-  }
-
-  const handleDragStart = (e, escalaItem) => { if(!isAd) return; setDragItem(escalaItem); };
-  const handleDragOver = (e, entName) => { e.preventDefault(); if(isAd && dragOverEnt !== entName) setDragOverEnt(entName); };
-  const handleDrop = async (e, destEnt) => {
-    e.preventDefault(); setDragOverEnt(null);
-    if (!isAd || !dragItem) return;
-    
-    let updatedEscala = { ...dragItem };
-    if (viewMode === 'Médico') {
-      if (updatedEscala.Sala === destEnt) return; 
-      updatedEscala.Sala = destEnt;
-      const pConfig = cfg?.postos?.find(p => p.nome === destEnt);
-      if(pConfig) { const sConfig = cfg?.setores?.find(s => s.nome === pConfig.setor); if(sConfig) updatedEscala.Unidade = sConfig.unidade; }
-    } else {
-      if (updatedEscala.Nome_Profissional === destEnt) return; 
-      updatedEscala.Nome_Profissional = destEnt;
-      const novoProf = profs.find(p => p.Nome === destEnt);
-      if(novoProf) { updatedEscala.Cargo = novoProf.Cargo; updatedEscala.Cor = novoProf.Cor; }
-    }
-    
-    await api.saveRecord('ESCALAS', updatedEscala);
-    onRefresh(); setDragItem(null);
+  const getEscalasDoDia = (dateObj) => {
+    const dStr = getStrDt(dateObj);
+    return escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
   };
 
-  const diasRender = Array.from({length: rangeDias}, (_, i) => { let d = new Date(dataBase); d.setDate(d.getDate() + i); return d; });
+  const getEntidadesDoDia = (escalasDia) => {
+    let entidadesDia = [];
+
+    if (viewMode === 'Médico') {
+      const eMed = escalasDia.filter(e => {
+        const p = profs.find(x => x.Nome === e.Nome_Profissional);
+        return (p && p.Tipo === 'Médico') || safeStr(e.Cargo).toLowerCase().includes('médico');
+      });
+      entidadesDia = Array.from(new Set(eMed.map(e => e.Sala))).sort((a, b) => safeStr(a).localeCompare(safeStr(b)));
+    } else if (viewMode === 'Colaborador') {
+      const eCol = escalasDia.filter(e => {
+        const p = profs.find(x => x.Nome === e.Nome_Profissional);
+        return p ? p.Tipo === 'Colaborador' : !safeStr(e.Cargo).toLowerCase().includes('médico');
+      });
+      entidadesDia = Array.from(new Set(eCol.map(e => e.Nome_Profissional))).sort((a, b) => safeStr(a).localeCompare(safeStr(b)));
+    }
+
+    return entidadesDia.filter(ent => safeStr(ent).toLowerCase().includes(busca.toLowerCase()));
+  };
+
+  const handleDragStart = (e, escalaItem) => {
+    if (!isAd) return;
+    setDragItem(escalaItem);
+  };
+
+  const handleDragOver = (e, entName) => {
+    e.preventDefault();
+    if (isAd && dragOverEnt !== entName) setDragOverEnt(entName);
+  };
+
+  const handleDrop = async (e, destEnt) => {
+    e.preventDefault();
+    setDragOverEnt(null);
+
+    if (!isAd || !dragItem) return;
+
+    let updatedEscala = { ...dragItem };
+
+    if (viewMode === 'Médico') {
+      if (updatedEscala.Sala === destEnt) {
+        setDragItem(null);
+        return;
+      }
+
+      updatedEscala.Sala = destEnt;
+
+      const pConfig = (cfg?.postos || []).find(p => p.nome === destEnt);
+      if (pConfig) {
+        const sConfig = (cfg?.setores || []).find(s => s.nome === pConfig.setor);
+        if (sConfig) updatedEscala.Unidade = sConfig.unidade || updatedEscala.Unidade;
+      }
+    } else {
+      if (updatedEscala.Nome_Profissional === destEnt) {
+        setDragItem(null);
+        return;
+      }
+
+      updatedEscala.Nome_Profissional = destEnt;
+
+      const novoProf = profs.find(p => p.Nome === destEnt);
+      if (novoProf) {
+        updatedEscala.Cargo = novoProf.Cargo;
+        updatedEscala.Cor = novoProf.Cor;
+      }
+    }
+
+    await api.saveRecord('ESCALAS', updatedEscala);
+    setDragItem(null);
+    onRefresh();
+  };
+
+  const diasRender = Array.from({ length: rangeDias }, (_, i) => {
+    const d = new Date(dataBase);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
 
   const RenderTimeline = ({ dateObj }) => {
     const dS = getStrDt(dateObj);
-    if (entExibidas.length === 0) return null;
+    const escalasDia = getEscalasDoDia(dateObj);
+    const entExibidas = getEntidadesDoDia(escalasDia);
+    const isToday = getStrDt(agora) === dS;
+
+    if (entExibidas.length === 0) {
+      return (
+        <div className="mb-10 animate-fade-in">
+          <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2">
+            <i className="ph-fill ph-calendar-blank text-primary"></i>
+            {dateObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase()}
+          </h3>
+          <div className="p-10 text-center border-2 border-dashed rounded-2xl opacity-50 font-bold dark:border-slate-700">
+            Nenhum dado encontrado para este dia.
+          </div>
+        </div>
+      );
+    }
+
+    let minH = 7;
+    let maxH = 19;
+
+    escalasDia.forEach(e => {
+      if (
+        e.Status !== 'FOLGA' &&
+        e.Status !== 'AUSENTE' &&
+        e.Horario &&
+        !safeStr(e.Horario).toUpperCase().includes('DEFINIR')
+      ) {
+        const partes = safeStr(e.Horario).split(' às ');
+        if (partes.length < 2) return;
+
+        const vIn = parseHorario(partes[0]);
+        let vOut = parseHorario(partes[1]);
+
+        if (vIn !== null && vIn < minH) minH = Math.floor(vIn);
+
+        if (vIn !== null && vOut !== null) {
+          if (vOut <= vIn) vOut += 24;
+          if (vOut > maxH) maxH = Math.ceil(vOut);
+        }
+      }
+    });
+
+    if (minH >= maxH) {
+      minH = 7;
+      maxH = 19;
+    }
+
+    const HORAS_TOTAIS = maxH - minH;
+    const arrayHoras = [];
+    for (let i = minH; i <= maxH; i += 0.5) arrayHoras.push(i);
+
+    let percAgora = null;
+    let pxAgora = null;
+
+    if (isToday) {
+      const hDec = agora.getHours() + (agora.getMinutes() / 60);
+      if (hDec >= minH && hDec <= maxH) {
+        percAgora = ((hDec - minH) / HORAS_TOTAIS) * 100;
+        pxAgora = (hDec - minH) * 60;
+      }
+    }
 
     if (layout === 'HORIZONTAL') {
       return (
         <div className="mb-10 animate-fade-in">
-          <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-blank text-primary"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'}).toUpperCase()}</h3>
+          <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2">
+            <i className="ph-fill ph-calendar-blank text-primary"></i>
+            {dateObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase()}
+          </h3>
+
           <div className="gantt-scroll-area shadow-lg">
             <div className="min-w-[1000px]">
-              
               <div className="g-h-header">
-                <div className="g-h-label bg-slate-100 dark:bg-slate-800 font-black text-[10px] uppercase items-center !flex-row">{viewMode === 'Médico' ? 'Posto / Sala' : 'Colaborador'}</div>
+                <div className="g-h-label bg-slate-100 dark:bg-slate-800 font-black text-[10px] uppercase items-center !flex-row">
+                  {viewMode === 'Médico' ? 'Posto / Sala' : 'Colaborador'}
+                </div>
+
                 <div className="g-h-track bg-slate-50 dark:bg-slate-900">
                   {arrayHoras.map((h, i) => (
                     <div key={i} className="g-grid-line">
-                      {Number.isInteger(h) && <span className="text-[9px] font-black text-slate-400 absolute top-1 left-1">{String(h%24).padStart(2,'0')}h</span>}
+                      {Number.isInteger(h) && (
+                        <span className="text-[9px] font-black text-slate-400 absolute top-1 left-1">
+                          {String(h % 24).padStart(2, '0')}h
+                        </span>
+                      )}
                       <div className="g-grid-half"></div>
                     </div>
                   ))}
-                  {percAgora !== null && <div className="linha-agora-h" style={{left: `${percAgora}%`}}><div className="absolute top-0 -left-1 w-2.5 h-2.5 bg-red-500 rounded-full"></div></div>}
+                  {percAgora !== null && (
+                    <div className="linha-agora-h" style={{ left: `${percAgora}%` }}>
+                      <div className="absolute top-0 -left-1 w-2.5 h-2.5 bg-red-500 rounded-full"></div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {entExibidas.map((ent, idx) => {
-                const blocos = viewMode === 'Médico' ? escDia.filter(e=>e.Sala === ent) : escDia.filter(e=>e.Nome_Profissional === ent);
-                const infoExtra = viewMode === 'Médico' ? cfg?.postos?.find(p=>p.nome === ent)?.setor : profs.find(p=>p.Nome === ent)?.Cargo;
+                const blocos = viewMode === 'Médico'
+                  ? escalasDia.filter(e => e.Sala === ent)
+                  : escalasDia.filter(e => e.Nome_Profissional === ent);
+
+                const infoExtra = viewMode === 'Médico'
+                  ? (cfg?.postos || []).find(p => p.nome === ent)?.setor
+                  : profs.find(p => p.Nome === ent)?.Cargo;
+
                 const isDragOver = dragOverEnt === ent;
-                
+
                 return (
-                  <div key={idx} 
-                    onDragOver={(e) => handleDragOver(e, ent)} onDrop={(e) => handleDrop(e, ent)}
+                  <div
+                    key={idx}
+                    onDragOver={(e) => handleDragOver(e, ent)}
+                    onDrop={(e) => handleDrop(e, ent)}
                     className={`g-h-row transition duration-200 ${isDragOver ? 'drag-over' : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'}`}
-                    style={{minHeight: condensed ? '40px' : '60px'}}>
-                    
-                    <div className="g-h-label bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800" title={ent}>
+                    style={{ minHeight: condensed ? '40px' : '60px' }}
+                  >
+                    <div
+                      className="g-h-label bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800"
+                      title={ent}
+                    >
                       <span className="font-black text-[11px] truncate leading-tight w-full">{ent}</span>
-                      {!condensed && <span className="text-[8px] font-bold opacity-50 truncate mt-0.5 w-full uppercase">{infoExtra || 'Geral'}</span>}
+                      {!condensed && (
+                        <span className="text-[8px] font-bold opacity-50 truncate mt-0.5 w-full uppercase">
+                          {infoExtra || 'Geral'}
+                        </span>
+                      )}
                     </div>
-                    
+
                     <div className="g-h-track">
-                      {arrayHoras.map((h, i) => <div key={i} className="g-grid-line"><div className="g-grid-half"></div></div>)}
-                      {percAgora !== null && <div className="linha-agora-h opacity-30 z-10" style={{left: `${percAgora}%`}}></div>}
-                      
+                      {arrayHoras.map((h, i) => (
+                        <div key={i} className="g-grid-line">
+                          <div className="g-grid-half"></div>
+                        </div>
+                      ))}
+
+                      {percAgora !== null && (
+                        <div className="linha-agora-h opacity-30 z-10" style={{ left: `${percAgora}%` }}></div>
+                      )}
+
                       {blocos.map((bloco, bIdx) => {
                         const isF = bloco.Status === 'FOLGA' || bloco.Status === 'AUSENTE';
-                        let left = 0; let width = 100; let hasConflict = false;
+                        let left = 0;
+                        let width = 100;
+                        let hasConflict = false;
 
-                        if (isF || bloco.Horario === 'A DEFINIR') { left = 1; width = 98; }
-                        else {
-                          const vIn = parseHorarioParaGantt(bloco.Horario.split(' às ')[0], minH);
-                          let vOut = parseHorarioParaGantt(bloco.Horario.split(' às ')[1], minH);
-                          if(vIn !== null && vOut !== null) {
-                            if(vOut <= vIn) vOut += 24; 
-                            left = ((vIn - minH)/HORAS_TOTAIS)*100; width = ((vOut - vIn)/HORAS_TOTAIS)*100;
-                            if(left < 0) { width += left; left = 0; } if(left+width > 100) width = 100 - left;
-                            
+                        if (isF || bloco.Horario === 'A DEFINIR') {
+                          left = 1;
+                          width = 98;
+                        } else {
+                          const partes = safeStr(bloco.Horario).split(' às ');
+                          const vIn = parseHorarioParaGantt(partes[0], minH);
+                          let vOut = parseHorarioParaGantt(partes[1], minH);
+
+                          if (vIn !== null && vOut !== null) {
+                            if (vOut <= vIn) vOut += 24;
+
+                            left = ((vIn - minH) / HORAS_TOTAIS) * 100;
+                            width = ((vOut - vIn) / HORAS_TOTAIS) * 100;
+
+                            if (left < 0) {
+                              width += left;
+                              left = 0;
+                            }
+
+                            if (left + width > 100) width = 100 - left;
+
                             blocos.forEach((outro, oI) => {
-                              if(bIdx !== oI && !isF && outro.Horario !== 'A DEFINIR' && outro.Status !== 'FOLGA'){
-                                const oIn = parseHorarioParaGantt(outro.Horario.split(' às ')[0], minH);
-                                let oOut = parseHorarioParaGantt(outro.Horario.split(' às ')[1], minH);
-                                if(oOut <= oIn) oOut += 24;
-                                if(vIn < oOut && vOut > oIn) hasConflict = true;
+                              if (
+                                bIdx !== oI &&
+                                outro.Horario !== 'A DEFINIR' &&
+                                outro.Status !== 'FOLGA' &&
+                                outro.Status !== 'AUSENTE'
+                              ) {
+                                const p2 = safeStr(outro.Horario).split(' às ');
+                                const oIn = parseHorarioParaGantt(p2[0], minH);
+                                let oOut = parseHorarioParaGantt(p2[1], minH);
+
+                                if (oIn !== null && oOut !== null) {
+                                  if (oOut <= oIn) oOut += 24;
+                                  if (vIn < oOut && vOut > oIn) hasConflict = true;
+                                }
                               }
                             });
                           }
                         }
-                        
+
                         const bColor = isF ? '#94a3b8' : getCorDaSala(bloco.Sala, cfg);
                         const exNome = viewMode === 'Médico' ? bloco.Nome_Profissional : bloco.Sala;
-                        
+
                         return (
-                          <div key={bIdx} draggable={isAd} onDragStart={(e) => handleDragStart(e, bloco)} onClick={()=>isAd && setEditData({...bloco})} 
-                            className={`g-h-block ${hasConflict ? 'conflict' : ''}`} 
-                            style={{left: `${left}%`, width: `${width}%`, backgroundColor: bColor, top: condensed ? '4px' : '6px', bottom: condensed ? '4px' : '6px'}}>
-                            
+                          <div
+                            key={bIdx}
+                            draggable={isAd}
+                            onDragStart={(e) => handleDragStart(e, bloco)}
+                            onClick={() => isAd && setEditData({ ...bloco })}
+                            className={`g-h-block ${hasConflict ? 'conflict' : ''}`}
+                            style={{
+                              left: `${left}%`,
+                              width: `${width}%`,
+                              backgroundColor: bColor,
+                              top: condensed ? '4px' : '6px',
+                              bottom: condensed ? '4px' : '6px'
+                            }}
+                          >
                             {hasConflict && <span className="absolute -top-1 -right-1 text-sm z-50 drop-shadow-md">⚠️</span>}
-                            <span className="font-black text-[10px] leading-tight truncate drop-shadow-sm">{isF ? bloco.Status : exNome}</span>
-                            {!condensed && !isF && bloco.Horario !== 'A DEFINIR' && <span className="text-[8px] font-bold opacity-90 ml-2 drop-shadow-sm"><i className="ph-fill ph-clock"></i> {bloco.Horario}</span>}
+                            <span className="font-black text-[10px] leading-tight truncate drop-shadow-sm">
+                              {isF ? bloco.Status : exNome}
+                            </span>
+                            {!condensed && !isF && bloco.Horario !== 'A DEFINIR' && (
+                              <span className="text-[8px] font-bold opacity-90 ml-2 drop-shadow-sm">
+                                <i className="ph-fill ph-clock"></i> {bloco.Horario}
+                              </span>
+                            )}
                           </div>
-                        )
+                        );
                       })}
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           </div>
         </div>
-      )
+      );
     }
+
+    if (layout === 'VERTICAL') {
+      return (
+        <div className="mb-10 animate-fade-in">
+          <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2">
+            <i className="ph-fill ph-calendar-blank text-primary"></i>
+            {dateObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase()}
+          </h3>
+
+          <div className="gantt-scroll-area flex shadow-lg">
+            <div className="m-v-time">
+              <div className="m-v-header bg-slate-100 dark:bg-slate-800" style={{ zIndex: 50, left: 0 }}>
+                HORA
+              </div>
+
+              {arrayHoras.map((h, i) => (
+                <div
+                  key={i}
+                  className="flex justify-center border-b border-slate-200 dark:border-slate-800/50 pt-1"
+                  style={{ height: `${60 / 2}px` }}
+                >
+                  {Number.isInteger(h) && (
+                    <span className="text-[9px] font-bold text-slate-500">
+                      {String(h % 24).padStart(2, '0')}h
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {entExibidas.map((ent, idx) => {
+              const blocos = viewMode === 'Médico'
+                ? escalasDia.filter(e => e.Sala === ent)
+                : escalasDia.filter(e => e.Nome_Profissional === ent);
+
+              const infoEx = viewMode === 'Médico'
+                ? (cfg?.postos || []).find(p => p.nome === ent)?.setor
+                : profs.find(p => p.Nome === ent)?.Cargo;
+
+              const isOver = dragOverEnt === ent;
+
+              return (
+                <div
+                  key={idx}
+                  onDragOver={(e) => handleDragOver(e, ent)}
+                  onDrop={(e) => handleDrop(e, ent)}
+                  className={`m-v-col transition ${isOver ? 'bg-blue-50/30 dark:bg-blue-900/20' : ''}`}
+                >
+                  <div className="m-v-header bg-white dark:bg-slate-900" title={ent}>
+                    <span className="font-black text-[11px] truncate w-full text-center px-1">
+                      {viewMode === 'Colaborador'
+                        ? ent.split(' ')[0] + ' ' + (ent.split(' ')[1] || '')
+                        : ent}
+                    </span>
+                    <span className="text-[8px] opacity-50 truncate w-full text-center mt-0.5">
+                      {infoEx || 'Geral'}
+                    </span>
+                  </div>
+
+                  <div className="relative w-full" style={{ height: `${HORAS_TOTAIS * 60}px` }}>
+                    {arrayHoras.map((h, i) => (
+                      <div
+                        key={i}
+                        className="w-full border-b border-slate-100 dark:border-slate-800/30"
+                        style={{ height: `${60 / 2}px` }}
+                      ></div>
+                    ))}
+
+                    {pxAgora !== null && <div className="linha-agora-v" style={{ top: `${pxAgora}px` }}></div>}
+
+                    {blocos.map((bloco, bIdx) => {
+                      const isF = bloco.Status === 'FOLGA' || bloco.Status === 'AUSENTE';
+                      let top = 0;
+                      let hght = 60;
+                      let hasC = false;
+
+                      if (isF || bloco.Horario === 'A DEFINIR') {
+                        top = 4;
+                        hght = 40;
+                      } else {
+                        const partes = safeStr(bloco.Horario).split(' às ');
+                        const vIn = parseHorarioParaGantt(partes[0], minH);
+                        let vOut = parseHorarioParaGantt(partes[1], minH);
+
+                        if (vIn !== null && vOut !== null) {
+                          if (vOut <= vIn) vOut += 24;
+
+                          top = (vIn - minH) * 60;
+                          hght = (vOut - vIn) * 60;
+
+                          if (top < 0) {
+                            hght += top;
+                            top = 0;
+                          }
+
+                          blocos.forEach((out, oI) => {
+                            if (
+                              bIdx !== oI &&
+                              out.Horario !== 'A DEFINIR' &&
+                              out.Status !== 'FOLGA' &&
+                              out.Status !== 'AUSENTE'
+                            ) {
+                              const p2 = safeStr(out.Horario).split(' às ');
+                              const oIn = parseHorarioParaGantt(p2[0], minH);
+                              let oOut = parseHorarioParaGantt(p2[1], minH);
+
+                              if (oIn !== null && oOut !== null) {
+                                if (oOut <= oIn) oOut += 24;
+                                if (vIn < oOut && vOut > oIn) hasC = true;
+                              }
+                            }
+                          });
+                        }
+                      }
+
+                      const c = isF ? '#94a3b8' : getCorDaSala(bloco.Sala, cfg);
+                      const n = viewMode === 'Médico' ? bloco.Nome_Profissional : bloco.Sala;
+
+                      return (
+                        <div
+                          key={bIdx}
+                          draggable={isAd}
+                          onDragStart={(e) => handleDragStart(e, bloco)}
+                          onClick={() => isAd && setEditData({ ...bloco })}
+                          className={`m-v-block ${hasC ? 'conflict' : ''}`}
+                          style={{
+                            top: `${top}px`,
+                            height: `${Math.max(hght - 2, 24)}px`,
+                            backgroundColor: c
+                          }}
+                        >
+                          {hasC && <span className="absolute top-1 right-1 text-sm drop-shadow-md">⚠️</span>}
+                          <span className="font-black text-[10px] leading-tight drop-shadow-sm">
+                            {isF ? bloco.Status : n}
+                          </span>
+                          {!isF && bloco.Horario !== 'A DEFINIR' && (
+                            <span className="text-[8px] font-bold opacity-90 drop-shadow-sm mt-1">
+                              {bloco.Horario}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mb-10 animate-fade-in">
+        <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2">
+          <i className="ph-fill ph-calendar-blank text-primary"></i>
+          {dateObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase()}
+        </h3>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {entExibidas.map((ent, idx) => {
+            const blocos = viewMode === 'Médico'
+              ? escalasDia.filter(e => e.Sala === ent)
+              : escalasDia.filter(e => e.Nome_Profissional === ent);
+
+            const infoEx = viewMode === 'Médico'
+              ? (cfg?.postos || []).find(p => p.nome === ent)?.setor
+              : profs.find(p => p.Nome === ent)?.Cargo;
+
+            const isOver = dragOverEnt === ent;
+
+            return (
+              <div
+                key={idx}
+                onDragOver={(e) => handleDragOver(e, ent)}
+                onDrop={(e) => handleDrop(e, ent)}
+                className={`clean-card p-3 flex flex-col border-t-4 border-t-primary shadow-sm transition ${isOver ? 'scale-105 ring-4 ring-blue-400' : ''}`}
+              >
+                <div className="border-b dark:border-slate-700 pb-2 mb-2 text-center">
+                  <h4 className="font-black text-xs uppercase truncate">{ent}</h4>
+                  <p className="text-[9px] opacity-60">{infoEx || 'Geral'}</p>
+                </div>
+
+                <div className="space-y-2">
+                  {blocos.map((b, bIdx) => {
+                    const isF = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
+                    const n = viewMode === 'Médico' ? b.Nome_Profissional : b.Sala;
+
+                    return (
+                      <div
+                        key={bIdx}
+                        draggable={isAd}
+                        onDragStart={(e) => handleDragStart(e, b)}
+                        onClick={() => isAd && setEditData({ ...b })}
+                        className="p-2 rounded bg-slate-50 dark:bg-slate-800 text-left border dark:border-slate-700 cursor-grab hover:border-primary transition shadow-sm"
+                      >
+                        <p className="font-black text-[10px] text-primary truncate leading-tight">
+                          {isF ? b.Status : n}
+                        </p>
+                        <p className="text-[8px] font-bold opacity-60 mt-1">
+                          <i className="ph-fill ph-clock"></i> {b.Horario}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="animate-fade-in space-y-6 max-w-[1600px] mx-auto pb-10">
+      {viewMode === 'MENU' ? (
+        <div>
+          <h2 className="text-2xl font-black mb-6">Visão Operacional de Tráfego</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div
+              onClick={() => setViewMode('Colaborador')}
+              className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:shadow-lg transition-all transform hover:-translate-y-1"
+            >
+              <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4">
+                <i className="ph-fill ph-users-three"></i>
+              </div>
+              <h3 className="font-black text-xl uppercase tracking-widest text-center">Gantt por Pessoa</h3>
+              <p className="text-[10px] font-bold opacity-60 mt-2 uppercase tracking-widest">Colunas = Equipe Base</p>
+            </div>
+
+            <div
+              onClick={() => setViewMode('Médico')}
+              className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer hover:border-red-500 hover:shadow-lg transition-all transform hover:-translate-y-1"
+            >
+              <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4">
+                <i className="ph-fill ph-door"></i>
+              </div>
+              <h3 className="font-black text-xl uppercase tracking-widest text-center">Gantt por Sala</h3>
+              <p className="text-[10px] font-bold opacity-60 mt-2 uppercase tracking-widest">Colunas = Consultórios</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="animate-fade-in space-y-6">
+          <div className="clean-card p-4 flex flex-col lg:flex-row justify-between lg:items-center gap-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setViewMode('MENU')}
+                className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center hover:bg-slate-200 transition"
+              >
+                <i className="ph-bold ph-caret-left"></i>
+              </button>
+
+              <div>
+                <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Painel Avançado</p>
+                <h2 className="text-xl font-black text-primary">
+                  {viewMode === 'Médico' ? 'Ocupação de Salas' : 'Painel de Pessoas'}
+                </h2>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <i className="ph-bold ph-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+                <input
+                  type="text"
+                  placeholder="Filtrar..."
+                  value={busca}
+                  onChange={e => setBusca(e.target.value)}
+                  className="w-32 md:w-48 p-2 pl-9 rounded-xl border dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm outline-none focus:border-primary transition"
+                />
+              </div>
+
+              <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shadow-sm border dark:border-slate-700">
+                <button
+                  onClick={() => setLayout('HORIZONTAL')}
+                  className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition ${layout === 'HORIZONTAL' ? 'bg-white dark:bg-slate-700 shadow text-primary' : 'opacity-60'}`}
+                >
+                  Horiz
+                </button>
+                <button
+                  onClick={() => setLayout('VERTICAL')}
+                  className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition ${layout === 'VERTICAL' ? 'bg-white dark:bg-slate-700 shadow text-primary' : 'opacity-60'}`}
+                >
+                  Vert
+                </button>
+                <button
+                  onClick={() => setLayout('BLOCO')}
+                  className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition ${layout === 'BLOCO' ? 'bg-white dark:bg-slate-700 shadow text-primary' : 'opacity-60'}`}
+                >
+                  Blocos
+                </button>
+              </div>
+
+              {layout === 'HORIZONTAL' && (
+                <button
+                  onClick={() => setCondensed(!condensed)}
+                  className={`p-2.5 rounded-xl border transition flex items-center justify-center ${condensed ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}
+                  title="Modo Condensado"
+                >
+                  <i className={condensed ? "ph-bold ph-arrows-in-line-vertical" : "ph-bold ph-arrows-out-line-vertical"}></i>
+                </button>
+              )}
+
+              <div className="flex items-center bg-white dark:bg-slate-800 p-1.5 rounded-xl shadow-sm border dark:border-slate-700 ml-auto">
+                <button
+                  onClick={() => {
+                    const novaData = new Date(dataBase);
+                    novaData.setDate(novaData.getDate() - rangeDias);
+                    setDataBase(novaData);
+                  }}
+                  className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition"
+                >
+                  <i className="ph-bold ph-caret-left"></i>
+                </button>
+
+                <span className="font-black text-[11px] uppercase px-3 text-center min-w-[120px] text-primary">
+                  {dataBase.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}
+                </span>
+
+                <button
+                  onClick={() => {
+                    const novaData = new Date(dataBase);
+                    novaData.setDate(novaData.getDate() + rangeDias);
+                    setDataBase(novaData);
+                  }}
+                  className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition"
+                >
+                  <i className="ph-bold ph-caret-right"></i>
+                </button>
+              </div>
+
+              <select
+                value={rangeDias}
+                onChange={e => setRangeDias(Number(e.target.value))}
+                className="p-2.5 rounded-xl border dark:border-slate-700 outline-none bg-white dark:bg-slate-800 font-bold text-xs shadow-sm cursor-pointer"
+              >
+                <option value={1}>Exibir 1 Dia</option>
+                <option value={3}>Exibir 3 Dias</option>
+                <option value={7}>Exibir 7 Dias</option>
+                <option value={15}>Exibir 15 Dias</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            {diasRender.map((d, i) => (
+              <RenderTimeline key={i} dateObj={d} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {editData && (
+        <SuperActionModal
+          escala={editData}
+          profs={profs}
+          cfg={cfg}
+          onClose={() => setEditData(null)}
+          onSave={onSave}
+          onRefresh={onRefresh}
+          isAd={isAd}
+        />
+      )}
+    </div>
+  );
+};
 
     if (layout === 'VERTICAL') {
       return (
