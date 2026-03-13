@@ -22,31 +22,37 @@
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <style>
-body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-webkit-scrollbar{width:6px;background:transparent;}::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:10px;}.dark ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);}.hide-scroll::-webkit-scrollbar{display:none;}
+body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-webkit-scrollbar{width:6px;height:6px;background:transparent;}::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:10px;}.dark ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);}.hide-scroll::-webkit-scrollbar{display:none;}
 .clean-card{background-color:#ffffff;border-radius:1.5rem;border:1px solid #e2e8f0;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);transition:all 0.2s ease;}
 .dark .clean-card{background-color:#1e293b;border-color:#334155;box-shadow:0 4px 6px -1px rgba(0,0,0,0.2);color:#f8fafc;}
 .clean-card:hover{transform:translateY(-2px);box-shadow:0 10px 15px -3px rgba(0,0,0,0.08);}.dark .clean-card:hover{box-shadow:0 10px 15px -3px rgba(0,0,0,0.3);}
 .fade-next{background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(248,250,252,0.8) 100%);}
 .dark .fade-next{background:linear-gradient(180deg, rgba(30,41,59,0) 0%, rgba(15,23,42,0.8) 100%);}
-.timeline-line::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e2e8f0;z-index:0;}.dark .timeline-line::before{background:#334155;}
-/* Estilos Melhorados para o Gantt */
-.gantt-grid { display: grid; grid-template-columns: 240px 1fr; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
-.dark .gantt-grid { border-color: #334155; }
-.gantt-header { background: #f8fafc; font-weight: 900; font-size: 10px; text-transform: uppercase; padding: 12px; border-bottom: 2px solid #e2e8f0; }
-.dark .gantt-header { background: #0f172a; border-color: #334155; }
-.gantt-row { border-bottom: 1px solid #f1f5f9; transition: background 0.2s; }
-.dark .gantt-row { border-color: #1e293b; border-bottom-color: #334155; }
-.gantt-row:hover { background: #f8fafc; }
-.dark .gantt-row:hover { background: #1e293b; }
-.gantt-cell { padding: 12px; border-right: 1px solid #f1f5f9; display: flex; align-items: center; font-size: 12px; font-weight: 700; }
-.dark .gantt-cell { border-color: #334155; }
-.gantt-timeline-container { position: relative; padding: 12px 0; min-height: 50px; }
-.gantt-bar { position: absolute; top: 8px; bottom: 8px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; align-items: center; padding: 0 8px; font-size: 10px; font-weight: 900; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: all 0.2s;}
-.gantt-bar:hover { transform: scaleY(1.1) scaleX(1.01); z-index: 50; filter: brightness(1.1); }
+
+/* Estilos da Matriz de Tempo (Time-Grid) */
+.time-grid-container { display: flex; overflow-x: auto; background: #fff; border-radius: 1rem; border: 1px solid #e2e8f0; position: relative; }
+.dark .time-grid-container { background: #0f172a; border-color: #334155; }
+.time-col-header { padding: 12px 8px; text-align: center; font-weight: 900; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; border-right: 1px solid #f1f5f9; min-width: 140px; background: #f8fafc; z-index: 20; position: sticky; top: 0; }
+.dark .time-col-header { background: #1e293b; border-color: #334155; }
+.time-col-hours { min-width: 60px; max-width: 60px; position: sticky; left: 0; background: #fff; z-index: 30; border-right: 2px solid #e2e8f0; box-shadow: 2px 0 5px rgba(0,0,0,0.02); }
+.dark .time-col-hours { background: #0f172a; border-color: #334155; }
+.time-cell-hour { height: 60px; display: flex; align-items: flex-start; justify-content: center; font-size: 10px; font-weight: 900; color: #94a3b8; border-bottom: 1px solid #f1f5f9; padding-top: 4px; }
+.dark .time-cell-hour { border-color: #1e293b; color: #64748b; }
+.time-col-data { min-width: 140px; position: relative; border-right: 1px solid #f1f5f9; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #f1f5f9 59px, #f1f5f9 60px); }
+.dark .time-col-data { border-color: #1e293b; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #1e293b 59px, #1e293b 60px); }
+.time-block { position: absolute; left: 4px; right: 4px; border-radius: 8px; padding: 6px; font-size: 10px; font-weight: 800; color: white; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s; z-index: 10; display: flex; flex-direction: column; line-height: 1.2; }
+.time-block:hover { transform: scale(1.02); z-index: 40; filter: brightness(1.1); box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
+.time-line-now { position: absolute; left: 0; right: 0; height: 2px; background-color: #ef4444; z-index: 35; pointer-events: none; box-shadow: 0 0 4px rgba(239,68,68,0.5); }
+.time-line-now::before { content: ''; position: absolute; left: -4px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background-color: #ef4444; }
 </style>
 <script>
-    const VERSAO_ATUAL = "40.0.0"; // Versão com Crachá, Foto Gigante no Calendário e Gantt Ao Vivo
-    if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); }
+    const VERSAO_ATUAL = "42.0.0"; 
+    if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { 
+        localStorage.clear(); 
+        sessionStorage.clear(); 
+        localStorage.setItem('escalas_versao', VERSAO_ATUAL); 
+        window.location.reload(); 
+    }
 </script>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300">
@@ -77,9 +83,7 @@ const fmtImg = (u) => {
 
 const getStrDt = (d) => { if(!d) return ''; return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); };
 
-const ordenarPorNome = (lista) => {
-    return [...lista].sort((a, b) => safeStr(a.Nome).localeCompare(safeStr(b.Nome)));
-};
+const ordenarPorNome = (lista) => { return [...lista].sort((a, b) => safeStr(a.Nome).localeCompare(safeStr(b.Nome))); };
 
 const checkIsMe = (nomeProfissional, userEmail) => {
     if(!nomeProfissional || !userEmail) return false;
@@ -89,9 +93,24 @@ const checkIsMe = (nomeProfissional, userEmail) => {
     return parts.some(p => p.length > 2 && nProf.includes(p));
 };
 
+const isEscalaValida = (esc, postosCfg) => {
+    const sala = safeStr(esc.Sala).trim().toUpperCase();
+    const salasOficiais = ['A DEFINIR', 'FOLGA', 'FÉRIAS', 'ATESTADO', 'TRABALHO EXTERNO', 'OUTROS'];
+    if (salasOficiais.includes(sala)) return true;
+    const postosList = postosCfg || [];
+    return postosList.some(p => safeStr(p.nome).trim().toUpperCase() === sala);
+};
+
+const parseHorario = (hStr) => {
+    if(!hStr || hStr === 'A DEFINIR') return null;
+    let parts = hStr.split(':');
+    if(parts.length < 2) return null;
+    return parseInt(parts[0]) + (parseInt(parts[1])/60);
+};
+
 const BadgeConvenio = ({ codUnimed, configLogo }) => {
     if(!codUnimed) return null;
-    if(configLogo) return <img src={fmtImg(configLogo)} className="h-4 w-auto inline-block ml-2 rounded-sm" title={`Código Unimed: ${codUnimed}`} alt="Convênio" />;
+    if(configLogo) return <img src={fmtImg(configLogo)} className="h-4 w-auto inline-block ml-2 rounded-sm bg-white" title={`Código Unimed: ${codUnimed}`} alt="Convênio" />;
     return <span className="ml-2 bg-green-500 text-white text-[8px] px-1.5 py-0.5 rounded font-black">CONVÊNIO</span>;
 }
 
@@ -110,6 +129,159 @@ const TopHeader = ({ user, isDark, toggleDark }) => {
                 <div className="hidden md:block text-right"><p className="text-[10px] uppercase font-bold opacity-50">Portal Médico</p><p className="font-black text-sm">Escalas SV</p></div>
                 <button onClick={toggleDark} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex justify-center items-center text-xl hover:scale-110 transition">{isDark?<i className="ph-fill ph-sun text-yellow-400"></i>:<i className="ph-fill ph-moon text-slate-600"></i>}</button>
                 <button onClick={()=>auth.signOut()} className="md:hidden w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 flex justify-center items-center text-xl hover:scale-110 transition text-red-500"><i className="ph-bold ph-sign-out"></i></button>
+            </div>
+        </div>
+    );
+};
+
+// ================== COMPONENTE UNIVERSAL: SUPER MODAL DE AÇÃO ==================
+const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd }) => {
+    const [fd, setFd] = useState({...escala});
+    
+    const isMedico = fd.Cargo?.toLowerCase().includes('médico') || profs.find(p=>p.Nome===fd.Nome_Profissional)?.Tipo === 'Médico';
+    const profsOrdenados = ordenarPorNome(profs);
+    const colaboradoresLivres = profsOrdenados.filter(p => p.Tipo === 'Colaborador' && p.StatusGeral === 'Ativo');
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+        
+        // Se transferir titularidade para VAZIO, apaga o documento.
+        if (fd.Nome_Profissional === "VAZIO") {
+            if(confirm("Deseja realmente deixar este posto vazio (excluir escala)?")) {
+                await api.deleteRecord('ESCALAS', fd.ID);
+                onRefresh();
+                onClose();
+            }
+            return;
+        }
+
+        // Atualiza a cor se mudou a pessoa
+        const pInfo = profs.find(p => p.Nome === fd.Nome_Profissional);
+        if(pInfo) { fd.Cor = pInfo.Cor; fd.Cargo = pInfo.Cargo; }
+
+        await onSave('ESCALAS', fd);
+        onRefresh();
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+            <div className="clean-card w-full max-w-md p-6 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e=>e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">
+                    <h3 className="text-xl font-black text-primary flex items-center gap-2"><i className="ph-fill ph-sliders"></i> Gerenciar Escala</h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-red-500"><i className="ph-bold ph-x text-xl"></i></button>
+                </div>
+                
+                <form onSubmit={handleSave} className="space-y-4">
+                    <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+                        <p className="text-[10px] font-black uppercase opacity-60">Data Referência</p>
+                        <p className="font-bold">{fd.Data}</p>
+                    </div>
+
+                    {isAd && (
+                        <div><label className="text-[10px] font-black uppercase opacity-60 text-blue-600">Transferir Plantão / Substituir</label>
+                            <select value={fd.Nome_Profissional} onChange={e=>setFd({...fd, Nome_Profissional: e.target.value})} className="w-full p-3 border border-blue-200 dark:border-blue-900/30 rounded-xl bg-blue-50 dark:bg-blue-900/10 font-bold text-blue-700 dark:text-blue-400 outline-none mt-1">
+                                <option value={fd.Nome_Profissional}>Manter: {fd.Nome_Profissional}</option>
+                                <option value="VAZIO">🗑️ DEIXAR POSTO VAZIO (Excluir)</option>
+                                <option disabled>──────────</option>
+                                {profsOrdenados.filter(p => p.Nome !== fd.Nome_Profissional).map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+                            </select>
+                        </div>
+                    )}
+
+                    <div><label className="text-[10px] font-black uppercase opacity-60">Status</label>
+                        <select value={fd.Status} onChange={e=>setFd({...fd, Status:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1">
+                            <option value="NO POSTO">🟢 Turno Normal (Ativo)</option>
+                            <option value="LANCHE">☕ Lanche / Pausa</option>
+                            <option value="FOLGA">⚪ Folga Agendada</option>
+                            <option value="AUSENTE">🔴 Ausente / Falta</option>
+                        </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Sala / Posto</label>
+                            <select value={fd.Sala} onChange={e=>setFd({...fd, Sala:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1">
+                                <option value="A DEFINIR">A DEFINIR...</option>
+                                <option value="FOLGA">FOLGA / FÉRIAS</option>
+                                <option disabled>──────────</option>
+                                {cfg?.postos?.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}
+                            </select>
+                        </div>
+                        <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Horário (Ex: 08:00 às 18:00)</label>
+                            <input type="text" value={fd.Horario} onChange={e=>setFd({...fd, Horario:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1"/>
+                        </div>
+                    </div>
+
+                    {isMedico && (
+                        <div className="border border-purple-200 dark:border-purple-900/30 rounded-xl p-3 bg-purple-50 dark:bg-purple-900/10">
+                            <label className="text-[10px] font-black uppercase text-purple-600 dark:text-purple-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-user-plus"></i> Auxiliar de Sala</label>
+                            <select value={fd.Auxiliar||''} onChange={e=>setFd({...fd, Auxiliar:e.target.value})} className="w-full p-2 border border-purple-200 dark:border-purple-900/30 rounded bg-white dark:bg-slate-800 font-bold outline-none text-sm">
+                                <option value="">Sem auxiliar vinculado</option>
+                                {colaboradoresLivres.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+                            </select>
+                        </div>
+                    )}
+
+                    <div><label className="text-[10px] font-black uppercase opacity-60">Anotação / Obs / Motivo da Falta</label>
+                        <input type="text" value={fd.ObsDia||''} onChange={e=>setFd({...fd, ObsDia:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 outline-none mt-1" placeholder="Ex: Atestado médico, trocar de sala às 10h..."/>
+                    </div>
+                    
+                    <div className="flex justify-end gap-2 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
+                        <button type="button" onClick={onClose} className="px-4 py-3 font-bold opacity-60 hover:opacity-100">Cancelar</button>
+                        <button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black hover:bg-blue-600 hover:shadow-lg transition">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+// Componente: Crachá Virtual
+const CrachaVirtual = ({ profInfo, cfg, onClose }) => {
+    return (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+            <div className="clean-card w-full max-w-sm p-0 overflow-hidden shadow-2xl relative" onClick={e=>e.stopPropagation()}>
+                <div className="h-24 bg-gradient-to-r from-primary to-blue-400 relative">
+                    <button onClick={onClose} className="absolute top-4 right-4 text-white hover:scale-110"><i className="ph-bold ph-x text-xl"></i></button>
+                </div>
+                <div className="px-6 pb-6 pt-0 relative flex flex-col items-center text-center">
+                    <div className="w-24 h-24 rounded-full border-4 border-white dark:border-slate-800 shadow-lg -mt-12 bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden mb-3" style={{backgroundColor:profInfo.FotoURL?'':(profInfo.Cor||'#0ea5e9')}}>
+                        {profInfo.FotoURL ? <img src={fmtImg(profInfo.FotoURL)} className="w-full h-full object-cover" /> : <span className="text-4xl font-black text-white">{profInfo.Nome?.[0]}</span>}
+                    </div>
+                    <h3 className="text-xl font-black leading-tight flex items-center justify-center gap-2">
+                        {profInfo.Nome}
+                        <BadgeConvenio codUnimed={profInfo.CodUnimed} configLogo={cfg?.logoConvenio} />
+                    </h3>
+                    <p className="text-xs font-bold text-primary uppercase mt-1">{profInfo.Cargo}</p>
+
+                    <div className="w-full mt-6 space-y-2 text-left">
+                        <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3">
+                            <i className="ph-fill ph-map-pin text-slate-400 text-xl"></i>
+                            <div>
+                                <p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Lotação Base</p>
+                                <p className="text-xs font-black">{profInfo.UnidadeBase || 'Não informada'} • {profInfo.Setor || '-'}</p>
+                            </div>
+                        </div>
+                        {(profInfo.CRM || profInfo.CodUnimed) && (
+                            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 flex gap-4">
+                                {profInfo.CRM && <div className="flex-1"><p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">CRM</p><p className="text-xs font-black">{profInfo.CRM}</p></div>}
+                                {profInfo.CodUnimed && <div className="flex-1"><p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Cód Unimed</p><p className="text-xs font-black">{profInfo.CodUnimed}</p></div>}
+                            </div>
+                        )}
+                        {profInfo.TipoContrato && (
+                            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+                                <p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Vínculo Contratual</p>
+                                <p className="text-xs font-black">{profInfo.TipoContrato}</p>
+                            </div>
+                        )}
+                        {profInfo.ObservacoesGerais && (
+                            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-xl border border-yellow-100 dark:border-yellow-900/30">
+                                <p className="text-[9px] uppercase font-bold text-yellow-600 mb-0.5 flex items-center gap-1"><i className="ph-fill ph-info"></i> Observações</p>
+                                <p className="text-xs font-medium italic text-yellow-800 dark:text-yellow-400">{profInfo.ObservacoesGerais}</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -335,7 +507,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                                 <div><label className="text-[10px] font-black uppercase opacity-60">Afastamentos / Folga Longa</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd,StatusGeral:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 text-red-500 font-bold"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{a.map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
                                 <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Observações Gerais</label><textarea value={fd.ObservacoesGerais||''} onChange={e=>setFd({...fd,ObservacoesGerais:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" rows="2" placeholder="Anotações sobre horários, preferências, restrições..."></textarea></div>
                                 
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor Destacada (Calendário/Gantt)</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-9 cursor-pointer border dark:border-slate-700 rounded p-0.5" /></div>
+                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor Destacada (Calendário/Matriz)</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-9 cursor-pointer border dark:border-slate-700 rounded p-0.5" /></div>
                             </div>
                             <div><label className="text-[10px] font-black uppercase opacity-60 block mb-1">Competências</label>
                                 <div className="flex flex-wrap gap-1">{h.map((x,i)=><button type="button" key={i} onClick={()=>toggleHab(x)} className={`px-2 py-1 text-[10px] rounded border ${fd.Habilidades?.includes(x)?'bg-primary text-white border-primary':'bg-transparent dark:border-slate-700'}`}>{x}</button>)}</div>
@@ -349,7 +521,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
     );
 };
 
-// ================== ABA 3: CALENDÁRIO / BUILDER MULTI-DATAS ==================
+// ================== ABA 3: CALENDÁRIO / BUILDER ==================
 const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
     const [mode, setMode] = useState('TIMELINE'); 
@@ -428,7 +600,6 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const profsOrdenadosParaBusca = ordenarPorNome(profs);
     const profsOrdenadosParaBuilder = ordenarPorNome(profs.filter(x => (x.StatusGeral==='Ativo'||!x.StatusGeral) && x.Tipo === builderTipo));
     
-    // Identifica se há um profissional selecionado para mostrar o cabeçalho com foto
     const profSelecionado = profs.find(p => p.Nome === calProf);
 
     return (
@@ -494,7 +665,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 </div>
             ) : (
                 <div className="space-y-6">
-                    <div className="clean-card p-5 flex flex-col md:flex-row justify-between md:items-center gap-4 relative">
+                    <div className="clean-card p-5 flex flex-col lg:flex-row justify-between md:items-center gap-4 relative">
                         <div className="flex items-center gap-4"><button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-left"></i></button><h2 className="text-lg font-black uppercase tracking-widest w-40 text-center">{mesAtual.toLocaleString('pt-BR', {month:'long', year:'numeric'})}</h2><button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-right"></i></button></div>
                         
                         <div className="flex flex-col md:flex-row w-full md:w-auto gap-2">
@@ -531,7 +702,6 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     {!calProf ? <div className="p-10 text-center clean-card opacity-50 font-bold border-dashed">Selecione um profissional para carregar o calendário.</div> :
                     <div className="space-y-6">
                         
-                        {/* NOVO: CARD GIGANTE DO PROFISSIONAL NO CALENDÁRIO */}
                         {profSelecionado && (
                             <div className="clean-card p-6 flex flex-col md:flex-row items-center md:items-start gap-6 bg-gradient-to-r from-blue-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-primary">
                                 {profSelecionado.FotoURL ? (
@@ -560,7 +730,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                 <div className="grid grid-cols-7 gap-2">
                                     {gridTL.vazios.map((_, i) => <div key={`v-${i}`} className="p-2 opacity-10"></div>)}
                                     {gridTL.dias.map((d, i) => {
-                                        const temEscala = escalas.some(e => e.Nome_Profissional === calProf && e.Data === d.dStr);
+                                        const temEscala = escalas.some(e => e.Nome_Profissional === calProf && e.Data === d.dStr && isEscalaValida(e, cfg?.postos));
                                         const profColor = profs.find(p=>p.Nome===calProf)?.Cor || '#0ea5e9';
                                         const isToday = d.dStr === getStrDt(new Date());
                                         const isSel = diaAtivo === d.dStr;
@@ -577,7 +747,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
 
                             <div className="clean-card p-6 bg-slate-50 dark:bg-slate-800">
                                 {diaAtivo ? (() => {
-                                    const escDia = escalas.filter(e => e.Nome_Profissional === calProf && e.Data === diaAtivo);
+                                    const escDia = escalas.filter(e => e.Nome_Profissional === calProf && e.Data === diaAtivo && isEscalaValida(e, cfg?.postos));
                                     return (
                                         <div>
                                             <h3 className="font-black text-lg mb-4 text-primary border-b border-slate-200 dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-check"></i> {diaAtivo}</h3>
@@ -595,6 +765,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                                         <h4 className={`font-black text-base pl-1 ${isFolga||isAus?'text-slate-600 dark:text-slate-400':''}`}>{esc.Sala} {esc.EmApoio?'(Apoio)':''}</h4>
                                                         
                                                         {(!isFolga && !isAus) && <p className={`text-sm font-bold mt-1 pl-1 ${esc.Horario==='A DEFINIR'?'text-red-500':'opacity-80'}`}><i className="ph-fill ph-clock"></i> {esc.Horario}</p>}
+                                                        {esc.Auxiliar && <p className="text-[10px] font-black text-purple-600 bg-purple-100 px-2 py-0.5 rounded inline-block mt-1 ml-1"><i className="ph-fill ph-user-plus"></i> Aux: {esc.Auxiliar}</p>}
                                                         
                                                         {esc.ObsDia && <p className={`text-xs mt-3 p-2 rounded ml-1 ${isFolga||isAus?'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300':'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400'}`}><i className="ph-bold ph-info"></i> {esc.ObsDia}</p>}
                                                         
@@ -621,100 +792,36 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 </div>
             )}
 
-            {/* MODAL DE EDIÇÃO AVANÇADA (COM TROCA DE TITULARIDADE) */}
-            {editData && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setEditData(null)}>
-                    <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
-                        <h3 className="text-lg font-black mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">Editar: {editData.Nome_Profissional}</h3>
-                        <form onSubmit={async (e) => {
-                            e.preventDefault();
-                            await onSave('ESCALAS', editData);
-                            setEditData(null);
-                            onRefresh();
-                        }} className="space-y-4">
-                            
-                            <div><label className="text-[10px] font-black uppercase opacity-60 text-primary">Transferir Titularidade (Opcional)</label>
-                                <select value={editData.Nome_Profissional} onChange={e=>{
-                                    if(e.target.value === "VAZIO") {
-                                        setEditData({...editData, Nome_Profissional: 'A DEFINIR', Status: 'NO POSTO', Cor: '#cbd5e1'});
-                                    } else {
-                                        const novoProf = profs.find(p => p.Nome === e.target.value);
-                                        if(novoProf) setEditData({...editData, Nome_Profissional: novoProf.Nome, Cargo: novoProf.Cargo, Cor: novoProf.Cor});
-                                    }
-                                }} className="w-full p-2 border border-blue-200 dark:border-blue-900/30 rounded bg-blue-50 dark:bg-blue-900/10 font-bold text-blue-700 dark:text-blue-400">
-                                    <option value={editData.Nome_Profissional}>Manter atual ({editData.Nome_Profissional})</option>
-                                    <option value="VAZIO">[ DEIXAR POSTO VAZIO ]</option>
-                                    <option disabled>──────────</option>
-                                    {profsOrdenadosParaBusca.filter(p => p.Nome !== editData.Nome_Profissional).map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
-                                </select>
-                            </div>
-
-                            <div><label className="text-[10px] font-black uppercase opacity-60 mt-2 block">Status da Escala</label>
-                                <select value={editData.Status} onChange={e=>setEditData({...editData, Status:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 font-bold">
-                                    <option value="NO POSTO">🟢 Turno Normal (Ativo)</option>
-                                    <option value="FOLGA">⚪ Folga Agendada</option>
-                                    <option value="AUSENTE">🔴 Ausente / Outros</option>
-                                </select>
-                            </div>
-
-                            <div><label className="text-[10px] font-black uppercase opacity-60">Horário</label><input type="text" value={editData.Horario} onChange={e=>setEditData({...editData, Horario:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent font-bold"/></div>
-                            
-                            <div><label className="text-[10px] font-black uppercase opacity-60">Sala / Posto</label>
-                                <select value={editData.Sala} onChange={e=>setEditData({...editData, Sala:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 font-bold">
-                                    <option value="A DEFINIR">A DEFINIR...</option>
-                                    <option value="FOLGA">FOLGA</option>
-                                    <option value="FÉRIAS">FÉRIAS</option>
-                                    <option value="ATESTADO">ATESTADO</option>
-                                    <option disabled>──────────</option>
-                                    {cfg?.postos?.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}
-                                </select>
-                            </div>
-
-                            <div><label className="text-[10px] font-black uppercase opacity-60">Anotação / Obs / Motivo</label><input type="text" value={editData.ObsDia||''} onChange={e=>setEditData({...editData, ObsDia:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
-                            
-                            <div className="flex justify-end gap-2 pt-4"><button type="button" onClick={()=>setEditData(null)} className="px-4 py-2 font-bold opacity-60">Cancelar</button><button type="submit" className="bg-primary text-white px-6 py-2 rounded-xl font-bold">Salvar Alterações</button></div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {editData && <SuperActionModal escala={editData} profs={profs} cfg={cfg} onClose={()=>setEditData(null)} onSave={onSave} onRefresh={onRefresh} isAd={isAd} />}
         </div>
     );
 };
 
-// ================== ABA 4: MAPA DE PLANTÃO (REFORMULADO C/ CRACHÁ E BUSCA) ==================
+// ================== ABA 4: MAPA DE PLANTÃO (REFORMULADO) ==================
 const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
     const [now, setNow] = useState(Date.now()); 
     const [actU, setActU] = useState(null);
     const [buscaGlobal, setBuscaGlobal] = useState(''); 
-    
-    // NOVO: Estado para abrir o Crachá Virtual
     const [infoProfModal, setInfoProfModal] = useState(null);
+    const [editData, setEditData] = useState(null);
 
     useEffect(() => { const t = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(t); }, []);
 
     const dStr = getStrDt(new Date()); 
-    const escHjRaw = escalas.filter(e => e.Data === dStr);
+    const escHjRaw = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
     
-    const postosSis = cfg?.postos||[]; const setoresSis = cfg?.setores||[]; const unids = cfg?.unidades||[];
-    const supervisorAtual = cfg?.supervisorAtual || 'Nenhum Assumiu';
-    const [isAssumindo, setIsAssumindo] = useState(false);
-    const [modalAction, setModalAction] = useState(null); 
-
-    const assumirPlantao = async (nome) => { await api.saveRecord('CONFIGURACOES', { ID: 'plantao', supervisorAtual: nome }); setIsAssumindo(false); onRefresh(); };
-    const setStatus = async (esc, st) => { await api.saveRecord('ESCALAS', {...esc, Status:st}); onRefresh(); };
+    const unids = cfg?.unidades||[]; const setoresSis = cfg?.setores||[]; const postosSis = cfg?.postos||[];
 
     const renderPosto = (sala, ocupantes) => {
         ocupantes.sort((a,b)=> (a.Horario||'').localeCompare(b.Horario||''));
         const d=new Date(now); const hStr=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
         
-        let currArr = [];
-        let nxtArr = [];
+        let currArr = []; let nxtArr = [];
 
         for(let o of ocupantes) {
             let pts = (o.Horario||'').split(' às '); let inH = pts[0]?.trim(); let outH = pts[1]?.trim();
             if(!inH || !outH || o.Horario === 'A DEFINIR') { currArr.push(o); continue; } 
-            
             if(hStr >= inH && hStr <= outH) { currArr.push(o); } 
             else if (hStr < inH) { nxtArr.push(o); }
         }
@@ -743,6 +850,9 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                     <p className={`text-[8px] font-bold opacity-60 truncate mt-0.5 text-slate-600 dark:text-slate-300 ${curr.Horario==='A DEFINIR'?'text-red-500':''}`}>{curr.Cargo} • <i className="ph-fill ph-clock"></i> {curr.Horario}</p>
                                 </div>
                             </div>
+                            
+                            {curr.Auxiliar && <p className="text-[8px] font-black text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded inline-block mb-1"><i className="ph-fill ph-user-plus"></i> Aux: {curr.Auxiliar}</p>}
+
                             <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2 mt-1">
                                 <span className={`text-[8px] font-black px-2 py-1 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>{curr.Status === 'NO POSTO' ? 'ATIVO' : curr.Status}</span>
                                 
@@ -753,10 +863,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                                 <button onClick={(e)=>{e.stopPropagation(); setStatus(curr, 'LANCHE');}} title="Ir para o Lanche/Pausa" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 hover:text-orange-600 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button>
                                             )}
                                             {isAd && (
-                                                <>
-                                                    <button onClick={(e)=>{e.stopPropagation(); setModalAction({tipo:'trocar_posto', escala: curr});}} title="Trocar de Posto/Sala" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 hover:text-blue-600 transition text-slate-500"><i className="ph-fill ph-swap"></i></button>
-                                                    <button onClick={(e)=>{e.stopPropagation(); setModalAction({tipo:'ausencia', escala: curr});}} title="Marcar Ausência" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-red-100 hover:text-red-600 transition text-slate-500"><i className="ph-fill ph-warning"></i></button>
-                                                </>
+                                                <button onClick={(e)=>{e.stopPropagation(); setEditData(curr);}} title="Ações Avançadas" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 hover:text-blue-600 transition text-slate-500"><i className="ph-fill ph-pencil-simple"></i></button>
                                             )}
                                         </>
                                     ) : (
@@ -764,9 +871,9 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                             {(isAd || (isMe && isInt)) && (
                                                 <button onClick={(e)=>{e.stopPropagation(); setStatus(curr, 'NO POSTO');}} className="px-2 py-1 bg-slate-800 dark:bg-slate-700 text-white rounded text-[8px] font-black hover:bg-slate-600 transition"><i className="ph-bold ph-arrow-u-down-left"></i> VOLTAR</button>
                                             )}
+                                            {isAus && isAd && <button onClick={(e)=>{e.stopPropagation(); setEditData(curr);}} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black hover:bg-blue-600 transition ml-1"><i className="ph-bold ph-magic-wand"></i> OPÇÕES</button>}
                                         </>
                                     )}
-                                    {isAus && isAd && <button onClick={(e)=>{e.stopPropagation(); setModalAction({tipo:'substituto', escala: curr});}} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black hover:bg-blue-600 transition ml-1"><i className="ph-bold ph-magic-wand"></i> COBRIR</button>}
                                 </div>
                             </div>
                         </div>
@@ -832,8 +939,8 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                         })}
                     </div>
                 )}
-                {/* O Modal precisa renderizar aqui também se clicado */}
                 {infoProfModal && <CrachaVirtual profInfo={infoProfModal} cfg={cfg} onClose={()=>setInfoProfModal(null)} />}
+                {editData && <SuperActionModal escala={editData} profs={profs} cfg={cfg} onClose={()=>setEditData(null)} onSave={onSave} onRefresh={onRefresh} isAd={isAd} />}
             </div>
         )
     }
@@ -841,27 +948,6 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     if(!actU) {
         return (
             <div className="animate-fade-in space-y-8 max-w-7xl mx-auto">
-                <div className="clean-card p-6 rounded-[1.5rem] border-l-4 border-l-primary flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-xl flex items-center justify-center text-3xl"><i className="ph-fill ph-shield-check"></i></div>
-                        <div><p className="text-[10px] uppercase tracking-widest font-bold opacity-60">Supervisão Geral</p><h3 className="font-black text-xl leading-none">No Comando: <span className="text-primary">{supervisorAtual}</span></h3></div>
-                    </div>
-                    {isAd && (
-                        isAssumindo ? (
-                            <div className="flex gap-2 w-full md:w-auto animate-fade-in">
-                                <select id="superSelect" className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white font-bold outline-none text-sm">
-                                    <option value="">Quem está assumindo?</option>
-                                    <option value={user.nome}>{user.nome} (Eu)</option>
-                                    {profs.filter(p => p.isGestor).map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
-                                </select>
-                                <button onClick={()=>{const v = document.getElementById('superSelect').value; if(v) assumirPlantao(v);}} className="bg-primary text-white px-4 rounded-xl font-bold hover:bg-blue-600">OK</button>
-                            </div>
-                        ) : (
-                            <button onClick={()=>setIsAssumindo(true)} className="w-full md:w-auto bg-slate-800 dark:bg-slate-700 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-700 transition">Trocar Supervisor</button>
-                        )
-                    )}
-                </div>
-
                 <div className="relative max-w-2xl mx-auto">
                     <i className="ph-bold ph-magnifying-glass absolute left-4 top-4 text-slate-400 text-xl"></i>
                     <input type="text" placeholder="Onde a pessoa está? Digite o nome aqui..." value={buscaGlobal} onChange={e=>setBuscaGlobal(e.target.value)} className="w-full p-4 pl-12 rounded-2xl border border-slate-200 dark:border-slate-700 outline-none bg-white dark:bg-slate-800 font-bold shadow-sm focus:border-primary transition" />
@@ -881,9 +967,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         );
     }
 
-    const setoresDaUnidade = setoresSis
-        .filter(s => safeStr(s.unidade).trim().toUpperCase() === safeStr(actU).trim().toUpperCase())
-        .map(s => s.nome);
+    const setoresDaUnidade = setoresSis.filter(s => safeStr(s.unidade).trim().toUpperCase() === safeStr(actU).trim().toUpperCase()).map(s => s.nome);
     
     return (
         <div className="animate-fade-in space-y-8 max-w-[1600px] mx-auto pb-10">
@@ -910,304 +994,212 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                     </div>
                 )
             })}
-            {setoresDaUnidade.length===0 && <p className="p-10 text-center opacity-50 font-bold border-2 border-dashed rounded-xl">Nenhum setor cadastrado nesta unidade.</p>}
-
-            {/* MODAIS DE AÇÃO DO GESTOR */}
-            {modalAction && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setModalAction(null)}>
-                    <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
-                        {modalAction.tipo === 'trocar_posto' && (
-                            <form onSubmit={async (e)=>{
-                                e.preventDefault();
-                                await api.saveRecord('ESCALAS', { ...modalAction.escala, Sala: e.target.novo_posto.value });
-                                setModalAction(null);
-                                onRefresh();
-                            }} className="space-y-4">
-                                <h3 className="text-lg font-black mb-2 text-primary">Trocar de Posto / Sala</h3>
-                                <p className="text-xs font-bold opacity-70 mb-4">Transferir {modalAction.escala.Nome_Profissional} do posto "{modalAction.escala.Sala}" para:</p>
-                                <select name="novo_posto" className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold outline-none text-sm" required>
-                                    <option value="">Selecione o novo posto...</option>
-                                    {cfg?.postos?.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}
-                                </select>
-                                <button type="submit" className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-blue-600 transition">Confirmar Troca</button>
-                            </form>
-                        )}
-
-                        {modalAction.tipo === 'ausencia' && (
-                            <form onSubmit={async (e)=>{ e.preventDefault(); await api.saveRecord('ESCALAS', { ...modalAction.escala, Status: 'AUSENTE', MotivoAusencia: e.target.motivo.value, ObsDia: `Ausente: ${e.target.motivo.value}` }); setModalAction(null); onRefresh(); }} className="space-y-4">
-                                <h3 className="text-lg font-black mb-2 text-red-500">Marcar Ausência</h3>
-                                <p className="text-xs font-bold opacity-70 mb-4">{modalAction.escala.Nome_Profissional}</p>
-                                <select name="motivo" className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold outline-none text-sm" required>
-                                    <option value="Faltou">Faltou</option><option value="Atestado">Atestado Médico</option><option value="Trabalho Externo">Trabalho Externo</option><option value="Outros">Outros</option>
-                                </select>
-                                <button type="submit" className="w-full py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition">Confirmar Ausência</button>
-                            </form>
-                        )}
-
-                        {modalAction.tipo === 'substituto' && (
-                            <div>
-                                <h3 className="text-xl font-black mb-2 flex items-center gap-2"><i className="ph-fill ph-magic-wand text-primary"></i> Substituir Ausência</h3>
-                                <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-                                    {ordenarPorNome(profs.filter(p => p.StatusGeral === 'Ativo' && !escHjRaw.some(e => e.Nome_Profissional === p.Nome))).map(sub => (
-                                        <div key={sub.ID} className="p-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-xl flex justify-between items-center">
-                                            <div><p className="font-black text-sm">{sub.Nome}</p><p className="text-[8px] font-bold opacity-50 uppercase">{sub.Cargo}</p></div>
-                                            <button onClick={async()=>{ await api.saveRecord('ESCALAS', {...modalAction.escala, ID: '', Nome_Profissional: sub.Nome, Status: 'NO POSTO', Cor: sub.Cor}, false); setModalAction(null); onRefresh(); }} className="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:scale-105 transition">Acionar</button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        <button type="button" onClick={()=>setModalAction(null)} className="w-full py-2 mt-4 text-sm font-bold opacity-50 hover:opacity-100 text-center block">Cancelar</button>
-                    </div>
-                </div>
-            )}
-
-            {/* NOVO: CRACHÁ VIRTUAL (POPUP) */}
+            
             {infoProfModal && <CrachaVirtual profInfo={infoProfModal} cfg={cfg} onClose={()=>setInfoProfModal(null)} />}
+            {editData && <SuperActionModal escala={editData} profs={profs} cfg={cfg} onClose={()=>setEditData(null)} onSave={onSave} onRefresh={onRefresh} isAd={isAd} />}
         </div>
     );
 };
 
-// Componente Separado para o Crachá Virtual (Facilita a leitura do código)
-const CrachaVirtual = ({ profInfo, cfg, onClose }) => {
-    return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-            <div className="clean-card w-full max-w-sm p-0 overflow-hidden shadow-2xl" onClick={e=>e.stopPropagation()}>
-                <div className="h-24 bg-gradient-to-r from-primary to-blue-400 relative">
-                    <button onClick={onClose} className="absolute top-4 right-4 text-white hover:scale-110"><i className="ph-bold ph-x text-xl"></i></button>
-                </div>
-                <div className="px-6 pb-6 pt-0 relative flex flex-col items-center text-center">
-                    <div className="w-24 h-24 rounded-full border-4 border-white dark:border-slate-800 shadow-lg -mt-12 bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden mb-3" style={{backgroundColor:profInfo.FotoURL?'':(profInfo.Cor||'#0ea5e9')}}>
-                        {profInfo.FotoURL ? <img src={fmtImg(profInfo.FotoURL)} className="w-full h-full object-cover" /> : <span className="text-4xl font-black text-white">{profInfo.Nome[0]}</span>}
-                    </div>
-                    <h3 className="text-xl font-black leading-tight flex items-center justify-center gap-2">
-                        {profInfo.Nome}
-                        <BadgeConvenio codUnimed={profInfo.CodUnimed} configLogo={cfg?.logoConvenio} />
-                    </h3>
-                    <p className="text-xs font-bold text-primary uppercase mt-1">{profInfo.Cargo}</p>
 
-                    <div className="w-full mt-6 space-y-2 text-left">
-                        <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3">
-                            <i className="ph-fill ph-map-pin text-slate-400 text-xl"></i>
-                            <div>
-                                <p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Lotação Base</p>
-                                <p className="text-xs font-black">{profInfo.UnidadeBase || 'Não informada'} • {profInfo.Setor || '-'}</p>
-                            </div>
-                        </div>
-                        {(profInfo.CRM || profInfo.CodUnimed) && (
-                            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 flex gap-4">
-                                {profInfo.CRM && <div className="flex-1"><p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">CRM</p><p className="text-xs font-black">{profInfo.CRM}</p></div>}
-                                {profInfo.CodUnimed && <div className="flex-1"><p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Cód Unimed</p><p className="text-xs font-black">{profInfo.CodUnimed}</p></div>}
-                            </div>
-                        )}
-                        {profInfo.TipoContrato && (
-                            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
-                                <p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Vínculo Contratual</p>
-                                <p className="text-xs font-black">{profInfo.TipoContrato}</p>
-                            </div>
-                        )}
-                        {profInfo.ObservacoesGerais && (
-                            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-xl border border-yellow-100 dark:border-yellow-900/30">
-                                <p className="text-[9px] uppercase font-bold text-yellow-600 mb-0.5 flex items-center gap-1"><i className="ph-fill ph-info"></i> Observações</p>
-                                <p className="text-xs font-medium italic text-yellow-800 dark:text-yellow-400">{profInfo.ObservacoesGerais}</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// ================== ABA 5: VISÃO AMPLA (MAPA DE GANTT AO VIVO) ==================
-const GanttView = ({ profs, escalas, cfg }) => {
+// ================== ABA 5: MATRIZ DE PLANTÃO (NOVA VISÃO AMPLA) ==================
+const MatrixBoardView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
+    const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
     const [viewMode, setViewMode] = useState('MENU');
-    const [diaAtual, setDiaAtual] = useState(new Date());
-    const [buscaGantt, setBuscaGantt] = useState('');
-    
-    // Motor do Tempo Ao Vivo
+    const [dataBase, setDataBase] = useState(new Date());
+    const [rangeDias, setRangeDias] = useState(1); // Pode ver 1, 3, 7, 15 dias
+    const [editData, setEditData] = useState(null);
     const [agora, setAgora] = useState(new Date());
+
     useEffect(() => {
-        const timer = setInterval(() => setAgora(new Date()), 30000); // Atualiza a linha a cada 30 segundos
+        const timer = setInterval(() => setAgora(new Date()), 60000); 
         return () => clearInterval(timer);
     }, []);
 
-    const dStr = getStrDt(diaAtual);
-    const isToday = getStrDt(agora) === dStr;
-    
-    const parseHorario = (hStr) => {
-        if(!hStr) return null;
-        let parts = hStr.split(':');
-        if(parts.length < 2) return null;
-        return parseInt(parts[0]) + (parseInt(parts[1])/60);
-    }
+    // Horários fixos da matriz: 06:00 até 23:00 (18 slots)
+    const H_INICIO = 6;
+    const H_FIM = 23;
+    const HORAS_REGUA = Array.from({length: (H_FIM - H_INICIO + 1)}, (_, i) => H_INICIO + i);
+    const PIXELS_POR_HORA = 60; // 1 hora = 60px de altura na tela
 
-    const escalasDiaGrupo = useMemo(() => {
-        if (viewMode === 'MENU') return [];
-        return escalas.filter(e => {
-            if (e.Data !== dStr) return false;
-            const pInfo = profs.find(p => p.Nome === e.Nome_Profissional);
-            const tipo = pInfo ? pInfo.Tipo : (e.Cargo.toLowerCase().includes('médico') ? 'Médico' : 'Colaborador');
-            return tipo === viewMode;
-        });
-    }, [escalas, dStr, viewMode, profs]);
-
-    const escalasFiltradas = escalasDiaGrupo.filter(e => safeStr(e.Nome_Profissional).toLowerCase().includes(buscaGantt.toLowerCase()));
-
-    const limites = useMemo(() => {
-        let minH = 24; let maxH = 0;
-        escalasDiaGrupo.forEach(e => {
-            if (e.Horario && e.Horario !== 'A DEFINIR' && e.Status !== 'FOLGA') {
-                const [inH, outH] = e.Horario.split(' às ');
-                const valIn = parseHorario(inH?.trim());
-                const valOut = parseHorario(outH?.trim());
-                if(valIn !== null && valIn < minH) minH = Math.floor(valIn);
-                if(valOut !== null && valOut > maxH) maxH = Math.ceil(valOut);
-            }
-        });
-        if(minH === 24) minH = 6; 
-        if(maxH === 0) maxH = 20;
-        if(maxH - minH < 6) { minH = 8; maxH = 18; }
-        if (maxH <= minH) maxH = minH + 12;
-        return { min: minH, max: maxH, range: maxH - minH };
-    }, [escalasDiaGrupo]);
-
-    const horasRegua = Array.from({length: limites.range + 1}, (_, i) => limites.min + i);
-
-    // Calcula a posição da linha vermelha do tempo
-    let posicaoAgoraPerc = null;
-    if (isToday) {
-        const horaAtualDecimal = agora.getHours() + (agora.getMinutes() / 60);
-        if (horaAtualDecimal >= limites.min && horaAtualDecimal <= limites.max) {
-            posicaoAgoraPerc = ((horaAtualDecimal - limites.min) / limites.range) * 100;
+    const gerarMatrizDias = () => {
+        const dias = [];
+        for(let i=0; i<rangeDias; i++) {
+            let d = new Date(dataBase);
+            d.setDate(d.getDate() + i);
+            dias.push(d);
         }
+        return dias;
+    };
+
+    const diasRender = gerarMatrizDias();
+
+    const TimeGrid = ({ dateObj }) => {
+        const dStr = getStrDt(dateObj);
+        const isToday = getStrDt(agora) === dStr;
+        
+        // Filtra escalas válidas daquele dia
+        const escalasDia = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
+        
+        // Entidades (Colunas) variam conforme a visão
+        let colunas = [];
+        if (viewMode === 'Colaborador') {
+            colunas = ordenarPorNome(profs.filter(p => p.Tipo === 'Colaborador' && p.StatusGeral === 'Ativo'));
+        } else {
+            // Se for médico, as colunas são os postos de trabalho (salas) agrupados ou não
+            colunas = cfg?.postos || [];
+        }
+
+        const getBloqueios = (colID, isProf) => {
+            if (isProf) return escalasDia.filter(e => e.Nome_Profissional === colID);
+            return escalasDia.filter(e => e.Sala === colID);
+        };
+
+        let linhaAgora = null;
+        if (isToday) {
+            const hDecimal = agora.getHours() + (agora.getMinutes() / 60);
+            if (hDecimal >= H_INICIO && hDecimal <= H_FIM + 1) {
+                linhaAgora = (hDecimal - H_INICIO) * PIXELS_POR_HORA;
+            }
+        }
+
+        return (
+            <div className="mb-10">
+                <h3 className="text-lg font-black mb-3 text-primary flex items-center gap-2"><i className="ph-fill ph-calendar-blank"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'short', year: 'numeric'}).toUpperCase()}</h3>
+                
+                <div className="time-grid-container shadow-md">
+                    {/* Coluna da Esquerda (Horas Fixo) */}
+                    <div className="time-col-hours">
+                        <div className="time-col-header" style={{minWidth:'60px'}}>H</div>
+                        {HORAS_REGUA.map(h => (
+                            <div key={h} className="time-cell-hour">{String(h).padStart(2,'0')}:00</div>
+                        ))}
+                    </div>
+
+                    {/* Colunas de Dados */}
+                    {colunas.map((col, idx) => {
+                        const blocos = getBloqueios(viewMode === 'Colaborador' ? col.Nome : col.nome, viewMode === 'Colaborador');
+                        
+                        return (
+                            <div key={idx} className="time-col-data">
+                                <div className="time-col-header truncate" title={viewMode === 'Colaborador' ? col.Nome : col.nome}>
+                                    {viewMode === 'Colaborador' ? col.Nome.split(' ')[0] + ' ' + (col.Nome.split(' ')[1]||'') : col.nome}
+                                    <span className="block text-[8px] font-normal opacity-50 truncate">{viewMode === 'Colaborador' ? col.Cargo : col.setor}</span>
+                                </div>
+                                
+                                <div className="relative" style={{height: `${(H_FIM - H_INICIO + 1) * PIXELS_POR_HORA}px`}}>
+                                    {linhaAgora !== null && <div className="time-line-now" style={{top: `${linhaAgora}px`}}></div>}
+
+                                    {blocos.map((b, bIdx) => {
+                                        const isFolga = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
+                                        let top = 0; let height = PIXELS_POR_HORA; // Default
+                                        
+                                        if (isFolga || b.Horario === 'A DEFINIR') {
+                                            // Mostra no topo
+                                            top = 4; height = 40;
+                                        } else {
+                                            const vIn = parseHorario(b.Horario.split(' às ')[0]?.trim());
+                                            let vOut = parseHorario(b.Horario.split(' às ')[1]?.trim());
+                                            
+                                            if(vIn !== null && vOut !== null) {
+                                                if(vOut < vIn) vOut += 24; 
+                                                top = (vIn - H_INICIO) * PIXELS_POR_HORA;
+                                                height = (vOut - vIn) * PIXELS_POR_HORA;
+                                                if(top < 0) { height += top; top = 0; } // corta o topo se começou antes
+                                            }
+                                        }
+
+                                        let bgColor = isFolga ? '#94a3b8' : (b.Cor || '#0ea5e9');
+                                        const pInfo = profs.find(p => p.Nome === b.Nome_Profissional) || {};
+
+                                        return (
+                                            <div key={bIdx} onClick={()=> isAd && setEditData({...b})} className="time-block" style={{top:`${top}px`, height:`${height-4}px`, backgroundColor: bgColor}}>
+                                                {viewMode === 'Colaborador' ? (
+                                                    <>
+                                                        <span className="truncate w-full">{b.Sala}</span>
+                                                        <span className="text-[8px] opacity-70 font-normal uppercase flex items-center gap-1"><i className="ph-fill ph-map-pin"></i> {b.Unidade || 'Geral'}</span>
+                                                        {!isFolga && b.Horario !== 'A DEFINIR' && <span className="text-[8px] font-normal mt-auto opacity-70">{b.Horario}</span>}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span className="truncate w-full flex items-center gap-1">
+                                                            {b.Nome_Profissional} {pInfo.CodUnimed && <div className="w-1.5 h-1.5 bg-green-400 rounded-full shrink-0"></div>}
+                                                        </span>
+                                                        {!isFolga && b.Horario !== 'A DEFINIR' && <span className="text-[8px] font-normal opacity-70">{b.Horario}</span>}
+                                                        {b.Auxiliar && <span className="text-[8px] bg-white/20 px-1 rounded mt-1 truncate">Aux: {b.Auxiliar}</span>}
+                                                    </>
+                                                )}
+                                                {(isFolga || b.Horario==='A DEFINIR') && <span className="text-[8px] font-black text-red-100 mt-auto">{b.Status==='FOLGA'?'FOLGA':'A DEFINIR'}</span>}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            </div>
+        )
     }
 
     return (
         <div className="animate-fade-in space-y-6 max-w-[1600px] mx-auto pb-10">
             {viewMode === 'MENU' && (
                 <div>
-                    <h2 className="text-2xl font-black mb-6">Visão Ampla (Mapa de Gantt)</h2>
+                    <h2 className="text-2xl font-black mb-6">Matriz de Plantão (Múltiplos Dias)</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-primary hover:shadow-lg transition-all">
-                            <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-chart-gantt"></i></div>
-                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Equipe Base</h3>
+                            <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-table"></i></div>
+                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Matriz Colaboradores</h3>
+                            <p className="text-[10px] font-bold opacity-60 mt-2">Visão por Pessoa e Horários</p>
                         </div>
                         <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-red-500 hover:shadow-lg transition-all">
-                            <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-chart-gantt"></i></div>
-                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Corpo Clínico</h3>
+                            <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-table"></i></div>
+                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Matriz Médicos</h3>
+                            <p className="text-[10px] font-bold opacity-60 mt-2">Visão por Salas e Horários</p>
                         </div>
                     </div>
                 </div>
             )}
 
             {viewMode !== 'MENU' && (
-                <div className="animate-fade-in space-y-4">
-                    <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
+                <div className="animate-fade-in space-y-6">
+                    <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
                         <div className="flex items-center gap-4">
-                            <button onClick={()=>{setViewMode('MENU'); setBuscaGantt('');}} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button>
+                            <button onClick={()=>setViewMode('MENU')} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button>
                             <div>
-                                <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Painel Gantt Ao Vivo</p>
-                                <h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Corpo Clínico' : 'Colaboradores'}</h2>
+                                <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Matriz de Plantão</p>
+                                <h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Painel de Salas (Médicos)' : 'Painel de Equipe Base'}</h2>
                             </div>
                         </div>
                         
-                        <div className="flex items-center gap-4 bg-white dark:bg-slate-800 p-2 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                            <button onClick={()=>setDiaAtual(new Date(diaAtual.setDate(diaAtual.getDate() - 1)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded"><i className="ph-bold ph-caret-left"></i></button>
-                            <span className="font-black text-sm uppercase tracking-widest min-w-[100px] text-center">{dStr}</span>
-                            <button onClick={()=>setDiaAtual(new Date(diaAtual.setDate(diaAtual.getDate() + 1)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded"><i className="ph-bold ph-caret-right"></i></button>
-                        </div>
-
-                        <div className="relative md:w-64">
-                            <input type="text" placeholder="Filtrar por nome..." value={buscaGantt} onChange={e=>setBuscaGantt(e.target.value)} className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-white dark:bg-slate-800 font-bold" />
+                        <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex items-center bg-white dark:bg-slate-800 p-1.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                                <button onClick={()=>setDataBase(new Date(dataBase.setDate(dataBase.getDate() - rangeDias)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded"><i className="ph-bold ph-caret-left"></i></button>
+                                <span className="font-black text-xs uppercase px-2">Início: {dataBase.toLocaleDateString('pt-BR')}</span>
+                                <button onClick={()=>setDataBase(new Date(dataBase.setDate(dataBase.getDate() + rangeDias)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded"><i className="ph-bold ph-caret-right"></i></button>
+                            </div>
+                            
+                            <select value={rangeDias} onChange={e=>setRangeDias(Number(e.target.value))} className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-white dark:bg-slate-800 font-bold text-sm shadow-sm cursor-pointer">
+                                <option value={1}>Exibir 1 Dia</option>
+                                <option value={3}>Exibir 3 Dias</option>
+                                <option value={7}>Exibir 7 Dias</option>
+                                <option value={15}>Exibir 15 Dias</option>
+                                <option value={30}>Exibir 30 Dias</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div className="clean-card bg-white dark:bg-slate-900 overflow-x-auto">
-                        <div className="min-w-[900px] gantt-grid">
-                            
-                            <div className="gantt-header border-r border-slate-200 dark:border-slate-700">Local de Trabalho</div>
-                            <div className="gantt-header flex justify-between relative overflow-hidden">
-                                {horasRegua.map((hr, i) => (
-                                    <div key={i} className="absolute text-[9px] opacity-40 font-black border-l border-slate-200 dark:border-slate-700 pl-1 h-full top-0" style={{left: `${(i/limites.range)*100}%`}}>
-                                        {String(hr).padStart(2,'0')}:00
-                                    </div>
-                                ))}
-                                {/* A LINHA VERMELHA DO TEMPO AO VIVO */}
-                                {posicaoAgoraPerc !== null && (
-                                    <div className="absolute top-0 bottom-0 w-[2px] bg-red-500 z-30" style={{left: `${posicaoAgoraPerc}%`}}>
-                                        <div className="absolute top-1 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded shadow-lg font-black tracking-widest">
-                                            {agora.getHours().toString().padStart(2,'0')}:{agora.getMinutes().toString().padStart(2,'0')}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {escalasFiltradas.length === 0 ? (
-                                <div className="col-span-2 p-10 text-center font-bold opacity-50">Nenhum plantão registrado para esta data.</div>
-                            ) : (
-                                escalasFiltradas.sort((a,b)=> safeStr(a.Unidade).localeCompare(safeStr(b.Unidade))).map((e, idx) => {
-                                    
-                                    const pInfo = profs.find(p => p.Nome === e.Nome_Profissional) || {};
-                                    const isFolga = e.Status === 'FOLGA';
-                                    
-                                    let leftPerc = 0; let widthPerc = 100;
-                                    let barColor = isFolga ? '#94a3b8' : (e.Cor || '#0ea5e9');
-
-                                    if (!isFolga && e.Horario && e.Horario !== 'A DEFINIR') {
-                                        const [inH, outH] = e.Horario.split(' às ');
-                                        const valIn = parseHorario(inH?.trim());
-                                        let valOut = parseHorario(outH?.trim());
-                                        
-                                        if (valIn !== null && valOut !== null) {
-                                            if(valOut < valIn) valOut += 24; 
-                                            leftPerc = ((valIn - limites.min) / limites.range) * 100;
-                                            widthPerc = ((valOut - valIn) / limites.range) * 100;
-                                            if(leftPerc < 0) { widthPerc += leftPerc; leftPerc = 0; }
-                                            if(leftPerc + widthPerc > 100) widthPerc = 100 - leftPerc;
-                                        }
-                                    }
-
-                                    return (
-                                        <React.Fragment key={e.ID || idx}>
-                                            <div className="gantt-cell flex flex-col items-start justify-center overflow-hidden">
-                                                <span className="font-black text-xs truncate w-full" title={e.Sala}>{e.Sala}</span>
-                                                <span className="text-[9px] opacity-50 uppercase truncate w-full flex items-center gap-1"><i className="ph-fill ph-map-pin"></i> {e.Unidade || 'GERAL'}</span>
-                                            </div>
-                                            <div className="gantt-cell p-0 gantt-timeline-container relative">
-                                                
-                                                {/* Guias verticais fracas no fundo */}
-                                                {horasRegua.map((hr, i) => (
-                                                    <div key={i} className="absolute top-0 bottom-0 border-l border-slate-200 dark:border-slate-800 z-0" style={{left: `${(i/limites.range)*100}%`}}></div>
-                                                ))}
-                                                {/* Linha vermelha no fundo */}
-                                                {posicaoAgoraPerc !== null && <div className="absolute top-0 bottom-0 w-[2px] bg-red-500/20 z-10" style={{left: `${posicaoAgoraPerc}%`}}></div>}
-
-                                                {e.Horario === 'A DEFINIR' ? (
-                                                    <div className="text-[10px] text-red-500 font-black pl-4 z-20">HORÁRIO A DEFINIR: {e.Nome_Profissional}</div>
-                                                ) : (
-                                                    <div className="gantt-bar z-20" style={{left: `${leftPerc}%`, width: `${widthPerc}%`, backgroundColor: barColor}} title={`${e.Nome_Profissional} (${e.Horario})`}>
-                                                        <div className="flex items-center gap-1.5 w-full">
-                                                            {pInfo.FotoURL ? <img src={fmtImg(pInfo.FotoURL)} className="w-5 h-5 rounded-full object-cover shrink-0 border border-white/30" /> : <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0 border border-white/30">{e.Nome_Profissional[0]}</div>}
-                                                            <span className="truncate">{e.Nome_Profissional}</span>
-                                                            <BadgeConvenio codUnimed={pInfo.CodUnimed} configLogo={cfg?.logoConvenio} />
-                                                            {!isFolga && <span className="opacity-70 ml-auto shrink-0 font-normal">{e.Horario}</span>}
-                                                            {isFolga && <span className="opacity-70 ml-auto shrink-0 font-normal">FOLGA / AUSÊNCIA</span>}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </React.Fragment>
-                                    )
-                                })
-                            )}
-                        </div>
+                    <div className="space-y-8">
+                        {diasRender.map((d, i) => <TimeGrid key={i} dateObj={d} />)}
                     </div>
                 </div>
             )}
+
+            {editData && <SuperActionModal escala={editData} profs={profs} cfg={cfg} onClose={()=>setEditData(null)} onSave={onSave} onRefresh={onRefresh} isAd={isAd} />}
         </div>
     );
-}
+};
 
 // ================== APP ROOT ==================
 const App = () => {
@@ -1249,7 +1241,7 @@ const App = () => {
     const menu = [ 
         {id:'HOJE', i:'ph-kanban', n:'Plantão'}, 
         {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas'}, 
-        {id:'GANTT', i:'ph-chart-gantt', n:'Visão Ampla'}, 
+        {id:'GANTT', i:'ph-table', n:'Matriz/Visão Ampla'}, 
         {id:'EQUIPE', i:'ph-users', n:'Equipe', adminOnly:true}, 
         {id:'CONFIG', i:'ph-gear', n:'Ajustes', adminOnly:true} 
     ];
@@ -1268,7 +1260,7 @@ const App = () => {
                 
                 {t==='HOJE' && <PainelHojeView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
                 {t==='CALENDARIO' && <CalendarioView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
-                {t==='GANTT' && <GanttView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} />}
+                {t==='GANTT' && <MatrixBoardView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
                 {t==='EQUIPE' && isAd && <EquipeView data={dbD.PROFISSIONAIS} cfg={dbD.CONFIGURACOES || {}} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={f} />}
                 {t==='CONFIG' && isAd && <AjustesView cfg={dbD.CONFIGURACOES || {}} onSave={api.saveRecord} onRefresh={f} />}
             </main>
