@@ -152,6 +152,21 @@ const safeGetHours = (hStr) => {
   return { in: hIn, out: hOut };
 };
 
+// ====== ADICIONE ESTAS DUAS FUNÇÕES AQUI ======
+const parseHorario = (str) => {
+  if (!str || typeof str !== 'string' || str.toUpperCase().includes('DEFINIR')) return null;
+  let pts = str.trim().split(':');
+  let h = parseInt(pts[0] || 0);
+  let m = parseInt(pts[1] || 0);
+  if (isNaN(h)) return null;
+  return h + (m / 60);
+};
+
+const parseHorarioParaGantt = (str, minH) => {
+  return parseHorario(str);
+};
+// ==============================================
+
 // ================== COMPONENTES MENORES ==================
 const BadgeConvenio = ({ cod, logo }) => {
   if(!cod) return null;
