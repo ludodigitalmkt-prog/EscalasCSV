@@ -36,38 +36,37 @@
   
   .clean-card { background-color: #ffffff; border-radius: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.2s ease; }
   .dark .clean-card { background-color: #1e293b; border-color: #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); color: #f8fafc; }
+  .clean-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08); }
   
-  /* GANTT BLINDADO - SEM VAZAMENTO DE BLOCOS */
-  .gantt-scroll-area { max-height: 70vh; overflow-y: auto; overflow-x: auto; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; }
+  /* CSS DO GANTT BLINDADO */
+  .gantt-scroll-area { max-height: 75vh; overflow-y: auto; overflow-x: auto; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; }
   .dark .gantt-scroll-area { background: #0f172a; border-color: #334155; }
   
-  /* Horizontal */
   .g-h-row { display: flex; border-bottom: 1px solid #f1f5f9; min-height: 60px; position: relative; }
   .dark .g-h-row { border-color: #334155; }
-  .g-h-label { width: 180px; min-width: 180px; position: sticky; left: 0; background: #f8fafc; z-index: 20; border-right: 2px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; padding: 8px; }
+  .g-h-row.drag-over { background-color: rgba(14, 165, 233, 0.1); border: 2px dashed #0ea5e9; }
+  
+  .g-h-label { width: 180px; min-width: 180px; position: sticky; left: 0; background: #f8fafc; z-index: 20; border-right: 2px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; padding: 8px; cursor: pointer; }
   .dark .g-h-label { background: #1e293b; border-color: #334155; }
+  .g-h-label:hover { filter: brightness(0.95); }
+  
   .g-h-track { flex: 1; position: relative; min-width: 900px; display: flex; }
-  .g-h-cell { flex: 1; border-right: 1px dashed rgba(0,0,0,0.05); height: 100%; transition: background 0.2s; }
-  .dark .g-h-cell { border-right-color: rgba(255,255,255,0.05); }
+  .g-grid-line { flex: 1; border-right: 1px dashed rgba(0,0,0,0.05); height: 100%; position: relative; }
+  .dark .g-grid-line { border-right-color: rgba(255,255,255,0.05); }
+  .g-grid-half { position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px dotted rgba(0,0,0,0.03); }
+  .dark .g-grid-half { border-left-color: rgba(255,255,255,0.03); }
+  
   .g-h-header { position: sticky; top: 0; z-index: 30; background: #fff; display: flex; border-bottom: 2px solid #e2e8f0; height: 40px; }
   .dark .g-h-header { background: #0f172a; border-color: #334155; }
-  .g-h-block { position: absolute; top: 6px; bottom: 6px; border-radius: 6px; padding: 4px 8px; color: white; display: flex; flex-direction: column; justify-content: center; overflow: hidden; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: grab; transition: filter 0.2s, transform 0.2s; border: 1px solid rgba(255,255,255,0.2); z-index: 10; }
   
-  /* Vertical */
-  .g-v-timecol { width: 60px; min-width: 60px; position: sticky; left: 0; background: #f8fafc; z-index: 20; border-right: 2px solid #e2e8f0; }
-  .dark .g-v-timecol { background: #1e293b; border-color: #334155; }
-  .g-v-cell { height: 60px; display: flex; justify-content: center; padding-top: 4px; font-size: 10px; font-weight: 900; color: #94a3b8; border-bottom: 1px solid #f1f5f9; }
-  .dark .g-v-cell { border-color: #334155; color: #64748b; }
-  .g-v-datacol { min-width: 150px; flex: 1; border-right: 1px solid #f1f5f9; position: relative; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #f1f5f9 59px, #f1f5f9 60px); }
-  .dark .g-v-datacol { border-color: #334155; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #1e293b 59px, #1e293b 60px); }
-  .g-v-header { height: 50px; position: sticky; top: 0; z-index: 30; background: #fff; border-bottom: 2px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 4px; }
-  .dark .g-v-header { background: #0f172a; border-color: #334155; }
-  .g-v-block { position: absolute; left: 4px; right: 4px; border-radius: 8px; padding: 6px; color: white; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: grab; transition: filter 0.2s, transform 0.2s; z-index: 10; border: 1px solid rgba(255,255,255,0.2); line-height: 1.2; }
+  .g-h-block { position: absolute; top: 6px; bottom: 6px; border-radius: 6px; padding: 4px 8px; color: white; font-size: 10px; font-weight: 800; display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: grab; transition: transform 0.2s, filter 0.2s; border: 1px solid rgba(255,255,255,0.2); z-index: 10; }
+  .g-h-block:active { cursor: grabbing; opacity: 0.8; z-index: 50; transform: scale(1.05); }
+  .g-h-block:hover { filter: brightness(1.1); box-shadow: 0 5px 10px rgba(0,0,0,0.2); z-index: 25; }
+  .g-h-block.conflict { border: 2px solid #ef4444; animation: pulse 2s infinite; z-index: 28; }
   
-  .conflict { border: 2px solid #ef4444; animation: pulse 1.5s infinite; z-index: 28 !important; }
-  .linha-agora { position: absolute; background: #ef4444; z-index: 18; pointer-events: none; }
+  .linha-agora-h { position: absolute; top: 0; bottom: 0; width: 2px; background: #ef4444; z-index: 18; pointer-events: none; }
   
-  /* Mural Festivo */
+  /* MURAL DE ANIVERSÁRIOS */
   .mural-bg { background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
   .dark .mural-bg { background-image: radial-gradient(#334155 1px, transparent 1px); }
   @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
@@ -75,9 +74,9 @@
   .dark .card-niver { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-color: #be185d; }
 </style>
 <script>
-  if (localStorage.getItem('escalas_versao') !== "57.0.0") { 
+  if (localStorage.getItem('escalas_versao') !== "58.0.0") { 
     localStorage.clear(); sessionStorage.clear(); 
-    localStorage.setItem('escalas_versao', "57.0.0"); window.location.reload(); 
+    localStorage.setItem('escalas_versao', "58.0.0"); window.location.reload(); 
   }
 </script>
 </head>
@@ -105,14 +104,13 @@ const api = {
   deleteRecord: async (c, id) => { try { await db.collection(c).doc(id).delete(); return true; } catch(e){ return false; } }
 };
 
-// ================== FUNÇÕES MATEMÁTICAS E GLOBAIS BLINDADAS ==================
+// ================== FUNÇÕES MATEMÁTICAS GLOBAIS SEGURAS ==================
 const safeStr = (v) => v == null ? '' : String(v);
 const fmtImg = (u) => { let s = safeStr(u).trim(); if(!s) return ''; const m = s.match(/(?:file\/d\/|id=|v\/|u\/\d+\/p\/)([a-zA-Z0-9_-]{25,})/); return m ? `https://drive.google.com/uc?export=view&id=${m[1]}` : s; };
 const getStrDt = (d) => d ? String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear() : '';
 const ordenarPorNome = (lista) => [...lista].sort((a, b) => safeStr(a.Nome).localeCompare(safeStr(b.Nome)));
 const checkIsMe = (nome, email) => { if(!nome || !email) return false; const p = safeStr(email).toLowerCase().split('@')[0].split(/[.\-_]/); const n = safeStr(nome).toLowerCase(); return p.some(x => x.length > 2 && n.includes(x)); };
 
-// Lógica de Aniversário
 const checkNiver = (niverStr) => {
   if (!niverStr) return { isHoje: false, isSemana: false };
   const hj = new Date(); const hjD = hj.getDate(); const hjM = hj.getMonth() + 1;
@@ -138,56 +136,20 @@ const getCorDaSala = (salaNome, cfg) => {
   return s?.cor || '#0ea5e9';
 };
 
-// ================== MATEMÁTICA EXATA DO GANTT ==================
-const getBlocoStyle = (horarioStr, isHorizontal) => {
-  if(!horarioStr || horarioStr.toUpperCase().includes('DEFINIR')) return isHorizontal ? { left: '1%', width: '98%' } : { top: '4px', height: '40px' };
+// ESSA FUNÇÃO RESOLVE O ERRO DE "is not defined" E O CÁLCULO DINÂMICO
+const safeGetHours = (hStr) => {
+  if (!hStr || typeof hStr !== 'string' || hStr.toUpperCase().includes('DEFINIR')) return { in: null, out: null };
+  let pts = hStr.toLowerCase().replace('as', 'às').split('às');
+  if (pts.length < 2) pts = hStr.split('-');
+  if (pts.length < 2) return { in: null, out: null };
   
-  let pts = horarioStr.toLowerCase().replace('as', 'às').split('às');
-  if(pts.length < 2) pts = horarioStr.split('-'); 
-  if(pts.length < 2) return isHorizontal ? { left: '1%', width: '98%' } : { top: '4px', height: '40px' };
+  let hIn = parseInt(pts[0].trim().split(':')[0] || 0) + (parseInt(pts[0].trim().split(':')[1] || 0) / 60);
+  let hOut = parseInt(pts[1].trim().split(':')[0] || 0) + (parseInt(pts[1].trim().split(':')[1] || 0) / 60);
   
-  let hIn = parseInt(pts[0].trim().split(':')[0]||0) + (parseInt(pts[0].trim().split(':')[1]||0)/60);
-  let hOut = parseInt(pts[1].trim().split(':')[0]||0) + (parseInt(pts[1].trim().split(':')[1]||0)/60);
+  if (isNaN(hIn) || isNaN(hOut)) return { in: null, out: null };
+  if (hOut <= hIn) hOut += 24; // Se passou da meia noite, soma 24
   
-  if(isNaN(hIn) || isNaN(hOut)) return isHorizontal ? { left: '1%', width: '98%' } : { top: '4px', height: '40px' };
-  if(hOut <= hIn) hOut += 24; 
-
-  const H_INICIO = 6; 
-  const H_TOTAL = 18; 
-  const PX_HORA = 60; 
-
-  let rIn = hIn < H_INICIO ? H_INICIO : hIn;
-  let rOut = hOut > (H_INICIO + H_TOTAL) ? (H_INICIO + H_TOTAL) : hOut;
-  if (rOut <= rIn) return { display: 'none' };
-
-  if (isHorizontal) {
-    let left = ((rIn - H_INICIO) / H_TOTAL) * 100;
-    let width = ((rOut - rIn) / H_TOTAL) * 100;
-    return { left: `${left}%`, width: `${width}%` };
-  } else {
-    let top = (rIn - H_INICIO) * PX_HORA;
-    let height = (rOut - rIn) * PX_HORA;
-    return { top: `${top}px`, height: `${height}px` };
-  }
-};
-
-const checkConflito = (blocoA, blocoB) => {
-  if(blocoA.Status === 'FOLGA' || blocoB.Status === 'FOLGA') return false;
-  if(blocoA.Horario === 'A DEFINIR' || blocoB.Horario === 'A DEFINIR') return false;
-  
-  let pA = blocoA.Horario.toLowerCase().replace('as', 'às').split('às');
-  let pB = blocoB.Horario.toLowerCase().replace('as', 'às').split('às');
-  if(pA.length < 2 || pB.length < 2) return false;
-
-  let aIn = parseInt(pA[0].split(':')[0]||0) + (parseInt(pA[0].split(':')[1]||0)/60);
-  let aOut = parseInt(pA[1].split(':')[0]||0) + (parseInt(pA[1].split(':')[1]||0)/60);
-  if(aOut <= aIn) aOut += 24;
-
-  let bIn = parseInt(pB[0].split(':')[0]||0) + (parseInt(pB[0].split(':')[1]||0)/60);
-  let bOut = parseInt(pB[1].split(':')[0]||0) + (parseInt(pB[1].split(':')[1]||0)/60);
-  if(bOut <= bIn) bOut += 24;
-
-  return (aIn < bOut && aOut > bIn); // Lógica de intersecção verdadeira
+  return { in: hIn, out: hOut };
 };
 
 // ================== COMPONENTES MENORES ==================
@@ -201,7 +163,7 @@ class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false }; }
   static getDerivedStateFromError() { return { hasError: true }; }
   render() { 
-    if (this.state.hasError) return <div className="p-10 text-center text-red-500 font-bold">Ocorreu um erro visual. <button onClick={()=>location.reload()} className="underline ml-2">Recarregar App</button></div>; 
+    if (this.state.hasError) return <div className="p-10 text-center text-red-500 font-bold">Ocorreu um erro visual. <button onClick={()=>location.reload()} className="underline ml-2 font-black">Recarregar App</button></div>; 
     return this.props.children; 
   }
 }
@@ -223,7 +185,7 @@ const TopHeader = ({ user, isDark, toggleDark }) => {
   );
 };
 
-// ================== SUPER MODAL (GERENCIAR ESCALA) ==================
+// ================== SUPER MODAL (GERENCIAR ESCALA) COM OPÇÕES RESTAURADAS ==================
 const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd }) => {
   const [fd, setFd] = useState({...escala});
   const isMedico = fd.Cargo?.toLowerCase().includes('médico') || profs.find(p=>p.Nome===fd.Nome_Profissional)?.Tipo === 'Médico';
@@ -246,14 +208,15 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
       <div className="clean-card w-full max-w-md p-6 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e=>e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4 border-b dark:border-slate-700 pb-2">
-          <h3 className="text-xl font-black text-primary flex items-center gap-2"><i className="ph-fill ph-sliders"></i> Editar Plantão</h3>
+          <h3 className="text-xl font-black text-primary flex items-center gap-2"><i className="ph-fill ph-sliders"></i> Gerenciar Escala</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-red-500"><i className="ph-bold ph-x text-xl"></i></button>
         </div>
         <form onSubmit={handleSave} className="space-y-4">
           <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700"><p className="text-[10px] font-black uppercase opacity-60">Data Ref.</p><p className="font-bold">{fd.Data}</p></div>
+          
           {isAd && (
             <div>
-              <label className="text-[10px] font-black uppercase opacity-60 text-blue-600 dark:text-blue-400">Transferir Plantão / Substituir</label>
+              <label className="text-[10px] font-black uppercase opacity-60 text-blue-600 dark:text-blue-400">Transferir / Substituir Profissional</label>
               <select value={fd.Nome_Profissional} onChange={e=>setFd({...fd, Nome_Profissional: e.target.value})} className="w-full p-3 border rounded-xl bg-blue-50 dark:bg-slate-900 text-blue-700 dark:text-blue-400 font-bold dark:border-slate-700 outline-none mt-1">
                 <option value={fd.Nome_Profissional}>Manter: {fd.Nome_Profissional}</option>
                 <option value="VAZIO">🗑️ DEIXAR POSTO VAZIO (Excluir)</option>
@@ -262,18 +225,18 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
               </select>
             </div>
           )}
-          <div>
-            <label className="text-[10px] font-black uppercase opacity-60">Status</label>
-            <select value={fd.Status} onChange={e=>setFd({...fd, Status:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1">
-              <option value="NO POSTO">🟢 Turno Normal (Ativo)</option>
-              <option value="LANCHE">☕ Lanche / Pausa</option>
-              <option value="FOLGA">⚪ Folga Agendada</option>
-              <option value="AUSENTE">🔴 Ausente / Falta</option>
-            </select>
-          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <label className="text-[10px] font-black uppercase opacity-60">Sala / Posto</label>
+              <label className="text-[10px] font-black uppercase opacity-60">Unidade de Atendimento</label>
+              <select value={fd.Unidade||''} onChange={e=>setFd({...fd, Unidade:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1">
+                <option value="">Selecione a Unidade...</option>
+                {(cfg?.unidades||[]).map((u,i) => <option key={i} value={u.nome}>{u.nome}</option>)}
+              </select>
+            </div>
+            
+            <div className="col-span-2">
+              <label className="text-[10px] font-black uppercase opacity-60">Sala / Setor / Posto</label>
               <select value={fd.Sala} onChange={e=>setFd({...fd, Sala:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1">
                 <option value="A DEFINIR">A DEFINIR...</option>
                 <option value="FOLGA">FOLGA / FÉRIAS</option>
@@ -281,14 +244,23 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
                 {(cfg?.postos||[]).map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}
               </select>
             </div>
+
+            <div className="col-span-2">
+              <label className="text-[10px] font-black uppercase opacity-60">Status do Plantão</label>
+              <select value={fd.Status} onChange={e=>setFd({...fd, Status:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1">
+                <option value="NO POSTO">🟢 Turno Normal (Ativo)</option><option value="LANCHE">☕ Lanche / Pausa</option><option value="FOLGA">⚪ Folga Agendada</option><option value="AUSENTE">🔴 Ausente / Falta</option>
+              </select>
+            </div>
+
             <div className="col-span-2">
               <label className="text-[10px] font-black uppercase opacity-60">Horário (Ex: 08:00 às 18:00)</label>
               <input type="text" value={fd.Horario} onChange={e=>setFd({...fd, Horario:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1"/>
             </div>
           </div>
+
           {isMedico ? (
             <div className="bg-purple-50 dark:bg-purple-900/10 p-3 rounded-xl border border-purple-200 dark:border-purple-900/30">
-              <label className="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase mb-1 flex items-center gap-1"><i className="ph-fill ph-user-plus"></i> Auxiliar de Sala</label>
+              <label className="text-[10px] font-black text-purple-600 dark:text-purple-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-user-plus mr-1"></i> Auxiliar de Sala (Staff)</label>
               <select value={fd.Auxiliar||''} onChange={e=>setFd({...fd, Auxiliar:e.target.value})} className="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-700 text-sm font-bold outline-none">
                 <option value="">Sem auxiliar</option>
                 {colabsL.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
@@ -296,20 +268,22 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
             </div>
           ) : (
             <div className="bg-indigo-50 dark:bg-indigo-900/10 p-3 rounded-xl border border-indigo-200 dark:border-indigo-900/30">
-              <label className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase mb-1 flex items-center gap-1"><i className="ph-fill ph-stethoscope"></i> Apoio a Médico</label>
+              <label className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-stethoscope mr-1"></i> Prestando Apoio a Médico</label>
               <select value={fd.MedicoApoio||''} onChange={e=>setFd({...fd, MedicoApoio:e.target.value})} className="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-700 text-sm font-bold outline-none">
                 <option value="">Atendimento Geral</option>
                 {medsA.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
               </select>
             </div>
           )}
+
           <div>
-            <label className="text-[10px] font-black uppercase opacity-60">Anotações / Obs</label>
-            <input type="text" value={fd.ObsDia||''} onChange={e=>setFd({...fd, ObsDia:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 outline-none mt-1"/>
+            <label className="text-[10px] font-black uppercase opacity-60">Anotações / Obs do Dia</label>
+            <input type="text" value={fd.ObsDia||''} onChange={e=>setFd({...fd, ObsDia:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 outline-none mt-1" placeholder="Ex: Atestado, trocar de sala as 14h..."/>
           </div>
+          
           <div className="flex justify-end gap-2 pt-4 border-t dark:border-slate-700">
             <button type="button" onClick={onClose} className="px-4 py-3 font-bold opacity-60 hover:opacity-100 transition">Cancelar</button>
-            <button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black shadow-lg">Salvar Modificações</button>
+            <button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black shadow-lg hover:bg-blue-600 transition">Salvar Modificações</button>
           </div>
         </form>
       </div>
@@ -324,7 +298,7 @@ const CrachaVirtual = ({ profInfo, cfg, onClose }) => {
     <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 animate-fade-in" onClick={onClose}>
       <div className="clean-card w-full max-w-sm p-0 overflow-hidden shadow-2xl relative" onClick={e=>e.stopPropagation()}>
         <div className={`h-24 relative ${niver.isHoje ? 'bg-gradient-to-r from-pink-500 to-rose-400' : 'bg-gradient-to-r from-primary to-blue-400'}`}>
-          <button onClick={onClose} className="absolute top-4 right-4 text-white hover:scale-110"><i className="ph-bold ph-x text-xl"></i></button>
+          <button onClick={onClose} className="absolute top-4 right-4 text-white hover:scale-110 transition"><i className="ph-bold ph-x text-xl"></i></button>
         </div>
         <div className="px-6 pb-6 pt-0 relative flex flex-col items-center text-center">
           <div className={`w-24 h-24 rounded-full border-4 shadow-lg -mt-12 bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden mb-3 relative ${niver.isHoje ? 'border-pink-200' : 'border-white dark:border-slate-800'}`} style={{backgroundColor:profInfo.FotoURL?'':(profInfo.Cor||'#0ea5e9')}}>
@@ -363,8 +337,14 @@ const CrachaVirtual = ({ profInfo, cfg, onClose }) => {
             )}
             {profInfo.ObservacoesGerais && (
               <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-xl border border-yellow-100 dark:border-yellow-900/30">
-                <p className="text-[9px] font-bold text-yellow-600 uppercase tracking-widest"><i className="ph-fill ph-info"></i> Obs</p>
-                <p className="text-xs text-yellow-800 dark:text-yellow-400">{profInfo.ObservacoesGerais}</p>
+                <p className="text-[9px] font-bold text-yellow-600 uppercase tracking-widest"><i className="ph-fill ph-info"></i> Obs da Gestão</p>
+                <p className="text-xs text-yellow-800 dark:text-yellow-400 mt-1">{profInfo.ObservacoesGerais}</p>
+              </div>
+            )}
+            
+            {profInfo.Habilidades && profInfo.Habilidades.length > 0 && (
+              <div className="pt-2 border-t dark:border-slate-700 flex flex-wrap gap-1">
+                {profInfo.Habilidades.map((h, i) => <span key={i} className="bg-slate-100 dark:bg-slate-800 text-[9px] font-bold px-2 py-0.5 rounded">{h}</span>)}
               </div>
             )}
           </div>
@@ -434,8 +414,8 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
               </div>
             </div>
             <div className="flex gap-1 shrink-0 ml-2">
-              <button onClick={()=>setMod({t:tipo, act:'edit', idx:i, v1:item.nome||item, v2:item.unidade||item.setor||'', v3:item.cor||'#0ea5e9'})} className="text-yellow-600 bg-yellow-100 p-1.5 rounded hover:bg-yellow-200"><i className="ph-bold ph-pencil"></i></button>
-              <button onClick={()=>del(tipo, i)} className="text-red-600 bg-red-100 p-1.5 rounded hover:bg-red-200"><i className="ph-bold ph-trash"></i></button>
+              <button onClick={()=>setMod({t:tipo, act:'edit', idx:i, v1:item.nome||item, v2:item.unidade||item.setor||'', v3:item.cor||'#0ea5e9'})} className="text-yellow-600 bg-yellow-100 p-1.5 rounded hover:bg-yellow-200 transition"><i className="ph-bold ph-pencil"></i></button>
+              <button onClick={()=>del(tipo, i)} className="text-red-600 bg-red-100 p-1.5 rounded hover:bg-red-200 transition"><i className="ph-bold ph-trash"></i></button>
             </div>
           </div>
         ))}
@@ -499,7 +479,7 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
   );
 };
 
-// ================== ABA 2: EQUIPE E CADASTROS ==================
+// ================== ABA 2: EQUIPE COM TODOS OS CAMPOS RESTAURADOS ==================
 const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
   const [viewMode, setViewMode] = useState('MENU'); 
   const [modal, setModal] = useState(false); const [fd, setFd] = useState({}); const [busca, setBusca] = useState('');
@@ -535,12 +515,12 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
         <div>
           <div className="flex flex-col md:flex-row justify-between mb-6 border-b dark:border-slate-700 pb-4 gap-4">
             <div className="flex items-center gap-4">
-              <button onClick={()=>{setViewMode('MENU'); setBusca('');}} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 transition"><i className="ph-bold ph-arrow-left"></i></button>
+              <button onClick={()=>{setViewMode('MENU'); setBusca('');}} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 transition"><i className="ph-bold ph-caret-left"></i></button>
               <div><p className="text-[10px] font-bold uppercase opacity-50">Pasta Ativa</p><h2 className="text-2xl font-black">{viewMode}s</h2></div>
             </div>
             <div className="flex gap-2 w-full md:w-auto">
               <input type="text" placeholder="Buscar por nome..." value={busca} onChange={e=>setBusca(e.target.value)} className="p-3 border rounded-xl flex-1 md:w-64 dark:border-slate-700 dark:bg-slate-900 font-bold outline-none"/>
-              <button onClick={()=>openModal()} className="bg-primary text-white px-6 rounded-xl font-bold shadow hover:bg-blue-600 transition"><i className="ph-bold ph-plus"></i> Novo</button>
+              <button onClick={()=>openModal()} className="bg-primary text-white px-6 rounded-xl font-bold shadow hover:bg-blue-600 transition">Novo</button>
             </div>
           </div>
 
@@ -602,7 +582,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                 {fd.Tipo==='Médico' ? (
                   <div className="col-span-2 grid grid-cols-2 md:grid-cols-3 gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border dark:border-slate-700 mt-2">
                     <div><label className="text-[9px] font-black uppercase opacity-60">CRM</label><input type="text" value={fd.CRM||''} onChange={e=>setFd({...fd, CRM:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required/></div>
-                    <div><label className="text-[9px] font-black uppercase opacity-60">Cód Unimed</label><input type="text" value={fd.CodUnimed||''} onChange={e=>setFd({...fd, CodUnimed:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 font-bold outline-none"/></div>
+                    <div><label className="text-[9px] font-black uppercase opacity-60">Cód Unimed (Exibe Logo)</label><input type="text" value={fd.CodUnimed||''} onChange={e=>setFd({...fd, CodUnimed:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 font-bold outline-none"/></div>
                     <div><label className="text-[9px] font-black uppercase opacity-60">Especialidade</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd, Cargo:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required/></div>
                     <div><label className="text-[9px] font-black uppercase opacity-60">URA</label><input type="text" value={fd.URA||''} onChange={e=>setFd({...fd, URA:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 outline-none"/></div>
                     <div><label className="text-[9px] font-black uppercase opacity-60">CBO</label><input type="text" value={fd.CBO||''} onChange={e=>setFd({...fd, CBO:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 outline-none"/></div>
@@ -617,7 +597,7 @@ const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
                 <div><label className="text-[10px] font-black uppercase opacity-60">Status Geral</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd, StatusGeral:e.target.value})} className="w-full p-2 border rounded-lg font-bold text-red-500 dark:border-slate-700 dark:bg-slate-900 outline-none"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{(cfg?.ausencias||[]).map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
                 
                 <div><label className="text-[10px] font-black uppercase opacity-60">Cor Pessoal (Matriz/Calendário)</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd, Cor:e.target.value})} className="w-full h-10 border rounded p-1 cursor-pointer dark:border-slate-700"/></div>
-                <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Observações Gerais</label><textarea value={fd.ObservacoesGerais||''} onChange={e=>setFd({...fd, ObservacoesGerais:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 outline-none" placeholder="Anotações..." rows="2"></textarea></div>
+                <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Observações Gerais</label><textarea value={fd.ObservacoesGerais||''} onChange={e=>setFd({...fd, ObservacoesGerais:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 outline-none" placeholder="Anotações para a gestão..." rows="2"></textarea></div>
                 
                 <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60 mb-1 block">Competências</label><div className="flex flex-wrap gap-1">{(cfg?.habilidades||[]).map((x,i)=><button type="button" key={i} onClick={()=>toggleHab(x)} className={`px-3 py-1.5 text-[10px] font-bold rounded-lg border transition ${fd.Habilidades?.includes(x)?'bg-primary text-white border-primary shadow':'bg-slate-50 dark:bg-slate-800 dark:border-slate-700'}`}>{x}</button>)}</div></div>
               </div>
@@ -1094,7 +1074,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
               <div className="flex items-center gap-2 mb-2">
                 {pInfo.FotoURL ? <img src={fmtImg(pInfo.FotoURL)} className={`w-8 h-8 rounded-full object-cover shrink-0 ${niver.isHoje?'animate-bounce':''}`} /> : <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 ${niver.isHoje?'animate-bounce':''}`} style={{background:curr.Cor||'#0ea5e9'}}>{curr.Nome_Profissional[0]}</div>}
                 <div className="truncate">
-                  <div className={`text-[11px] font-black truncate text-slate-800 dark:text-white flex items-center gap-1 ${isAus?'line-through text-red-50 dark:text-red-400':''}`}>
+                  <div className={`text-[11px] font-black truncate text-slate-800 dark:text-white flex items-center gap-1 ${isAus?'line-through text-red-500 dark:text-red-400':''}`}>
                     <span className="truncate">{curr.Nome_Profissional}</span>
                     {niver.isHoje ? <span title="Aniversário Hoje">🎂</span> : (niver.isSemana && <span title="Aniversário esta semana">🎈</span>)}
                     <BadgeConvenio cod={pInfo.CodUnimed} logo={cfg?.logoConvenio} />
@@ -1244,7 +1224,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   );
 };
 
-// ================== ABA 5: GANTT TRIPLO DRAG & DROP ==================
+// ================== ABA 5: GANTT DRAG & DROP ==================
 const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
   const [viewMode, setViewMode] = useState('MENU');
@@ -1276,10 +1256,10 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   
   const entExibidas = entidades.filter(ent => ent.toLowerCase().includes(busca.toLowerCase()));
 
-  // TEMPO DINÂMICO
+  // TEMPO DINÂMICO SEGURO
   let minH = 7; let maxH = 19;
   escDia.forEach(e => {
-    if(e.Status !== 'FOLGA' && e.Status !== 'AUSENTE' && e.Horario && e.Horario !== 'A DEFINIR') {
+    if(e.Status !== 'FOLGA' && e.Status !== 'AUSENTE' && e.Horario && !e.Horario.includes('DEFINIR')) {
       const vIn = parseHorario(e.Horario.split(' às ')[0]);
       let vOut = parseHorario(e.Horario.split(' às ')[1]);
       if(vIn !== null && vIn < minH) minH = Math.floor(vIn);
@@ -1382,13 +1362,12 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                             left = ((vIn - minH)/HORAS_TOTAIS)*100; width = ((vOut - vIn)/HORAS_TOTAIS)*100;
                             if(left < 0) { width += left; left = 0; } if(left+width > 100) width = 100 - left;
                             
-                            // Conflito
                             blocos.forEach((outro, oI) => {
                               if(bIdx !== oI && !isF && outro.Horario !== 'A DEFINIR' && outro.Status !== 'FOLGA'){
                                 const oIn = parseHorarioParaGantt(outro.Horario.split(' às ')[0], minH);
                                 let oOut = parseHorarioParaGantt(outro.Horario.split(' às ')[1], minH);
                                 if(oOut <= oIn) oOut += 24;
-                                if((vIn >= oIn && vIn < oOut) || (vOut > oIn && vOut <= oOut)) hasConflict = true;
+                                if(vIn < oOut && vOut > oIn) hasConflict = true;
                               }
                             });
                           }
@@ -1401,6 +1380,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                           <div key={bIdx} draggable={isAd} onDragStart={(e) => handleDragStart(e, bloco)} onClick={()=>isAd && setEditData({...bloco})} 
                             className={`g-h-block ${hasConflict ? 'conflict' : ''}`} 
                             style={{left: `${left}%`, width: `${width}%`, backgroundColor: bColor, top: condensed ? '4px' : '6px', bottom: condensed ? '4px' : '6px'}}>
+                            
                             {hasConflict && <span className="absolute -top-1 -right-1 text-sm z-50 drop-shadow-md">⚠️</span>}
                             <span className="font-black text-[10px] leading-tight truncate drop-shadow-sm">{isF ? bloco.Status : exNome}</span>
                             {!condensed && !isF && bloco.Horario !== 'A DEFINIR' && <span className="text-[8px] font-bold opacity-90 ml-2 drop-shadow-sm"><i className="ph-fill ph-clock"></i> {bloco.Horario}</span>}
@@ -1453,7 +1433,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                       if(isF||bloco.Horario==='A DEFINIR'){top=4;hght=40;}else{
                         const vIn=parseHorarioParaGantt(bloco.Horario.split(' às ')[0], minH); const vOut=parseHorarioParaGantt(bloco.Horario.split(' às ')[1], minH);
                         if(vIn!==null&&vOut!==null){ top=(vIn-minH)*60; hght=(vOut-vIn)*60; if(top<0){hght+=top;top=0;} 
-                          blocos.forEach((out,oI)=>{if(bIdx!==oI&&!isF&&out.Horario!=='A DEFINIR'&&out.Status!=='FOLGA'){const oIn=parseHorarioParaGantt(out.Horario.split(' às ')[0], minH);const oOut=parseHorarioParaGantt(out.Horario.split(' às ')[1], minH);if((vIn>=oIn&&vIn<oOut)||(vOut>oIn&&vOut<=oOut))hasC=true;}});
+                          blocos.forEach((out,oI)=>{if(bIdx!==oI&&!isF&&out.Horario!=='A DEFINIR'&&out.Status!=='FOLGA'){const oIn=parseHorarioParaGantt(out.Horario.split(' às ')[0], minH);const oOut=parseHorarioParaGantt(out.Horario.split(' às ')[1], minH);if((vIn<oOut)&&(vOut>oIn))hasC=true;}});
                         }
                       }
                       const c = isF?'#94a3b8':getCorDaSala(bloco.Sala, cfg); const n = viewMode==='Médico'?bloco.Nome_Profissional:bloco.Sala;
@@ -1476,7 +1456,6 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
       )
     }
 
-    // 3. LAYOUT BLOCO (RESUMO)
     return (
       <div className="mb-10 animate-fade-in">
         <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-blank text-primary"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'}).toUpperCase()}</h3>
@@ -1517,12 +1496,12 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:shadow-lg transition-all transform hover:-translate-y-1">
               <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4"><i className="ph-fill ph-users-three"></i></div>
-              <h3 className="font-black text-xl uppercase tracking-widest text-center">Gantt Colaboradores</h3>
-              <p className="text-[10px] font-bold opacity-60 mt-2 uppercase tracking-widest">Colunas = Nomes</p>
+              <h3 className="font-black text-xl uppercase tracking-widest text-center">Gantt por Pessoa</h3>
+              <p className="text-[10px] font-bold opacity-60 mt-2 uppercase tracking-widest">Colunas = Equipe Base</p>
             </div>
             <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer hover:border-red-500 hover:shadow-lg transition-all transform hover:-translate-y-1">
               <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4"><i className="ph-fill ph-door"></i></div>
-              <h3 className="font-black text-xl uppercase tracking-widest text-center">Gantt Médicos</h3>
+              <h3 className="font-black text-xl uppercase tracking-widest text-center">Gantt por Sala</h3>
               <p className="text-[10px] font-bold opacity-60 mt-2 uppercase tracking-widest">Colunas = Consultórios</p>
             </div>
           </div>
@@ -1561,6 +1540,10 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                 <span className="font-black text-[11px] uppercase px-3 text-center min-w-[120px] text-primary">{dataBase.toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit', month:'2-digit'})}</span>
                 <button onClick={()=>setDataBase(new Date(dataBase.setDate(dataBase.getDate() + rangeDias)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition"><i className="ph-bold ph-caret-right"></i></button>
               </div>
+              
+              <select value={rangeDias} onChange={e=>setRangeDias(Number(e.target.value))} className="p-2.5 rounded-xl border dark:border-slate-700 outline-none bg-white dark:bg-slate-800 font-bold text-xs shadow-sm cursor-pointer">
+                <option value={1}>Exibir 1 Dia</option><option value={3}>Exibir 3 Dias</option><option value={7}>Exibir 7 Dias</option><option value={15}>Exibir 15 Dias</option>
+              </select>
             </div>
           </div>
 
@@ -1677,7 +1660,7 @@ const App = () => {
       <div className="w-full max-w-md clean-card p-10">
         <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6"><i className="ph-fill ph-hospital"></i></div>
         <h1 className="text-3xl font-black text-center mb-8">Escalas SV</h1>
-        <form onSubmit={async e=>{e.preventDefault();setL(true);try{await auth.signInWithEmailAndPassword(e.target.e.value, e.target.p.value);}catch(err){alert('Acesso Negado.');setL(false);}}} className="space-y-4">
+        <form onSubmit={async e=>{e.preventDefault();setL(true);try{await auth.signInWithEmailAndPassword(e.target.e.value, e.target.p.value);}catch(err){alert('Acesso Negado. Verifique os dados.');setL(false);}}} className="space-y-4">
           <input name="e" type="email" placeholder="E-mail" className="w-full p-4 rounded-xl border dark:border-slate-700 dark:bg-slate-800 outline-none font-bold" required />
           <input name="p" type="password" placeholder="Senha" className="w-full p-4 rounded-xl border dark:border-slate-700 dark:bg-slate-800 outline-none font-bold" required />
           <button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-xl shadow-lg hover:bg-blue-600 transition">Entrar no Sistema</button>
