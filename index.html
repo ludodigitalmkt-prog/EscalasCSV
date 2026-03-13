@@ -27,29 +27,23 @@ body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;}::-
 .dark .clean-card{background-color:#1e293b;border-color:#334155;box-shadow:0 4px 6px -1px rgba(0,0,0,0.2);color:#f8fafc;}
 .clean-card:hover{transform:translateY(-2px);box-shadow:0 10px 15px -3px rgba(0,0,0,0.08);}.dark .clean-card:hover{box-shadow:0 10px 15px -3px rgba(0,0,0,0.3);}
 
-/* Estilos da Nova Matriz de Tempo (Excel Style) */
-.matrix-container { display: flex; overflow-x: auto; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; }
-.dark .matrix-container { background: #0f172a; border-color: #334155; }
-.matrix-time-col { min-width: 60px; max-width: 60px; position: sticky; left: 0; background: #f8fafc; z-index: 30; border-right: 2px solid #e2e8f0; }
-.dark .matrix-time-col { background: #1e293b; border-color: #334155; }
-.matrix-header-cell { height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; padding: 4px; text-align: center; line-height: 1.1; }
-.dark .matrix-header-cell { border-color: #334155; }
-.matrix-time-cell { height: 60px; display: flex; align-items: flex-start; justify-content: center; font-size: 10px; font-weight: 900; color: #94a3b8; border-bottom: 1px solid #f1f5f9; padding-top: 4px; }
-.dark .matrix-time-cell { border-color: #334155; color: #64748b; }
-.matrix-data-col { min-width: 140px; flex: 1; border-right: 1px solid #f1f5f9; position: relative; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #f1f5f9 59px, #f1f5f9 60px); }
-.dark .matrix-data-col { border-color: #334155; background: repeating-linear-gradient(180deg, transparent, transparent 59px, #1e293b 59px, #1e293b 60px); }
-.matrix-block { position: absolute; left: 0; right: 0; padding: 6px; font-size: 9px; font-weight: 800; color: white; overflow: hidden; cursor: pointer; transition: all 0.2s; z-index: 10; display: flex; flex-direction: column; line-height: 1.2; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); border-radius: 4px; }
-.matrix-block:hover { z-index: 40; filter: brightness(1.1); transform: scale(1.02); box-shadow: 0 4px 10px rgba(0,0,0,0.3); border-radius: 8px; }
-.matrix-now-line { position: absolute; left: 0; right: 0; height: 2px; background-color: #ef4444; z-index: 35; pointer-events: none; box-shadow: 0 0 4px rgba(239,68,68,0.5); }
-.matrix-now-line::before { content: ''; position: absolute; left: 0; top: -4px; width: 10px; height: 10px; border-radius: 50%; background-color: #ef4444; }
+/* Estilos do Super Gantt (Horizontal) */
+.gantt-row-wrapper { display: flex; border-bottom: 1px solid #e2e8f0; min-height: 56px; }
+.dark .gantt-row-wrapper { border-color: #334155; }
+.gantt-label { width: 180px; flex-shrink: 0; padding: 8px; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; background: #f8fafc; z-index: 10; position: sticky; left: 0; }
+.dark .gantt-label { border-color: #334155; background: #1e293b; }
+.gantt-track { flex-grow: 1; position: relative; background: repeating-linear-gradient(90deg, transparent, transparent calc(100%/18 - 1px), #f1f5f9 calc(100%/18 - 1px), #f1f5f9 calc(100%/18)); min-width: 800px; }
+.dark .gantt-track { background: repeating-linear-gradient(90deg, transparent, transparent calc(100%/18 - 1px), #334155 calc(100%/18 - 1px), #334155 calc(100%/18)); }
+.gantt-header-row { display: flex; height: 30px; border-bottom: 2px solid #e2e8f0; background: #fff; position: sticky; top: 0; z-index: 20; }
+.dark .gantt-header-row { border-color: #334155; background: #0f172a; }
+.gantt-block { position: absolute; top: 4px; bottom: 4px; border-radius: 6px; padding: 4px 8px; font-size: 10px; font-weight: 800; color: white; display: flex; flex-direction: column; justify-content: center; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s; white-space: nowrap; border: 1px solid rgba(255,255,255,0.2); }
+.gantt-block:hover { transform: scaleY(1.1); z-index: 15; filter: brightness(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+.gantt-now-line { position: absolute; top: 0; bottom: 0; width: 2px; background-color: #ef4444; z-index: 18; pointer-events: none; box-shadow: 0 0 5px rgba(239,68,68,0.5); }
 </style>
 <script>
-    const VERSAO_ATUAL = "43.0.0"; 
+    const VERSAO_ATUAL = "44.0.0"; 
     if (localStorage.getItem('escalas_versao') !== VERSAO_ATUAL) { 
-        localStorage.clear(); 
-        sessionStorage.clear(); 
-        localStorage.setItem('escalas_versao', VERSAO_ATUAL); 
-        window.location.reload(); 
+        localStorage.clear(); sessionStorage.clear(); localStorage.setItem('escalas_versao', VERSAO_ATUAL); window.location.reload(); 
     }
 </script>
 </head>
@@ -62,7 +56,7 @@ const firebaseConfig = { apiKey:"AIzaSyAtywH5sc1OEs0xa-c7IDOpGA9764ZhU6c", authD
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore(); const auth = firebase.auth();
 
-db.enablePersistence({synchronizeTabs:true}).catch(function(err) { console.log("Aviso de Cache: ", err.code); });
+db.enablePersistence({synchronizeTabs:true}).catch(e => console.log(e));
 
 const api = {
     fetch: async (c) => { try { const s = await db.collection(c).get(); return s.docs.map(d => ({ ID: d.id, ...d.data() })); } catch(e){return [];} },
@@ -72,23 +66,14 @@ const api = {
 const safeStr = (v) => v==null?'':String(v);
 
 const fmtImg = (u) => { 
-    let s=safeStr(u).trim(); 
-    if(!s) return ''; 
+    let s=safeStr(u).trim(); if(!s) return ''; 
     const match = s.match(/(?:file\/d\/|id=|v\/|u\/\d+\/p\/)([a-zA-Z0-9_-]{25,})/);
     if(match) return `https://drive.google.com/uc?export=view&id=${match[1]}`; 
     return s; 
 };
 
 const getStrDt = (d) => { if(!d) return ''; return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); };
-const ordenarPorNome = (lista) => { return [...lista].sort((a, b) => safeStr(a.Nome).localeCompare(safeStr(b.Nome))); };
-
-const checkIsMe = (nomeProfissional, userEmail) => {
-    if(!nomeProfissional || !userEmail) return false;
-    const norm = (s) => safeStr(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const parts = norm(userEmail).split('@')[0].split(/[.\-_]/);
-    const nProf = norm(nomeProfissional);
-    return parts.some(p => p.length > 2 && nProf.includes(p));
-};
+const ordenarPorNome = (lista) => [...lista].sort((a, b) => safeStr(a.Nome).localeCompare(safeStr(b.Nome)));
 
 const isEscalaValida = (esc, postosCfg) => {
     const sala = safeStr(esc.Sala).trim().toUpperCase();
@@ -98,21 +83,26 @@ const isEscalaValida = (esc, postosCfg) => {
     return postosList.some(p => safeStr(p.nome).trim().toUpperCase() === sala);
 };
 
-// HELPER: Busca a cor do SETOR para pintar os blocos
 const getCorDaSala = (salaNome, cfg) => {
-    const psts = cfg?.postos || [];
-    const sets = cfg?.setores || [];
+    const psts = cfg?.postos || []; const sets = cfg?.setores || [];
     const p = psts.find(x => safeStr(x.nome).trim().toUpperCase() === safeStr(salaNome).trim().toUpperCase());
-    if(!p) return '#94a3b8'; // default
+    if(!p) return '#94a3b8'; 
     const s = sets.find(x => safeStr(x.nome).trim().toUpperCase() === safeStr(p.setor).trim().toUpperCase());
-    return s?.cor || '#3b82f6';
+    return s?.cor || '#0ea5e9';
 }
 
 const parseHorario = (hStr) => {
     if(!hStr || hStr === 'A DEFINIR') return null;
-    let parts = hStr.split(':');
-    if(parts.length < 2) return null;
+    let parts = hStr.split(':'); if(parts.length < 2) return null;
     return parseInt(parts[0]) + (parseInt(parts[1])/60);
+};
+
+const checkIsMe = (nomeProfissional, userEmail) => {
+    if(!nomeProfissional || !userEmail) return false;
+    const norm = (s) => safeStr(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const parts = norm(userEmail).split('@')[0].split(/[.\-_]/);
+    const nProf = norm(nomeProfissional);
+    return parts.some(p => p.length > 2 && nProf.includes(p));
 };
 
 const BadgeConvenio = ({ codUnimed, configLogo }) => {
@@ -123,7 +113,7 @@ const BadgeConvenio = ({ codUnimed, configLogo }) => {
 
 class ErrorBoundary extends Component {
     constructor(props){super(props);this.state={hasError:false,e:''};} static getDerivedStateFromError(e){return{hasError:true};} componentDidCatch(e){this.setState({e:String(e)});}
-    render(){ if(this.state.hasError) return <div className="p-10 text-center"><h2 className="text-2xl text-red-500 font-black mb-2">Erro</h2><p className="text-xs bg-red-100 text-red-800 p-4 rounded max-w-xl mx-auto">{this.state.e}</p><button onClick={()=>location.reload()} className="p-3 bg-blue-500 text-white rounded font-bold mt-4">Recarregar</button></div>; return this.props.children; }
+    render(){ if(this.state.hasError) return <div className="p-10 text-center text-red-500 font-bold">Erro detectado. Recarregue a página.</div>; return this.props.children; }
 }
 
 const TopHeader = ({ user, isDark, toggleDark }) => {
@@ -141,11 +131,9 @@ const TopHeader = ({ user, isDark, toggleDark }) => {
     );
 };
 
-// ================== COMPONENTE UNIVERSAL: SUPER MODAL DE AÇÃO ==================
+// ================== SUPER MODAL E CRACHÁ ==================
 const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd }) => {
     const [fd, setFd] = useState({...escala});
-    
-    // Identifica se é médico (para abrir opções de auxiliar) ou colaborador (para abrir opção de apoiar médico)
     const isMedico = fd.Cargo?.toLowerCase().includes('médico') || profs.find(p=>p.Nome===fd.Nome_Profissional)?.Tipo === 'Médico';
     const profsOrdenados = ordenarPorNome(profs);
     const colaboradoresLivres = profsOrdenados.filter(p => p.Tipo === 'Colaborador' && p.StatusGeral === 'Ativo');
@@ -154,20 +142,12 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
     const handleSave = async (e) => {
         e.preventDefault();
         if (fd.Nome_Profissional === "VAZIO") {
-            if(confirm("Deseja realmente deixar este posto vazio (excluir escala)?")) {
-                await api.deleteRecord('ESCALAS', fd.ID);
-                onRefresh();
-                onClose();
-            }
+            if(confirm("Deseja realmente excluir este plantão?")) { await api.deleteRecord('ESCALAS', fd.ID); onRefresh(); onClose(); }
             return;
         }
-
         const pInfo = profs.find(p => p.Nome === fd.Nome_Profissional);
         if(pInfo) { fd.Cor = pInfo.Cor; fd.Cargo = pInfo.Cargo; }
-
-        await onSave('ESCALAS', fd);
-        onRefresh();
-        onClose();
+        await onSave('ESCALAS', fd); onRefresh(); onClose();
     };
 
     return (
@@ -177,123 +157,48 @@ const SuperActionModal = ({ escala, profs, cfg, onClose, onSave, onRefresh, isAd
                     <h3 className="text-xl font-black text-primary flex items-center gap-2"><i className="ph-fill ph-sliders"></i> Gerenciar Escala</h3>
                     <button onClick={onClose} className="text-slate-400 hover:text-red-500"><i className="ph-bold ph-x text-xl"></i></button>
                 </div>
-                
                 <form onSubmit={handleSave} className="space-y-4">
-                    <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
-                        <p className="text-[10px] font-black uppercase opacity-60">Data Referência</p>
-                        <p className="font-bold">{fd.Data}</p>
-                    </div>
-
+                    <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700"><p className="text-[10px] font-black uppercase opacity-60">Data</p><p className="font-bold">{fd.Data}</p></div>
                     {isAd && (
-                        <div><label className="text-[10px] font-black uppercase opacity-60 text-blue-600">Transferir Plantão / Substituir</label>
+                        <div><label className="text-[10px] font-black uppercase opacity-60 text-blue-600">Transferir / Substituir</label>
                             <select value={fd.Nome_Profissional} onChange={e=>setFd({...fd, Nome_Profissional: e.target.value})} className="w-full p-3 border border-blue-200 dark:border-blue-900/30 rounded-xl bg-blue-50 dark:bg-blue-900/10 font-bold text-blue-700 dark:text-blue-400 outline-none mt-1">
-                                <option value={fd.Nome_Profissional}>Manter: {fd.Nome_Profissional}</option>
-                                <option value="VAZIO">🗑️ DEIXAR POSTO VAZIO (Excluir)</option>
-                                <option disabled>──────────</option>
-                                {profsOrdenados.filter(p => p.Nome !== fd.Nome_Profissional).map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+                                <option value={fd.Nome_Profissional}>Manter: {fd.Nome_Profissional}</option><option value="VAZIO">🗑️ DEIXAR POSTO VAZIO (Excluir)</option><option disabled>──────────</option>{profsOrdenados.filter(p => p.Nome !== fd.Nome_Profissional).map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
                             </select>
                         </div>
                     )}
-
-                    <div><label className="text-[10px] font-black uppercase opacity-60">Status</label>
-                        <select value={fd.Status} onChange={e=>setFd({...fd, Status:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1">
-                            <option value="NO POSTO">🟢 Turno Normal (Ativo)</option>
-                            <option value="LANCHE">☕ Lanche / Pausa</option>
-                            <option value="FOLGA">⚪ Folga Agendada</option>
-                            <option value="AUSENTE">🔴 Ausente / Falta</option>
-                        </select>
-                    </div>
-
+                    <div><label className="text-[10px] font-black uppercase opacity-60">Status</label><select value={fd.Status} onChange={e=>setFd({...fd, Status:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1"><option value="NO POSTO">🟢 Turno Normal (Ativo)</option><option value="LANCHE">☕ Lanche / Pausa</option><option value="FOLGA">⚪ Folga Agendada</option><option value="AUSENTE">🔴 Ausente / Falta</option></select></div>
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Sala / Posto</label>
-                            <select value={fd.Sala} onChange={e=>setFd({...fd, Sala:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1">
-                                <option value="A DEFINIR">A DEFINIR...</option>
-                                <option value="FOLGA">FOLGA / FÉRIAS</option>
-                                <option disabled>──────────</option>
-                                {cfg?.postos?.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}
-                            </select>
-                        </div>
-                        <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Horário (Ex: 08:00 às 18:00)</label>
-                            <input type="text" value={fd.Horario} onChange={e=>setFd({...fd, Horario:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1"/>
-                        </div>
+                        <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Sala / Posto</label><select value={fd.Sala} onChange={e=>setFd({...fd, Sala:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1"><option value="A DEFINIR">A DEFINIR...</option><option value="FOLGA">FOLGA / FÉRIAS</option><option disabled>──────────</option>{cfg?.postos?.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}</select></div>
+                        <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Horário (Ex: 08:00 às 18:00)</label><input type="text" value={fd.Horario} onChange={e=>setFd({...fd, Horario:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1"/></div>
                     </div>
-
                     {isMedico ? (
-                        <div className="border border-purple-200 dark:border-purple-900/30 rounded-xl p-3 bg-purple-50 dark:bg-purple-900/10">
-                            <label className="text-[10px] font-black uppercase text-purple-600 dark:text-purple-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-user-plus"></i> Auxiliar de Sala</label>
-                            <select value={fd.Auxiliar||''} onChange={e=>setFd({...fd, Auxiliar:e.target.value})} className="w-full p-2 border border-purple-200 dark:border-purple-900/30 rounded bg-white dark:bg-slate-800 font-bold outline-none text-sm">
-                                <option value="">Sem auxiliar vinculado</option>
-                                {colaboradoresLivres.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
-                            </select>
-                        </div>
+                        <div className="border border-purple-200 dark:border-purple-900/30 rounded-xl p-3 bg-purple-50 dark:bg-purple-900/10"><label className="text-[10px] font-black uppercase text-purple-600 dark:text-purple-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-user-plus"></i> Auxiliar de Sala</label><select value={fd.Auxiliar||''} onChange={e=>setFd({...fd, Auxiliar:e.target.value})} className="w-full p-2 border border-purple-200 dark:border-purple-900/30 rounded bg-white dark:bg-slate-800 font-bold outline-none text-sm"><option value="">Sem auxiliar</option>{colaboradoresLivres.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}</select></div>
                     ) : (
-                        <div className="border border-indigo-200 dark:border-indigo-900/30 rounded-xl p-3 bg-indigo-50 dark:bg-indigo-900/10">
-                            <label className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-stethoscope"></i> Prestando Apoio Ao Médico:</label>
-                            <select value={fd.MedicoApoio||''} onChange={e=>setFd({...fd, MedicoApoio:e.target.value})} className="w-full p-2 border border-indigo-200 dark:border-indigo-900/30 rounded bg-white dark:bg-slate-800 font-bold outline-none text-sm">
-                                <option value="">Atendimento Geral (Sem vínculo)</option>
-                                {medicosAtivos.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
-                            </select>
-                        </div>
+                        <div className="border border-indigo-200 dark:border-indigo-900/30 rounded-xl p-3 bg-indigo-50 dark:bg-indigo-900/10"><label className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-stethoscope"></i> Prestando Apoio Ao Médico:</label><select value={fd.MedicoApoio||''} onChange={e=>setFd({...fd, MedicoApoio:e.target.value})} className="w-full p-2 border border-indigo-200 dark:border-indigo-900/30 rounded bg-white dark:bg-slate-800 font-bold outline-none text-sm"><option value="">Atendimento Geral</option>{medicosAtivos.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}</select></div>
                     )}
-
-                    <div><label className="text-[10px] font-black uppercase opacity-60">Anotação / Obs / Motivo da Falta</label>
-                        <input type="text" value={fd.ObsDia||''} onChange={e=>setFd({...fd, ObsDia:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 outline-none mt-1" placeholder="Ex: Atestado médico, trocar de sala às 10h..."/>
-                    </div>
-                    
-                    <div className="flex justify-end gap-2 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
-                        <button type="button" onClick={onClose} className="px-4 py-3 font-bold opacity-60 hover:opacity-100">Cancelar</button>
-                        <button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black hover:bg-blue-600 hover:shadow-lg transition">Salvar Alterações</button>
-                    </div>
+                    <div><label className="text-[10px] font-black uppercase opacity-60">Anotações / Obs</label><input type="text" value={fd.ObsDia||''} onChange={e=>setFd({...fd, ObsDia:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 outline-none mt-1"/></div>
+                    <div className="flex justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-700"><button type="button" onClick={onClose} className="px-4 py-3 font-bold opacity-60">Cancelar</button><button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black hover:bg-blue-600 transition">Salvar</button></div>
                 </form>
             </div>
         </div>
     );
 };
 
-// Componente: Crachá Virtual
 const CrachaVirtual = ({ profInfo, cfg, onClose }) => {
     return (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
             <div className="clean-card w-full max-w-sm p-0 overflow-hidden shadow-2xl relative" onClick={e=>e.stopPropagation()}>
-                <div className="h-24 bg-gradient-to-r from-primary to-blue-400 relative">
-                    <button onClick={onClose} className="absolute top-4 right-4 text-white hover:scale-110"><i className="ph-bold ph-x text-xl"></i></button>
-                </div>
+                <div className="h-24 bg-gradient-to-r from-primary to-blue-400 relative"><button onClick={onClose} className="absolute top-4 right-4 text-white"><i className="ph-bold ph-x text-xl"></i></button></div>
                 <div className="px-6 pb-6 pt-0 relative flex flex-col items-center text-center">
-                    <div className="w-24 h-24 rounded-full border-4 border-white dark:border-slate-800 shadow-lg -mt-12 bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden mb-3" style={{backgroundColor:profInfo.FotoURL?'':(profInfo.Cor||'#0ea5e9')}}>
+                    <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg -mt-12 bg-slate-100 flex items-center justify-center overflow-hidden mb-3" style={{backgroundColor:profInfo.FotoURL?'':(profInfo.Cor||'#0ea5e9')}}>
                         {profInfo.FotoURL ? <img src={fmtImg(profInfo.FotoURL)} className="w-full h-full object-cover" /> : <span className="text-4xl font-black text-white">{profInfo.Nome?.[0]}</span>}
                     </div>
-                    <h3 className="text-xl font-black leading-tight flex items-center justify-center gap-2">
-                        {profInfo.Nome}
-                        <BadgeConvenio codUnimed={profInfo.CodUnimed} configLogo={cfg?.logoConvenio} />
-                    </h3>
+                    <h3 className="text-xl font-black leading-tight flex justify-center items-center gap-2">{profInfo.Nome} <BadgeConvenio codUnimed={profInfo.CodUnimed} configLogo={cfg?.logoConvenio} /></h3>
                     <p className="text-xs font-bold text-primary uppercase mt-1">{profInfo.Cargo}</p>
-
                     <div className="w-full mt-6 space-y-2 text-left">
-                        <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3">
-                            <i className="ph-fill ph-map-pin text-slate-400 text-xl"></i>
-                            <div>
-                                <p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Lotação Base</p>
-                                <p className="text-xs font-black">{profInfo.UnidadeBase || 'Não informada'} • {profInfo.Setor || '-'}</p>
-                            </div>
-                        </div>
-                        {(profInfo.CRM || profInfo.CodUnimed) && (
-                            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700 flex gap-4">
-                                {profInfo.CRM && <div className="flex-1"><p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">CRM</p><p className="text-xs font-black">{profInfo.CRM}</p></div>}
-                                {profInfo.CodUnimed && <div className="flex-1"><p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Cód Unimed</p><p className="text-xs font-black">{profInfo.CodUnimed}</p></div>}
-                            </div>
-                        )}
-                        {profInfo.TipoContrato && (
-                            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
-                                <p className="text-[9px] uppercase font-bold opacity-50 mb-0.5">Vínculo Contratual</p>
-                                <p className="text-xs font-black">{profInfo.TipoContrato}</p>
-                            </div>
-                        )}
-                        {profInfo.ObservacoesGerais && (
-                            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-xl border border-yellow-100 dark:border-yellow-900/30">
-                                <p className="text-[9px] uppercase font-bold text-yellow-600 mb-0.5 flex items-center gap-1"><i className="ph-fill ph-info"></i> Observações</p>
-                                <p className="text-xs font-medium italic text-yellow-800 dark:text-yellow-400">{profInfo.ObservacoesGerais}</p>
-                            </div>
-                        )}
+                        <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700"><p className="text-[9px] uppercase font-bold opacity-50">Lotação Base</p><p className="text-xs font-black">{profInfo.UnidadeBase || 'Geral'} • {profInfo.Setor || '-'}</p></div>
+                        {(profInfo.CRM || profInfo.CodUnimed) && <div className="bg-slate-50 p-3 rounded-xl flex gap-4">{profInfo.CRM && <div><p className="text-[9px] uppercase font-bold opacity-50">CRM</p><p className="text-xs font-black">{profInfo.CRM}</p></div>}{profInfo.CodUnimed && <div><p className="text-[9px] uppercase font-bold opacity-50">Unimed</p><p className="text-xs font-black">{profInfo.CodUnimed}</p></div>}</div>}
+                        {profInfo.ObservacoesGerais && <div className="bg-yellow-50 p-3 rounded-xl"><p className="text-[9px] uppercase font-bold text-yellow-600"><i className="ph-fill ph-info"></i> Obs</p><p className="text-xs text-yellow-800">{profInfo.ObservacoesGerais}</p></div>}
                     </div>
                 </div>
             </div>
@@ -303,103 +208,41 @@ const CrachaVirtual = ({ profInfo, cfg, onClose }) => {
 
 // ================== ABA 1: AJUSTES ==================
 const AjustesView = ({ cfg, onSave, onRefresh }) => {
-    const [u, setU] = useState([]); const [s, setS] = useState([]); const [p, setP] = useState([]);
-    const [h, setH] = useState([]); const [a, setA] = useState([]); 
+    const [u, setU] = useState([]); const [s, setS] = useState([]); const [p, setP] = useState([]); const [loading, setL] = useState(false); const [mod, setMod] = useState(null); 
     const [logoConv, setLogoConv] = useState('');
-    const [loading, setL] = useState(false); const [mod, setMod] = useState(null); 
-
-    useEffect(() => {
-        const formatData = (arr) => (arr||[]).map(x => typeof x === 'string' ? {nome: x.toUpperCase()} : x);
-        setU(formatData(cfg?.unidades)); setS(formatData(cfg?.setores)); setP(formatData(cfg?.postos));
-        setH(cfg?.habilidades||[]); setA(cfg?.ausencias||[]); setLogoConv(cfg?.logoConvenio||'');
-    }, [cfg]);
-
-    const salvar = async () => { setL(true); await onSave('CONFIGURACOES',{ID:'parametros',unidades:u,setores:s,postos:p,habilidades:h,ausencias:a,logoConvenio:logoConv}); onRefresh(); setL(false); alert("Configurações Salvas!"); };
-
-    const openAdd = (t) => setMod({ t, act: 'add', v1: '', v2: '', v3: '#0ea5e9' });
-    const openEdit = (t, idx) => {
-        if(t==='u') setMod({ t, act: 'edit', idx, v1: u[idx].nome, v2: '' });
-        if(t==='s') setMod({ t, act: 'edit', idx, v1: s[idx].nome, v2: s[idx].unidade||'', v3: s[idx].cor||'#0ea5e9' });
-        if(t==='p') setMod({ t, act: 'edit', idx, v1: p[idx].nome, v2: p[idx].setor||'' });
-        if(t==='h') setMod({ t, act: 'edit', idx, v1: h[idx], v2: '' });
-        if(t==='a') setMod({ t, act: 'edit', idx, v1: a[idx], v2: '' });
-    };
-
+    useEffect(() => { setU(cfg?.unidades||[]); setS(cfg?.setores||[]); setP(cfg?.postos||[]); setLogoConv(cfg?.logoConvenio||''); }, [cfg]);
+    const salvar = async () => { setL(true); await onSave('CONFIGURACOES',{ID:'parametros',unidades:u,setores:s,postos:p, logoConvenio:logoConv}); onRefresh(); setL(false); alert("Salvo!"); };
     const confirmMod = (e) => {
-        e.preventDefault();
-        const { t, act, idx, v1, v2, v3 } = mod;
-        let n1 = v1.trim().toUpperCase(); let n2 = v2.trim().toUpperCase();
-        if(t==='p' || t==='h' || t==='a') n1 = v1.trim(); 
-        
+        e.preventDefault(); const { t, act, idx, v1, v2, v3 } = mod; let n1 = v1.trim().toUpperCase(); let n2 = v2.trim().toUpperCase();
         if(act === 'add') {
-            if(t==='u') setU([...u, {id:Date.now(), nome:n1}]); if(t==='s') setS([...s, {id:Date.now(), nome:n1, unidade:n2, cor:v3}]); if(t==='p') setP([...p, {id:Date.now(), nome:n1, setor:n2}]);
-            if(t==='h') setH([...h, n1]); if(t==='a') setA([...a, n1]);
+            if(t==='u') setU([...u, {nome:n1}]); if(t==='s') setS([...s, {nome:n1, unidade:n2, cor:v3}]); if(t==='p') setP([...p, {nome:n1, setor:n2}]);
         } else {
-            if(t==='u'){ let arr=[...u]; arr[idx].nome=n1; setU(arr); } if(t==='s'){ let arr=[...s]; arr[idx].nome=n1; arr[idx].unidade=n2; arr[idx].cor=v3; setS(arr); }
-            if(t==='p'){ let arr=[...p]; arr[idx].nome=n1; arr[idx].setor=n2; setP(arr); } if(t==='h'){ let arr=[...h]; arr[idx]=n1; setH(arr); }
-            if(t==='a'){ let arr=[...a]; arr[idx]=n1; setA(arr); }
-        }
-        setMod(null);
+            if(t==='u'){ let arr=[...u]; arr[idx].nome=n1; setU(arr); } if(t==='s'){ let arr=[...s]; arr[idx].nome=n1; arr[idx].unidade=n2; arr[idx].cor=v3; setS(arr); } if(t==='p'){ let arr=[...p]; arr[idx].nome=n1; arr[idx].setor=n2; setP(arr); }
+        } setMod(null);
     };
-
     const del = (tipo, idx) => {
-        if(!confirm("Excluir permanentemente?")) return;
+        if(!confirm("Excluir?")) return;
         if(tipo==='u') setU(u.filter((_,i)=>i!==idx)); if(tipo==='s') setS(s.filter((_,i)=>i!==idx)); if(tipo==='p') setP(p.filter((_,i)=>i!==idx));
-        if(tipo==='h') setH(h.filter((_,i)=>i!==idx)); if(tipo==='a') setA(a.filter((_,i)=>i!==idx));
     };
-
-    const ListRender = ({title, arr, tipo, desc}) => (
-        <div className="clean-card p-5">
-            <div className="flex justify-between items-center mb-2"><h3 className="font-black text-sm">{title}</h3><button onClick={()=>openAdd(tipo)} className="bg-primary text-white w-6 h-6 rounded font-black hover:scale-110 transition">+</button></div>
-            <p className="text-[9px] opacity-50 mb-3">{desc}</p>
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                {arr.map((item, i) => (
-                    <div key={i} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-2 rounded text-xs border border-slate-100 dark:border-slate-700">
-                        <div className="truncate pr-2 flex items-center gap-2">
-                            {item.cor && <div className="w-3 h-3 rounded-full shrink-0" style={{backgroundColor: item.cor}}></div>}
-                            <div><p className="font-bold text-slate-800 dark:text-white">{item.nome || item}</p>{item.unidade && <p className="text-[8px] opacity-60">Em: {item.unidade}</p>}{item.setor && <p className="text-[8px] opacity-60">Setor: {item.setor}</p>}</div>
-                        </div>
-                        <div className="flex gap-1 shrink-0"><button onClick={()=>openEdit(tipo, i)} className="text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 p-1 rounded hover:bg-yellow-200 transition"><i className="ph-bold ph-pencil"></i></button><button onClick={()=>del(tipo, i)} className="text-red-600 bg-red-100 dark:bg-red-900/30 p-1 rounded hover:bg-red-200 transition"><i className="ph-bold ph-trash"></i></button></div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-
     return (
         <div className="animate-fade-in space-y-6 max-w-6xl mx-auto">
-            <div className="flex justify-between items-center"><h2 className="text-2xl font-black">Ajustes & Parâmetros</h2><button onClick={salvar} disabled={loading} className="bg-primary text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-600 transition">{loading?'Salvando...':'Salvar Servidor'}</button></div>
-            
-            <div className="clean-card p-4 flex flex-col md:flex-row justify-between items-center bg-blue-50/50 dark:bg-slate-800/50 gap-4">
-                <div><h4 className="font-bold text-sm">Identidade Visual Convênio (UNIMED)</h4><p className="text-[10px] opacity-60">Cole a URL da logo para exibir no card dos médicos</p></div>
-                <input type="text" value={logoConv} onChange={e=>setLogoConv(e.target.value)} placeholder="URL da imagem (Drive, Imgur, etc)" className="p-2 rounded border dark:border-slate-700 w-full md:w-96 text-xs bg-white dark:bg-slate-900" />
+            <div className="flex justify-between items-center"><h2 className="text-2xl font-black">Ajustes</h2><button onClick={salvar} disabled={loading} className="bg-primary text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-600">Salvar Servidor</button></div>
+            <div className="clean-card p-4 flex justify-between bg-blue-50/50 gap-4">
+                <div><h4 className="font-bold text-sm">Logo Convênio (UNIMED)</h4></div>
+                <input type="text" value={logoConv} onChange={e=>setLogoConv(e.target.value)} placeholder="URL Imagem" className="p-2 border rounded w-64 text-xs" />
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <ListRender title="1. Unidades/Prédios" arr={u} tipo="u" desc="Estruturas físicas (Ex: Matriz)." />
-                <ListRender title="2. Setores / Depart." arr={s} tipo="s" desc="Áreas com cores próprias na Matriz." />
-                <ListRender title="3. Postos/Salas" arr={p} tipo="p" desc="Locais exatos (Precisa de Setor)." />
-                <ListRender title="Motivos de Afastamento" arr={a} tipo="a" desc="Férias, Licenças." />
-                <ListRender title="Competências" arr={h} tipo="h" desc="Habilidades da equipe." />
+                <div className="clean-card p-5"><div className="flex justify-between"><h3 className="font-black text-sm">1. Unidades</h3><button onClick={()=>setMod({t:'u',act:'add',v1:'',v2:'',v3:''})} className="text-primary font-black">+</button></div><div className="mt-2 space-y-2">{u.map((x,i)=><div key={i} className="flex justify-between bg-slate-50 p-2 rounded text-xs"><span className="font-bold">{x.nome}</span><button onClick={()=>del('u',i)} className="text-red-500">X</button></div>)}</div></div>
+                <div className="clean-card p-5"><div className="flex justify-between"><h3 className="font-black text-sm">2. Setores (Cores)</h3><button onClick={()=>setMod({t:'s',act:'add',v1:'',v2:'',v3:'#0ea5e9'})} className="text-primary font-black">+</button></div><div className="mt-2 space-y-2">{s.map((x,i)=><div key={i} className="flex justify-between bg-slate-50 p-2 rounded text-xs items-center"><div className="flex gap-2 items-center"><div className="w-3 h-3 rounded-full" style={{background:x.cor}}></div><span className="font-bold">{x.nome}</span></div><button onClick={()=>del('s',i)} className="text-red-500">X</button></div>)}</div></div>
+                <div className="clean-card p-5"><div className="flex justify-between"><h3 className="font-black text-sm">3. Salas/Postos</h3><button onClick={()=>setMod({t:'p',act:'add',v1:'',v2:'',v3:''})} className="text-primary font-black">+</button></div><div className="mt-2 space-y-2">{p.map((x,i)=><div key={i} className="flex justify-between bg-slate-50 p-2 rounded text-xs"><span className="font-bold">{x.nome}</span><button onClick={()=>del('p',i)} className="text-red-500">X</button></div>)}</div></div>
             </div>
-
             {mod && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={()=>setMod(null)}>
-                    <div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}>
-                        <h3 className="text-xl font-black mb-4">{mod.act==='add'?'Adicionar':'Editar'} Registro</h3>
-                        <form onSubmit={confirmMod} className="space-y-4">
-                            <div><label className="text-[10px] font-black uppercase opacity-60">Nome / Descrição</label><input type="text" value={mod.v1} onChange={e=>setMod({...mod, v1:e.target.value})} className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 font-bold text-sm text-slate-800 dark:text-white" required autoFocus/></div>
-                            {mod.t === 's' && (
-                                <>
-                                    <div><label className="text-[10px] font-black uppercase opacity-60">Vincular a qual Unidade?</label><select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 font-bold text-sm text-slate-800 dark:text-white" required><option value="">Selecione a Unidade...</option>{u.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
-                                    <div><label className="text-[10px] font-black uppercase opacity-60">Cor do Setor na Matriz</label><input type="color" value={mod.v3} onChange={e=>setMod({...mod, v3:e.target.value})} className="w-full h-12 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer p-1" required/></div>
-                                </>
-                            )}
-                            {mod.t === 'p' && <div><label className="text-[10px] font-black uppercase opacity-60">Vincular a qual Setor?</label><select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 font-bold text-sm text-slate-800 dark:text-white" required><option value="">Selecione o Setor...</option>{s.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>}
-                            <div className="flex justify-end gap-2 pt-4"><button type="button" onClick={()=>setMod(null)} className="px-4 py-2 opacity-60 font-bold">Cancelar</button><button type="submit" className="bg-primary text-white px-6 py-2 rounded-xl font-bold">Confirmar</button></div>
-                        </form>
-                    </div>
-                </div>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60" onClick={()=>setMod(null)}><div className="clean-card w-full max-w-md p-6" onClick={e=>e.stopPropagation()}><form onSubmit={confirmMod} className="space-y-4">
+                    <input type="text" value={mod.v1} onChange={e=>setMod({...mod, v1:e.target.value})} className="w-full p-3 rounded-xl border dark:bg-slate-900" placeholder="Nome" required autoFocus/>
+                    {mod.t==='s' && <><select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 border rounded-xl" required><option value="">Unidade...</option>{u.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select><input type="color" value={mod.v3} onChange={e=>setMod({...mod, v3:e.target.value})} className="w-full h-12 p-1 border rounded-xl"/></>}
+                    {mod.t==='p' && <select value={mod.v2} onChange={e=>setMod({...mod, v2:e.target.value})} className="w-full p-3 border rounded-xl" required><option value="">Setor...</option>{s.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select>}
+                    <button type="submit" className="w-full bg-primary text-white p-3 rounded-xl font-bold">Salvar</button>
+                </form></div></div>
             )}
         </div>
     );
@@ -407,512 +250,190 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
 
 // ================== ABA 2: EQUIPE ==================
 const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
-    const [viewMode, setViewMode] = useState('MENU'); 
-    const [modal, setModal] = useState(false); const [fd, setFd] = useState({}); const [busca, setBusca] = useState('');
-    const u = cfg?.unidades||[]; const s = cfg?.setores||[]; const h = cfg?.habilidades||[]; const a = cfg?.ausencias||[];
-
-    const openModal = (i=null) => { 
-        setFd(i ? {...i} : { Nome:'', Cargo:'', Tipo: viewMode !== 'MENU' ? viewMode : 'Colaborador', UnidadeBase:'', Setor:'', Habilidades:[], Cor:'#0ea5e9', CRM:'', CodUnimed:'', URA:'', CBO:'', OutroDoc:'', Segmento:'', isGestor: false, StatusGeral:'Ativo', TipoContrato: '', ObservacoesGerais: '' }); 
-        setModal(true); 
-    };
-    
-    const toggleHab = (hab) => { let arr = fd.Habilidades||[]; setFd({...fd, Habilidades: arr.includes(hab)?arr.filter(x=>x!==hab):[...arr, hab]}); };
+    const [viewMode, setViewMode] = useState('MENU'); const [modal, setModal] = useState(false); const [fd, setFd] = useState({}); const [busca, setBusca] = useState('');
+    const u = cfg?.unidades||[]; const s = cfg?.setores||[]; 
+    const openModal = (i=null) => { setFd(i ? {...i} : { Nome:'', Cargo:'', Tipo: viewMode !== 'MENU' ? viewMode : 'Colaborador', UnidadeBase:'', Setor:'', Cor:'#0ea5e9', CRM:'', CodUnimed:'', isGestor: false, StatusGeral:'Ativo', TipoContrato: '', ObservacoesGerais: '' }); setModal(true); };
     const save = async (e) => { e.preventDefault(); await onSave('PROFISSIONAIS', fd); setModal(false); onRefresh(); };
-
     const filtrados = ordenarPorNome(data).filter(p => viewMode === 'MENU' ? true : p.Tipo === viewMode).filter(p => safeStr(p.Nome).toLowerCase().includes(busca.toLowerCase()));
 
     return (
         <div className="animate-fade-in space-y-6 max-w-7xl mx-auto">
             {viewMode === 'MENU' && (
-                <div>
-                    <h2 className="text-2xl font-black mb-6">Gestão de Pessoas</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-primary hover:shadow-lg transition-all">
-                            <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-users-three"></i></div>
-                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Colaboradores</h3>
-                            <p className="text-xs font-bold opacity-60 mt-2 text-center">Recepcionistas, Administrativo, Apoio</p>
-                        </div>
-                        <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-red-500 hover:shadow-lg transition-all">
-                            <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-stethoscope"></i></div>
-                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Corpo Clínico</h3>
-                            <p className="text-xs font-bold opacity-60 mt-2 text-center">Médicos, Plantonistas, Especialistas</p>
-                        </div>
-                    </div>
-                </div>
+                <div><h2 className="text-2xl font-black mb-6">Equipe</h2><div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center cursor-pointer hover:border-primary"><i className="ph-fill ph-users-three text-4xl mb-4 text-blue-500"></i><h3 className="font-black text-xl uppercase">Colaboradores</h3></div>
+                    <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center cursor-pointer hover:border-red-500"><i className="ph-fill ph-stethoscope text-4xl mb-4 text-red-500"></i><h3 className="font-black text-xl uppercase">Corpo Clínico</h3></div>
+                </div></div>
             )}
-
             {viewMode !== 'MENU' && (
-                <div className="animate-fade-in">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
-                        <div className="flex items-center gap-4">
-                            <button onClick={()=>{setViewMode('MENU'); setBusca('');}} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button>
-                            <div><p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Visualizando Equipe</p><h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Corpo Clínico (Médicos)' : 'Colaboradores'}</h2></div>
-                        </div>
-                        <div className="flex gap-2 w-full md:w-auto">
-                            <input type="text" placeholder="Buscar por nome..." value={busca} onChange={e=>setBusca(e.target.value)} className="p-2.5 rounded-xl border dark:border-slate-700 outline-none text-sm bg-transparent text-slate-800 dark:text-white flex-1 md:w-64 font-bold" />
-                            <button onClick={()=>openModal()} className="bg-primary text-white px-5 rounded-xl font-bold hover:bg-blue-600 transition shadow-sm"><i className="ph-bold ph-plus"></i> Novo</button>
-                        </div>
+                <div>
+                    <div className="flex justify-between mb-4 border-b pb-4"><div className="flex gap-4"><button onClick={()=>setViewMode('MENU')} className="w-10 h-10 clean-card flex items-center justify-center"><i className="ph-bold ph-arrow-left"></i></button><h2 className="text-2xl font-black mt-1">{viewMode}s</h2></div><div className="flex gap-2"><input type="text" placeholder="Buscar..." value={busca} onChange={e=>setBusca(e.target.value)} className="p-2 border rounded-xl" /><button onClick={()=>openModal()} className="bg-primary text-white px-4 rounded-xl font-bold">Novo</button></div></div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {filtrados.map((p, i) => (
+                            <div key={i} onClick={()=>openModal(p)} className="clean-card p-4 flex flex-col items-center text-center cursor-pointer relative border-t-4 border-primary hover:shadow-lg">
+                                {p.FotoURL ? <img src={fmtImg(p.FotoURL)} className="w-12 h-12 rounded-full object-cover mb-2" /> : <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-black mb-2">{p.Nome[0]}</div>}
+                                <h3 className="font-black text-xs truncate w-full flex items-center justify-center">{p.Nome} <BadgeConvenio codUnimed={p.CodUnimed} configLogo={cfg?.logoConvenio} /></h3>
+                                <p className="text-[9px] opacity-60 uppercase">{p.Cargo}</p>
+                                <button onClick={(e)=>{e.stopPropagation();if(confirm('Excluir?')){onDelete('PROFISSIONAIS',p.ID);onRefresh();}}} className="absolute top-2 right-2 text-red-500"><i className="ph-fill ph-trash"></i></button>
+                            </div>
+                        ))}
                     </div>
-
-                    {filtrados.length === 0 ? (
-                        <div className="p-10 text-center border-2 border-dashed rounded-2xl opacity-50 font-bold">Nenhuma pessoa encontrada nesta categoria.</div>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {filtrados.map((p, i) => (
-                                <div key={i} onClick={()=>openModal(p)} className="clean-card p-5 flex flex-col items-center text-center relative cursor-pointer group">
-                                    {p.StatusGeral && p.StatusGeral !== 'Ativo' && <span className="absolute top-2 left-2 bg-red-100 text-red-600 text-[8px] font-black px-2 py-1 rounded">{p.StatusGeral}</span>}
-                                    {p.FotoURL ? <img src={fmtImg(p.FotoURL)} className="w-14 h-14 rounded-full object-cover shadow mb-2" /> : <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black text-white shadow mb-2" style={{backgroundColor:p.Cor||'#0ea5e9'}}>{safeStr(p.Nome)[0]}</div>}
-                                    
-                                    <h3 className="font-black text-sm truncate w-full leading-tight text-slate-800 dark:text-white flex justify-center items-center">
-                                        {p.Nome} 
-                                        <BadgeConvenio codUnimed={p.CodUnimed} configLogo={cfg?.logoConvenio} />
-                                    </h3>
-                                    <p className="text-[9px] font-bold opacity-60 uppercase mt-0.5">{p.Tipo === 'Médico' ? `CRM: ${p.CRM||'N/A'}` : p.Cargo}</p>
-                                    <p className="text-[8px] font-black bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded mt-1 truncate max-w-full text-slate-700 dark:text-slate-300">{p.UnidadeBase||'S/ Unid'} • {p.Setor||'S/ Setor'}</p>
-                                    {p.isGestor && <span className="mt-2 text-[8px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">Autorizado Supervisão</span>}
-                                    <button onClick={(e)=>{e.stopPropagation();if(confirm('Excluir?')){onDelete('PROFISSIONAIS',p.ID);onRefresh();}}} className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 bg-red-50 dark:bg-red-900/30 p-1 rounded transition"><i className="ph-fill ph-trash"></i></button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
                 </div>
             )}
-
             {modal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" onClick={()=>setModal(false)}>
-                    <div className="clean-card w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e=>e.stopPropagation()}>
-                        <div className="p-4 border-b dark:border-slate-700 flex justify-between bg-slate-50 dark:bg-slate-800"><h3 className="font-black text-slate-800 dark:text-white">Ficha Cadastral</h3><button onClick={()=>setModal(false)}><i className="ph-bold ph-x"></i></button></div>
-                        <form onSubmit={save} className="p-5 overflow-y-auto space-y-4 text-sm text-slate-800 dark:text-white">
-                            <div className="flex gap-4 mb-2 p-3 bg-blue-50 dark:bg-slate-800 rounded-xl border border-blue-100 dark:border-slate-700">
-                                <label className="flex items-center gap-2 font-bold cursor-pointer"><input type="radio" checked={fd.Tipo==='Colaborador'} onChange={()=>setFd({...fd, Tipo:'Colaborador'})} /> Equipe Base</label>
-                                <label className="flex items-center gap-2 font-bold cursor-pointer text-blue-600 dark:text-blue-400"><input type="radio" checked={fd.Tipo==='Médico'} onChange={()=>setFd({...fd, Tipo:'Médico'})} /> Corpo Clínico (Médico)</label>
-                            </div>
-                            <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
-                                <input type="checkbox" id="isGestor" checked={fd.isGestor||false} onChange={e=>setFd({...fd, isGestor: e.target.checked})} className="w-4 h-4" />
-                                <label htmlFor="isGestor" className="font-bold text-sm cursor-pointer">Identificar como Líder/Supervisor (Permite Assumir Casa de Vidro)</label>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Nome</label><input type="text" value={fd.Nome} onChange={e=>setFd({...fd,Nome:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
-                                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Foto URL (Links do Drive ou Imagens)</label><input type="text" value={fd.FotoURL||''} onChange={e=>setFd({...fd,FotoURL:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" placeholder="Cole aqui o link público da foto"/></div>
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Unidade de Atendimento</label><select value={fd.UnidadeBase||''} onChange={e=>setFd({...fd,UnidadeBase:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800"><option value="">Selecione...</option>{u.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}</select></div>
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Setor Base</label><select value={fd.Setor||''} onChange={e=>setFd({...fd,Setor:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800"><option value="">Selecione...</option>{s.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x}</option>)}</select></div>
-
-                                {fd.Tipo==='Médico' ? (
-                                    <div className="col-span-2 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mt-2 space-y-4">
-                                        <h4 className="text-xs font-black uppercase text-blue-600 dark:text-blue-400 border-b border-slate-100 dark:border-slate-700 pb-2">Informações Médicas</h4>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                            <div><label className="text-[9px] font-black uppercase opacity-60">CRM</label><input type="text" value={fd.CRM||''} onChange={e=>setFd({...fd,CRM:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
-                                            <div><label className="text-[9px] font-black uppercase opacity-60">Cód Unimed</label><input type="text" value={fd.CodUnimed||''} onChange={e=>setFd({...fd,CodUnimed:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" placeholder="Se preenchido, exibe a logo"/></div>
-                                            <div><label className="text-[9px] font-black uppercase opacity-60">URA</label><input type="text" value={fd.URA||''} onChange={e=>setFd({...fd,URA:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
-                                            <div><label className="text-[9px] font-black uppercase opacity-60">CBO</label><input type="text" value={fd.CBO||''} onChange={e=>setFd({...fd,CBO:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
-                                            <div><label className="text-[9px] font-black uppercase opacity-60">Outro Doc/Registro</label><input type="text" value={fd.OutroDoc||''} onChange={e=>setFd({...fd,OutroDoc:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent"/></div>
-                                            <div><label className="text-[9px] font-black uppercase opacity-60">Especialidade / Cargo</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
-                                            <div className="col-span-2 md:col-span-3"><label className="text-[9px] font-black uppercase opacity-60">Segmento / Observações Clínicas</label><textarea value={fd.Segmento||''} onChange={e=>setFd({...fd,Segmento:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" rows="2"></textarea></div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Cargo</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" required/></div>
-                                )}
-                                
-                                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Tipo de Contrato</label><input type="text" placeholder="Ex: CLT, PJ, RPA..." value={fd.TipoContrato||''} onChange={e=>setFd({...fd,TipoContrato:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" /></div>
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Afastamentos / Folga Longa</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd,StatusGeral:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 text-red-500 font-bold"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{a.map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
-                                <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Observações Gerais</label><textarea value={fd.ObservacoesGerais||''} onChange={e=>setFd({...fd,ObservacoesGerais:e.target.value})} className="w-full p-2 border dark:border-slate-700 rounded bg-transparent" rows="2" placeholder="Anotações sobre horários, preferências, restrições..."></textarea></div>
-                                
-                                <div><label className="text-[10px] font-black uppercase opacity-60">Cor Pessoal (Aparece se sem setor)</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-9 cursor-pointer border dark:border-slate-700 rounded p-0.5" /></div>
-                            </div>
-                            <div><label className="text-[10px] font-black uppercase opacity-60 block mb-1">Competências</label>
-                                <div className="flex flex-wrap gap-1">{h.map((x,i)=><button type="button" key={i} onClick={()=>toggleHab(x)} className={`px-2 py-1 text-[10px] rounded border ${fd.Habilidades?.includes(x)?'bg-primary text-white border-primary':'bg-transparent dark:border-slate-700'}`}>{x}</button>)}</div>
-                            </div>
-                            <div className="pt-4 flex justify-end gap-2 border-t border-slate-200 dark:border-slate-700"><button type="button" onClick={()=>setModal(false)} className="px-4 py-2 opacity-60 font-bold">Cancelar</button><button type="submit" className="bg-primary text-white px-6 py-2 rounded font-bold">Salvar Ficha</button></div>
-                        </form>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60" onClick={()=>setModal(false)}><div className="clean-card w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e=>e.stopPropagation()}><div className="p-4 border-b"><h3 className="font-black">Ficha Cadastral</h3></div><form onSubmit={save} className="p-5 overflow-y-auto space-y-4 text-sm text-slate-800 dark:text-white">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Nome</label><input type="text" value={fd.Nome} onChange={e=>setFd({...fd,Nome:e.target.value})} className="w-full p-2 border rounded" required/></div>
+                        <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Foto URL (Drive)</label><input type="text" value={fd.FotoURL||''} onChange={e=>setFd({...fd,FotoURL:e.target.value})} className="w-full p-2 border rounded"/></div>
+                        <div><label className="text-[10px] font-black uppercase opacity-60">Unidade</label><select value={fd.UnidadeBase||''} onChange={e=>setFd({...fd,UnidadeBase:e.target.value})} className="w-full p-2 border rounded"><option value="">Selecione...</option>{u.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
+                        <div><label className="text-[10px] font-black uppercase opacity-60">Setor</label><select value={fd.Setor||''} onChange={e=>setFd({...fd,Setor:e.target.value})} className="w-full p-2 border rounded"><option value="">Selecione...</option>{s.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
+                        {fd.Tipo==='Médico' ? ( <><div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Especialidade / Cargo</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border rounded" required/></div><div><label className="text-[10px] font-black uppercase opacity-60">CRM</label><input type="text" value={fd.CRM||''} onChange={e=>setFd({...fd,CRM:e.target.value})} className="w-full p-2 border rounded"/></div><div><label className="text-[10px] font-black uppercase opacity-60">Cód Unimed</label><input type="text" value={fd.CodUnimed||''} onChange={e=>setFd({...fd,CodUnimed:e.target.value})} className="w-full p-2 border rounded"/></div></> ) : ( <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Cargo</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd,Cargo:e.target.value})} className="w-full p-2 border rounded" required/></div> )}
+                        <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Cor Destacada</label><input type="color" value={fd.Cor} onChange={e=>setFd({...fd,Cor:e.target.value})} className="w-full h-8 cursor-pointer border rounded" /></div>
                     </div>
-                </div>
+                    <div className="pt-4 flex justify-end gap-2 border-t"><button type="button" onClick={()=>setModal(false)} className="px-4 py-2 opacity-60 font-bold">Cancelar</button><button type="submit" className="bg-primary text-white px-6 py-2 rounded font-bold">Salvar Ficha</button></div>
+                </form></div></div>
             )}
         </div>
     );
-};
-
-// ================== NOVA ABA: TRABALHANDO HOJE (LISTA DIÁRIA) ==================
-const TrabalhandoHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
-    const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
-    const [viewMode, setViewMode] = useState('MENU');
-    const [infoProfModal, setInfoProfModal] = useState(null);
-    const [editData, setEditData] = useState(null);
-    
-    const dStr = getStrDt(new Date()); 
-    // Só pega as válidas e sem ser folga do dia
-    const escHjRaw = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos) && e.Status !== 'FOLGA');
-
-    const profsHjColab = [];
-    const profsHjMedico = [];
-
-    escHjRaw.forEach(esc => {
-        const pInfo = profs.find(p => p.Nome === esc.Nome_Profissional) || {Nome: esc.Nome_Profissional, Cargo: esc.Cargo, Cor: esc.Cor};
-        const pCompleto = {...pInfo, escalaHj: esc};
-        if (pInfo.Tipo === 'Médico') profsHjMedico.push(pCompleto);
-        else profsHjColab.push(pCompleto);
-    });
-
-    const setStatus = async (esc, st) => { await api.saveRecord('ESCALAS', {...esc, Status:st}); onRefresh(); };
-
-    return (
-        <div className="animate-fade-in space-y-6 max-w-7xl mx-auto pb-10">
-            {viewMode === 'MENU' && (
-                <div>
-                    <h2 className="text-2xl font-black mb-6">Trabalhando Hoje (Lista Diária)</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-primary hover:shadow-lg transition-all">
-                            <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-users-three"></i></div>
-                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Colaboradores no Plantão</h3>
-                            <p className="text-sm font-black text-primary mt-2">{profsHjColab.length} Ativos</p>
-                        </div>
-                        <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-red-500 hover:shadow-lg transition-all">
-                            <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-stethoscope"></i></div>
-                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Médicos no Plantão</h3>
-                            <p className="text-sm font-black text-red-500 mt-2">{profsHjMedico.length} Ativos</p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {viewMode !== 'MENU' && (
-                <div className="animate-fade-in space-y-6">
-                    <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
-                        <button onClick={()=>setViewMode('MENU')} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button>
-                        <div>
-                            <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Resumo do Dia</p>
-                            <h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Corpo Clínico Ativo' : 'Colaboradores Ativos'}</h2>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {(viewMode === 'Colaborador' ? profsHjColab : profsHjMedico).map((p, i) => {
-                            const esc = p.escalaHj;
-                            const isInt = esc.Status === 'LANCHE'; const isAus = esc.Status === 'AUSENTE';
-                            const isMe = checkIsMe(esc.Nome_Profissional, user.email);
-
-                            return (
-                                <div key={i} className={`clean-card p-4 flex flex-col items-center text-center relative shadow-sm border-t-4 ${isInt?'border-t-orange-500 bg-orange-50 dark:bg-orange-900/10':isAus?'border-t-red-500 bg-red-50 dark:bg-red-900/10':'border-t-primary'}`}>
-                                    {p.FotoURL ? <img src={fmtImg(p.FotoURL)} onClick={()=>setInfoProfModal(p)} className="w-14 h-14 rounded-full object-cover shadow mb-2 cursor-pointer hover:scale-105" /> : <div onClick={()=>setInfoProfModal(p)} className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black text-white shadow mb-2 cursor-pointer hover:scale-105" style={{backgroundColor:p.Cor||'#0ea5e9'}}>{safeStr(p.Nome)[0]}</div>}
-                                    
-                                    <h3 className="font-black text-xs truncate w-full leading-tight text-slate-800 dark:text-white flex justify-center items-center gap-1 cursor-pointer" onClick={()=>setInfoProfModal(p)}>
-                                        {p.Nome}
-                                        <BadgeConvenio codUnimed={p.CodUnimed} configLogo={cfg?.logoConvenio} />
-                                    </h3>
-                                    
-                                    <div className="w-full bg-white dark:bg-slate-800 p-2 rounded-lg mt-2 border border-slate-100 dark:border-slate-700 text-left">
-                                        <p className="text-[10px] font-black uppercase truncate text-primary">{esc.Sala}</p>
-                                        <p className="text-[8px] font-bold opacity-60 mt-0.5"><i className="ph-fill ph-clock"></i> {esc.Horario}</p>
-                                        {esc.MedicoApoio && <p className="text-[8px] font-bold text-indigo-600 bg-indigo-50 mt-1 px-1 rounded truncate">Apoio: {esc.MedicoApoio}</p>}
-                                        {esc.Auxiliar && <p className="text-[8px] font-bold text-purple-600 bg-purple-50 mt-1 px-1 rounded truncate">Auxiliar: {esc.Auxiliar}</p>}
-                                    </div>
-
-                                    <div className="flex w-full justify-between items-center mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
-                                        <span className={`text-[8px] font-black px-2 py-1 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600'}`}>{esc.Status === 'NO POSTO' ? 'ATIVO' : esc.Status}</span>
-                                        <div className="flex gap-1">
-                                            {(!isInt && !isAus) ? (
-                                                <>
-                                                    {(isAd || isMe) && <button onClick={()=>setStatus(esc, 'LANCHE')} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 text-slate-500"><i className="ph-fill ph-coffee"></i></button>}
-                                                    {isAd && <button onClick={()=>setEditData(esc)} className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 text-slate-500"><i className="ph-fill ph-sliders"></i></button>}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {(isAd || (isMe && isInt)) && <button onClick={()=>setStatus(esc, 'NO POSTO')} className="px-2 py-1 bg-slate-800 text-white rounded text-[8px] font-black"><i className="ph-bold ph-arrow-u-down-left"></i> VOLTAR</button>}
-                                                    {isAus && isAd && <button onClick={()=>setEditData(esc)} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black ml-1"><i className="ph-bold ph-magic-wand"></i> OPÇÕES</button>}
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )
-                        })}
-                    </div>
-                    {(viewMode === 'Colaborador' ? profsHjColab : profsHjMedico).length === 0 && <div className="p-10 text-center border-2 border-dashed rounded-2xl opacity-50 font-bold">Ninguém escalado ativo nesta categoria hoje.</div>}
-                </div>
-            )}
-            {infoProfModal && <CrachaVirtual profInfo={infoProfModal} cfg={cfg} onClose={()=>setInfoProfModal(null)} />}
-            {editData && <SuperActionModal escala={editData} profs={profs} cfg={cfg} onClose={()=>setEditData(null)} onSave={onSave} onRefresh={onRefresh} isAd={isAd} />}
-        </div>
-    )
 };
 
 // ================== ABA 3: CALENDÁRIO / BUILDER ==================
 const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
     const [mode, setMode] = useState('TIMELINE'); 
-    
     const [builderTipo, setBuilderTipo] = useState('Colaborador'); 
     const [tipoLancamento, setTipoLancamento] = useState('PLANTAO');
     const [motivoAus, setMotivoAus] = useState('Folga');
-
     const psts = cfg?.postos||[]; const unds = cfg?.unidades||[]; 
     const [selProf, setSelProf] = useState(''); const [selUnd, setSelUnd] = useState(''); const [selSala, setSelSala] = useState('');
     const [hIn, setHIn] = useState(''); const [hOut, setHOut] = useState(''); const [obs, setObs] = useState('');
     const [dates, setDates] = useState([]); 
-
     const [bMes, setBMes] = useState(new Date());
-
     const [calProf, setCalProf] = useState(isAd ? '' : user.nome);
     const [mesAtual, setMesAtual] = useState(new Date());
     const [diaAtivo, setDiaAtivo] = useState(null); 
-    
-    const [filtroCat, setFiltroCat] = useState('');
-    const [buscaNome, setBuscaNome] = useState('');
-    const [showAuto, setShowAuto] = useState(false);
+    const [buscaNome, setBuscaNome] = useState(''); const [showAuto, setShowAuto] = useState(false);
     const [editData, setEditData] = useState(null);
 
-    useEffect(() => {
-        if(calProf) setBuscaNome(calProf);
-    }, []);
+    useEffect(() => { if(calProf) setBuscaNome(calProf); }, []);
     
     const toggleD = (dFmt) => { if(dates.includes(dFmt)) setDates(dates.filter(x=>x!==dFmt)); else setDates([...dates, dFmt]); };
     
     const gerar = async () => {
-        if(!selProf || dates.length===0) return alert("Preencha Profissional e as Datas no calendário!");
+        if(!selProf || dates.length===0) return alert("Preencha Profissional e Datas!");
         const prof = profs.find(x=>x.ID===selProf || x.Nome===selProf);
-        
-        let statusFinal = 'NO POSTO';
-        let salaFinal = selSala || 'A DEFINIR';
-        let horarioFinal = (hIn && hOut) ? `${hIn} às ${hOut}` : 'A DEFINIR';
-        let obsFinal = obs;
-
-        if (tipoLancamento === 'AUSENCIA') {
-            statusFinal = motivoAus === 'Folga' ? 'FOLGA' : 'AUSENTE';
-            salaFinal = motivoAus.toUpperCase();
-            horarioFinal = '--:--';
-            obsFinal = obs ? `${motivoAus} - ${obs}` : motivoAus;
-        }
-
-        for(let d of dates){ 
-            await onSave('ESCALAS', { 
-                Data: d, 
-                Unidade: tipoLancamento === 'AUSENCIA' ? '' : selUnd, 
-                Sala: salaFinal, 
-                Nome_Profissional: prof.Nome, 
-                Cargo: prof.Cargo, 
-                Horario: horarioFinal, 
-                Status: statusFinal, 
-                Cor: prof.Cor, 
-                Habilidades: prof.Habilidades||[], 
-                ObsDia: obsFinal 
-            }); 
-        }
-        alert("Escalas Geradas com Sucesso!"); setDates([]); setMode('TIMELINE'); onRefresh();
+        let statusFinal = 'NO POSTO'; let salaFinal = selSala || 'A DEFINIR'; let horarioFinal = (hIn && hOut) ? `${hIn} às ${hOut}` : 'A DEFINIR'; let obsFinal = obs;
+        if (tipoLancamento === 'AUSENCIA') { statusFinal = motivoAus === 'Folga' ? 'FOLGA' : 'AUSENTE'; salaFinal = motivoAus.toUpperCase(); horarioFinal = '--:--'; obsFinal = obs ? `${motivoAus} - ${obs}` : motivoAus; }
+        for(let d of dates){ await onSave('ESCALAS', { Data: d, Unidade: tipoLancamento==='AUSENCIA'?'':selUnd, Sala: salaFinal, Nome_Profissional: prof.Nome, Cargo: prof.Cargo, Horario: horarioFinal, Status: statusFinal, Cor: prof.Cor, ObsDia: obsFinal }); }
+        alert("Escalas Geradas!"); setDates([]); setMode('TIMELINE'); onRefresh();
     };
 
     const buildGrid = (dataRef) => {
         const ano = dataRef.getFullYear(); const mes = dataRef.getMonth();
-        const diasNoMes = new Date(ano, mes + 1, 0).getDate();
-        const priDia = new Date(ano, mes, 1).getDay();
-        const vazios = Array.from({length: priDia});
-        const dias = Array.from({length: diasNoMes}, (_, i) => { const d = new Date(ano, mes, i + 1); return { d, dStr: getStrDt(d), dSem: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()] }; });
+        const diasNoMes = new Date(ano, mes + 1, 0).getDate(); const priDia = new Date(ano, mes, 1).getDay();
+        const vazios = Array.from({length: priDia}); const dias = Array.from({length: diasNoMes}, (_, i) => { const d = new Date(ano, mes, i + 1); return { d, dStr: getStrDt(d) }; });
         return {vazios, dias};
     };
 
-    const gridTL = buildGrid(mesAtual);
-    const gridB = buildGrid(bMes);
-
+    const gridTL = buildGrid(mesAtual); const gridB = buildGrid(bMes);
     const profsOrdenadosParaBusca = ordenarPorNome(profs);
     const profsOrdenadosParaBuilder = ordenarPorNome(profs.filter(x => (x.StatusGeral==='Ativo'||!x.StatusGeral) && x.Tipo === builderTipo));
-    
     const profSelecionado = profs.find(p => p.Nome === calProf);
 
     return (
         <div className="animate-fade-in max-w-5xl mx-auto space-y-6 pb-10">
             {isAd && (
-                <div className="flex gap-2 mb-4 border-b border-slate-200 dark:border-slate-700 pb-4">
-                    <button onClick={()=>setMode('TIMELINE')} className={`px-4 py-2 rounded-xl font-bold text-sm ${mode==='TIMELINE'?'bg-primary text-white':'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}><i className="ph-bold ph-calendar"></i> Ver Calendário</button>
-                    <button onClick={()=>setMode('BUILDER')} className={`px-4 py-2 rounded-xl font-bold text-sm ${mode==='BUILDER'?'bg-accent text-white':'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}><i className="ph-bold ph-magic-wand"></i> Criar Escalas</button>
+                <div className="flex gap-2 mb-4 border-b pb-4">
+                    <button onClick={()=>setMode('TIMELINE')} className={`px-4 py-2 rounded-xl font-bold text-sm ${mode==='TIMELINE'?'bg-primary text-white':'bg-slate-200 text-slate-600'}`}>Ver Calendário</button>
+                    <button onClick={()=>setMode('BUILDER')} className={`px-4 py-2 rounded-xl font-bold text-sm ${mode==='BUILDER'?'bg-accent text-white':'bg-slate-200 text-slate-600'}`}>Criar Escalas</button>
                 </div>
             )}
-
             {mode === 'BUILDER' ? (
                 <div className="clean-card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-2">
-                            <button onClick={()=>{setBuilderTipo('Colaborador'); setSelProf('');}} className={`flex-1 py-2 text-[10px] sm:text-xs font-black uppercase rounded-lg transition ${builderTipo==='Colaborador'?'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400':'opacity-60 hover:opacity-100'}`}>Equipe Base</button>
-                            <button onClick={()=>{setBuilderTipo('Médico'); setSelProf('');}} className={`flex-1 py-2 text-[10px] sm:text-xs font-black uppercase rounded-lg transition ${builderTipo==='Médico'?'bg-white dark:bg-slate-700 shadow text-red-600 dark:text-red-400':'opacity-60 hover:opacity-100'}`}>Médicos</button>
-                        </div>
-
-                        <div><label className="text-xs font-bold opacity-60">1. Selecione o(a) {builderTipo}</label><select value={selProf} onChange={e=>setSelProf(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold"><option value="">Abre a lista (A-Z)...</option>{profsOrdenadosParaBuilder.map(x=><option key={x.ID} value={x.ID}>{x.Nome}</option>)}</select></div>
-                        
-                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl my-4">
-                            <button onClick={()=>setTipoLancamento('PLANTAO')} className={`flex-1 py-2 text-[10px] sm:text-xs font-black uppercase rounded-lg transition ${tipoLancamento==='PLANTAO'?'bg-white dark:bg-slate-700 shadow text-primary':'opacity-60 hover:opacity-100'}`}>Plantão Normal</button>
-                            <button onClick={()=>setTipoLancamento('AUSENCIA')} className={`flex-1 py-2 text-[10px] sm:text-xs font-black uppercase rounded-lg transition ${tipoLancamento==='AUSENCIA'?'bg-white dark:bg-slate-700 shadow text-red-500 dark:text-red-400':'opacity-60 hover:opacity-100'}`}>Folga / Ausência</button>
-                        </div>
-
+                        <div className="flex bg-slate-100 p-1 rounded-xl mb-2"><button onClick={()=>{setBuilderTipo('Colaborador'); setSelProf('');}} className={`flex-1 py-2 text-xs font-black uppercase rounded-lg ${builderTipo==='Colaborador'?'bg-white shadow text-blue-600':'opacity-60'}`}>Equipe Base</button><button onClick={()=>{setBuilderTipo('Médico'); setSelProf('');}} className={`flex-1 py-2 text-xs font-black uppercase rounded-lg ${builderTipo==='Médico'?'bg-white shadow text-red-600':'opacity-60'}`}>Médicos</button></div>
+                        <div><select value={selProf} onChange={e=>setSelProf(e.target.value)} className="w-full p-3 border rounded-xl font-bold"><option value="">Profissional (A-Z)...</option>{profsOrdenadosParaBuilder.map(x=><option key={x.ID} value={x.ID}>{x.Nome}</option>)}</select></div>
+                        <div className="flex bg-slate-100 p-1 rounded-xl my-4"><button onClick={()=>setTipoLancamento('PLANTAO')} className={`flex-1 py-2 text-xs font-black uppercase rounded-lg ${tipoLancamento==='PLANTAO'?'bg-white shadow text-primary':'opacity-60'}`}>Plantão Normal</button><button onClick={()=>setTipoLancamento('AUSENCIA')} className={`flex-1 py-2 text-xs font-black uppercase rounded-lg ${tipoLancamento==='AUSENCIA'?'bg-white shadow text-red-500':'opacity-60'}`}>Folga/Ausência</button></div>
                         {tipoLancamento === 'PLANTAO' ? (
-                            <div className="space-y-4 animate-fade-in">
-                                <div><label className="text-xs font-bold opacity-60">Unidade (Opcional - Pode preencher depois)</label><select value={selUnd} onChange={e=>setSelUnd(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white"><option value="">A DEFINIR DEPOIS...</option>{unds.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
-                                <div><label className="text-xs font-bold opacity-60">Posto / Sala (Opcional - Pode preencher depois)</label><select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white"><option value="">A DEFINIR DEPOIS...</option>{psts.map((x,i)=><option key={i} value={x.nome||x}>{x.nome||x} {x.setor?`(${x.setor})`:''}</option>)}</select></div>
-                                <div className="flex gap-2">
-                                    <div className="flex-1"><label className="text-xs font-bold opacity-60">Entra (Opcional)</label><input type="time" value={hIn} onChange={e=>setHIn(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold" /></div>
-                                    <div className="flex-1"><label className="text-xs font-bold opacity-60">Sai (Opcional)</label><input type="time" value={hOut} onChange={e=>setHOut(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold" /></div>
-                                </div>
-                            </div>
+                            <div className="space-y-4"><select value={selUnd} onChange={e=>setSelUnd(e.target.value)} className="w-full p-3 border rounded-xl"><option value="">Unidade (A DEFINIR)...</option>{unds.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select><select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border rounded-xl"><option value="">Sala (A DEFINIR)...</option>{psts.map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select><div className="flex gap-2"><input type="time" value={hIn} onChange={e=>setHIn(e.target.value)} className="w-full p-3 border rounded-xl" /><input type="time" value={hOut} onChange={e=>setHOut(e.target.value)} className="w-full p-3 border rounded-xl" /></div></div>
                         ) : (
-                            <div className="space-y-4 animate-fade-in">
-                                <div><label className="text-xs font-bold opacity-60">Selecione o Motivo</label><select value={motivoAus} onChange={e=>setMotivoAus(e.target.value)} className="w-full p-3 border border-red-200 dark:border-red-900/30 rounded-xl mt-1 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-bold"><option value="Folga">Folga Agendada</option><option value="Férias">Férias</option><option value="Atestado">Atestado Médico</option><option value="Trabalho Externo">Trabalho Externo</option><option value="Outros">Outros motivos</option></select></div>
-                            </div>
+                            <div className="space-y-4"><select value={motivoAus} onChange={e=>setMotivoAus(e.target.value)} className="w-full p-3 border border-red-200 rounded-xl bg-red-50 text-red-600 font-bold"><option value="Folga">Folga Agendada</option><option value="Férias">Férias</option><option value="Atestado">Atestado Médico</option></select></div>
                         )}
-
-                        <div><label className="text-xs font-bold opacity-60">Anotação / Obs (Opcional)</label><input type="text" value={obs} onChange={e=>setObs(e.target.value)} className="w-full p-3 border dark:border-slate-700 rounded-xl mt-1 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white" placeholder="Detalhes adicionais..." /></div>
+                        <input type="text" value={obs} onChange={e=>setObs(e.target.value)} className="w-full p-3 border rounded-xl" placeholder="Anotações..." />
                     </div>
-                    
-                    <div className="border-l border-slate-200 dark:border-slate-700 pl-0 md:pl-6 space-y-4 flex flex-col">
-                        <label className="text-xs font-bold opacity-60">Selecione as Datas no Calendário</label>
-                        <div className="flex items-center justify-between mb-2">
-                            <button onClick={()=>setBMes(new Date(bMes.getFullYear(), bMes.getMonth()-1, 1))} className="w-8 h-8 rounded bg-slate-100 dark:bg-slate-800"><i className="ph-bold ph-caret-left"></i></button>
-                            <span className="font-bold text-sm uppercase">{bMes.toLocaleString('pt-BR',{month:'long',year:'numeric'})}</span>
-                            <button onClick={()=>setBMes(new Date(bMes.getFullYear(), bMes.getMonth()+1, 1))} className="w-8 h-8 rounded bg-slate-100 dark:bg-slate-800"><i className="ph-bold ph-caret-right"></i></button>
-                        </div>
-                        <div className="grid grid-cols-7 gap-1 text-center text-[9px] font-black opacity-50 uppercase"><div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div></div>
-                        <div className="grid grid-cols-7 gap-1">
-                            {gridB.vazios.map((_, i) => <div key={`v-${i}`} className="p-2"></div>)}
-                            {gridB.dias.map((d, i) => {
-                                const isSel = dates.includes(d.dStr);
-                                return <button key={i} onClick={(e)=>{e.preventDefault(); toggleD(d.dStr);}} className={`p-2 rounded-lg text-xs font-bold transition ${isSel? (tipoLancamento==='AUSENCIA'?'bg-red-500 text-white shadow-md':'bg-primary text-white shadow-md') : 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700'}`}>{d.d.getDate()}</button>
-                            })}
-                        </div>
-                        <div className="mt-2 text-[10px] font-bold opacity-60">{dates.length} dias selecionados.</div>
-                        <button onClick={gerar} className={`w-full py-4 rounded-xl font-black shadow-lg hover:scale-[1.02] transition mt-auto text-white ${tipoLancamento==='AUSENCIA'?'bg-red-500':'bg-accent'}`}>Salvar {tipoLancamento==='AUSENCIA'?'Folgas':'Escalas'} no Servidor</button>
+                    <div className="border-l pl-0 md:pl-6 space-y-4 flex flex-col">
+                        <div className="flex justify-between items-center mb-2"><button onClick={()=>setBMes(new Date(bMes.getFullYear(), bMes.getMonth()-1, 1))} className="w-8 h-8 rounded bg-slate-100"><i className="ph-bold ph-caret-left"></i></button><span className="font-bold text-sm uppercase">{bMes.toLocaleString('pt-BR',{month:'long',year:'numeric'})}</span><button onClick={()=>setBMes(new Date(bMes.getFullYear(), bMes.getMonth()+1, 1))} className="w-8 h-8 rounded bg-slate-100"><i className="ph-bold ph-caret-right"></i></button></div>
+                        <div className="grid grid-cols-7 gap-1 text-center text-[9px] font-black opacity-50"><div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div></div>
+                        <div className="grid grid-cols-7 gap-1">{gridB.vazios.map((_, i) => <div key={`v-${i}`} className="p-2"></div>)}{gridB.dias.map((d, i) => { const isSel = dates.includes(d.dStr); return <button key={i} onClick={(e)=>{e.preventDefault(); toggleD(d.dStr);}} className={`p-2 rounded-lg text-xs font-bold ${isSel? (tipoLancamento==='AUSENCIA'?'bg-red-500 text-white':'bg-primary text-white') : 'bg-slate-50'}`}>{d.d.getDate()}</button> })}</div>
+                        <button onClick={gerar} className={`w-full py-4 rounded-xl font-black mt-auto text-white ${tipoLancamento==='AUSENCIA'?'bg-red-500':'bg-accent'}`}>Salvar</button>
                     </div>
                 </div>
             ) : (
                 <div className="space-y-6">
-                    <div className="clean-card p-5 flex flex-col lg:flex-row justify-between md:items-center gap-4 relative">
-                        <div className="flex items-center gap-4"><button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-left"></i></button><h2 className="text-lg font-black uppercase tracking-widest w-40 text-center">{mesAtual.toLocaleString('pt-BR', {month:'long', year:'numeric'})}</h2><button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex justify-center items-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-right"></i></button></div>
-                        
-                        <div className="flex flex-col md:flex-row w-full md:w-auto gap-2">
-                            <select value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} className="p-2.5 rounded-lg border dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-sm">
-                                <option value="">Todas Categorias</option>
-                                <option value="Médico">Médicos</option>
-                                <option value="Colaborador">Colaboradores</option>
-                                <option value="Gestor">Supervisores/Líderes</option>
-                            </select>
-                            
-                            <div className="relative flex-1 md:w-72">
-                                <input type="text" placeholder="Buscar profissional..." value={buscaNome} onChange={e=>{setBuscaNome(e.target.value); setShowAuto(true); setCalProf(''); setDiaAtivo(null);}} onFocus={()=>setShowAuto(true)} className="p-2.5 rounded-lg border dark:border-slate-700 outline-none bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-sm w-full" />
-                                
-                                {showAuto && buscaNome && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
-                                        {profsOrdenadosParaBusca.filter(p => {
-                                            let match = true;
-                                            if(filtroCat==='Médico') match = p.Tipo === 'Médico';
-                                            else if(filtroCat==='Colaborador') match = p.Tipo === 'Colaborador';
-                                            else if(filtroCat==='Gestor') match = p.isGestor === true;
-                                            return match && safeStr(p.Nome).toLowerCase().includes(buscaNome.toLowerCase());
-                                        }).map(p => (
-                                            <div key={p.ID} onClick={()=>{setBuscaNome(p.Nome); setCalProf(p.Nome); setShowAuto(false); setDiaAtivo(null);}} className="p-3 cursor-pointer hover:bg-blue-50 dark:hover:bg-slate-700 border-b border-slate-100 dark:border-slate-700 last:border-0">
-                                                <p className="font-bold text-sm">{p.Nome}</p>
-                                                <p className="text-[10px] opacity-60 uppercase">{p.Tipo} {p.isGestor?'• Gestor/Supervisor':''}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                    <div className="clean-card p-5 flex flex-col lg:flex-row justify-between gap-4">
+                        <div className="flex items-center gap-4"><button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 rounded-full flex justify-center items-center"><i className="ph-bold ph-caret-left"></i></button><h2 className="text-lg font-black uppercase w-40 text-center">{mesAtual.toLocaleString('pt-BR', {month:'long', year:'numeric'})}</h2><button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1)); setDiaAtivo(null);}} className="w-8 h-8 bg-slate-100 rounded-full flex justify-center items-center"><i className="ph-bold ph-caret-right"></i></button></div>
+                        <div className="relative flex-1 md:w-72">
+                            <input type="text" placeholder="Buscar profissional..." value={buscaNome} onChange={e=>{setBuscaNome(e.target.value); setShowAuto(true); setCalProf(''); setDiaAtivo(null);}} onFocus={()=>setShowAuto(true)} className="p-2.5 rounded-lg border w-full font-bold" />
+                            {showAuto && buscaNome && (
+                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+                                    {profsOrdenadosParaBusca.filter(p => safeStr(p.Nome).toLowerCase().includes(buscaNome.toLowerCase())).map(p => (
+                                        <div key={p.ID} onClick={()=>{setBuscaNome(p.Nome); setCalProf(p.Nome); setShowAuto(false); setDiaAtivo(null);}} className="p-3 cursor-pointer hover:bg-blue-50 border-b"><p className="font-bold text-sm">{p.Nome}</p><p className="text-[10px] opacity-60">{p.Tipo}</p></div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
-
-                    {!calProf ? <div className="p-10 text-center clean-card opacity-50 font-bold border-dashed">Selecione um profissional para carregar o calendário.</div> :
+                    {!calProf ? <div className="p-10 text-center opacity-50 font-bold border-dashed border-2 rounded-xl">Selecione um profissional.</div> :
                     <div className="space-y-6">
-                        
                         {profSelecionado && (
-                            <div className="clean-card p-6 flex flex-col md:flex-row items-center md:items-start gap-6 bg-gradient-to-r from-blue-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-primary">
-                                {profSelecionado.FotoURL ? (
-                                    <img src={fmtImg(profSelecionado.FotoURL)} className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white dark:border-slate-800 shrink-0" />
-                                ) : (
-                                    <div className="w-24 h-24 rounded-full bg-primary text-white flex items-center justify-center text-4xl font-black shadow-lg border-4 border-white dark:border-slate-800 shrink-0" style={{backgroundColor:profSelecionado.Cor||'#0ea5e9'}}>
-                                        {profSelecionado.Nome[0]}
-                                    </div>
-                                )}
-                                <div className="text-center md:text-left mt-2 md:mt-0">
-                                    <h2 className="text-2xl font-black text-slate-800 dark:text-white flex items-center justify-center md:justify-start gap-2">
-                                        {profSelecionado.Nome}
-                                        <BadgeConvenio codUnimed={profSelecionado.CodUnimed} configLogo={cfg?.logoConvenio} />
-                                    </h2>
-                                    <p className="text-sm font-bold text-primary uppercase mt-1">{profSelecionado.Cargo}</p>
-                                    <p className="text-xs font-bold opacity-60 mt-1 uppercase tracking-widest"><i className="ph-fill ph-map-pin"></i> Lotação: {profSelecionado.UnidadeBase || 'S/ Unid'} • {profSelecionado.Setor || 'S/ Setor'}</p>
-                                </div>
+                            <div className="clean-card p-6 flex items-center gap-6 bg-gradient-to-r from-blue-50 to-white border-l-4 border-l-primary">
+                                {profSelecionado.FotoURL ? <img src={fmtImg(profSelecionado.FotoURL)} className="w-20 h-20 rounded-full object-cover shadow-lg border-2 border-white" /> : <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center text-3xl font-black">{profSelecionado.Nome[0]}</div>}
+                                <div><h2 className="text-2xl font-black text-slate-800">{profSelecionado.Nome} <BadgeConvenio codUnimed={profSelecionado.CodUnimed} configLogo={cfg?.logoConvenio} /></h2><p className="text-sm font-bold text-primary uppercase">{profSelecionado.Cargo}</p></div>
                             </div>
                         )}
-
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="clean-card p-6 lg:col-span-2">
-                                <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[10px] font-black opacity-50 uppercase">
-                                    <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
-                                </div>
+                                <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[10px] font-black opacity-50"><div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div></div>
                                 <div className="grid grid-cols-7 gap-2">
-                                    {gridTL.vazios.map((_, i) => <div key={`v-${i}`} className="p-2 opacity-10"></div>)}
+                                    {gridTL.vazios.map((_, i) => <div key={`v-${i}`} className="p-2"></div>)}
                                     {gridTL.dias.map((d, i) => {
                                         const temEscala = escalas.some(e => e.Nome_Profissional === calProf && e.Data === d.dStr && isEscalaValida(e, cfg?.postos));
-                                        const profColor = profs.find(p=>p.Nome===calProf)?.Cor || '#0ea5e9';
-                                        const isToday = d.dStr === getStrDt(new Date());
                                         const isSel = diaAtivo === d.dStr;
-
                                         return (
-                                            <div key={i} onClick={()=> temEscala && setDiaAtivo(d.dStr)} className={`relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${temEscala?'cursor-pointer hover:border-primary shadow-sm':''} ${isSel?'ring-2 ring-primary bg-blue-50 dark:bg-slate-800':isToday?'bg-slate-100 dark:bg-slate-700':'bg-transparent border-slate-100 dark:border-slate-800'}`}>
-                                                <span className={`text-sm font-bold ${temEscala?'text-slate-800 dark:text-white':'text-slate-400 dark:text-slate-500'}`}>{d.d.getDate()}</span>
-                                                {temEscala && <span className="absolute bottom-2 w-1.5 h-1.5 rounded-full" style={{backgroundColor:profColor}}></span>}
+                                            <div key={i} onClick={()=> temEscala && setDiaAtivo(d.dStr)} className={`relative flex flex-col items-center justify-center p-3 rounded-xl border ${temEscala?'cursor-pointer shadow-sm':''} ${isSel?'ring-2 ring-primary bg-blue-50':''}`}>
+                                                <span className={`text-sm font-bold ${temEscala?'text-slate-800':'text-slate-400'}`}>{d.d.getDate()}</span>
+                                                {temEscala && <span className="absolute bottom-2 w-1.5 h-1.5 rounded-full bg-primary"></span>}
                                             </div>
                                         )
                                     })}
                                 </div>
                             </div>
-
-                            <div className="clean-card p-6 bg-slate-50 dark:bg-slate-800">
-                                {diaAtivo ? (() => {
-                                    const escDia = escalas.filter(e => e.Nome_Profissional === calProf && e.Data === diaAtivo && isEscalaValida(e, cfg?.postos));
-                                    return (
-                                        <div>
-                                            <h3 className="font-black text-lg mb-4 text-primary border-b border-slate-200 dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-check"></i> {diaAtivo}</h3>
-                                            <div className="space-y-4">
-                                                {escDia.map((esc, j) => {
-                                                    const isFolga = esc.Status === 'FOLGA';
-                                                    const isAus = esc.Status === 'AUSENTE';
-                                                    
-                                                    return (
-                                                    <div key={j} className={`p-4 rounded-xl shadow-sm border relative overflow-hidden ${isFolga?'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-80':isAus?'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/30':'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-700'}`}>
-                                                        <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{backgroundColor: isFolga ? '#94a3b8' : isAus ? '#ef4444' : getCorDaSala(esc.Sala, cfg)}}></div>
-                                                        
-                                                        {(!isFolga && !isAus && esc.Unidade) && <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1 pl-1">{esc.Unidade}</p>}
-                                                        
-                                                        <h4 className={`font-black text-base pl-1 ${isFolga||isAus?'text-slate-600 dark:text-slate-400':''}`}>{esc.Sala} {esc.EmApoio?'(Apoio)':''}</h4>
-                                                        
-                                                        {(!isFolga && !isAus) && <p className={`text-sm font-bold mt-1 pl-1 ${esc.Horario==='A DEFINIR'?'text-red-500':'opacity-80'}`}><i className="ph-fill ph-clock"></i> {esc.Horario}</p>}
-                                                        {esc.Auxiliar && <p className="text-[10px] font-black text-purple-600 bg-purple-100 px-2 py-0.5 rounded inline-block mt-1 ml-1"><i className="ph-fill ph-user-plus"></i> Aux: {esc.Auxiliar}</p>}
-                                                        
-                                                        {esc.ObsDia && <p className={`text-xs mt-3 p-2 rounded ml-1 ${isFolga||isAus?'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300':'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400'}`}><i className="ph-bold ph-info"></i> {esc.ObsDia}</p>}
-                                                        
-                                                        {isAd && (
-                                                            <div className="absolute top-2 right-2 flex gap-2">
-                                                                <button onClick={() => setEditData({...esc})} className="text-yellow-500 hover:scale-110"><i className="ph-fill ph-pencil"></i></button>
-                                                                <button onClick={async()=>{if(confirm('Excluir turno permanentemente?')){await api.deleteRecord('ESCALAS', esc.ID); onRefresh(); setDiaAtivo(null)}}} className="text-red-500 hover:scale-110"><i className="ph-fill ph-trash"></i></button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )})}
-                                            </div>
-                                        </div>
-                                    )
-                                })() : (
-                                    <div className="h-full flex flex-col items-center justify-center text-center opacity-50 min-h-[200px]">
-                                        <i className="ph-fill ph-cursor-click text-4xl mb-2"></i>
-                                        <p className="text-xs font-bold">Clique no calendário para ver os detalhes.</p>
-                                    </div>
-                                )}
+                            <div className="clean-card p-6 bg-slate-50">
+                                {diaAtivo ? (
+                                    <div><h3 className="font-black text-lg mb-4 text-primary border-b pb-2"><i className="ph-fill ph-calendar-check"></i> {diaAtivo}</h3><div className="space-y-4">
+                                        {escalas.filter(e => e.Nome_Profissional === calProf && e.Data === diaAtivo && isEscalaValida(e, cfg?.postos)).map((esc, j) => {
+                                            const isFolga = esc.Status === 'FOLGA'; const isAus = esc.Status === 'AUSENTE';
+                                            return (
+                                                <div key={j} className={`p-4 rounded-xl shadow-sm border relative overflow-hidden ${isFolga?'bg-slate-100 opacity-80':isAus?'bg-red-50 border-red-200':'bg-white'}`}>
+                                                    <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{backgroundColor: isFolga ? '#94a3b8' : isAus ? '#ef4444' : getCorDaSala(esc.Sala, cfg)}}></div>
+                                                    {(!isFolga && !isAus && esc.Unidade) && <p className="text-[10px] font-black uppercase tracking-widest opacity-60 pl-1">{esc.Unidade}</p>}
+                                                    <h4 className={`font-black text-base pl-1 ${isFolga||isAus?'text-slate-600':''}`}>{esc.Sala}</h4>
+                                                    {(!isFolga && !isAus) && <p className="text-sm font-bold mt-1 pl-1"><i className="ph-fill ph-clock"></i> {esc.Horario}</p>}
+                                                    {isAd && <div className="absolute top-2 right-2 flex gap-2"><button onClick={() => setEditData({...esc})} className="text-yellow-500 hover:scale-110"><i className="ph-fill ph-pencil"></i></button></div>}
+                                                </div>
+                                            )
+                                        })}
+                                    </div></div>
+                                ) : <div className="h-full flex flex-col items-center justify-center opacity-50"><i className="ph-fill ph-cursor-click text-4xl mb-2"></i><p className="text-xs font-bold">Clique no calendário</p></div>}
                             </div>
                         </div>
                     </div>}
                 </div>
             )}
-
             {editData && <SuperActionModal escala={editData} profs={profs} cfg={cfg} onClose={()=>setEditData(null)} onSave={onSave} onRefresh={onRefresh} isAd={isAd} />}
         </div>
     );
 };
-
-// ================== ABA 4: MAPA DE PLANTÃO (REFORMULADO) ==================
+    // ================== ABA 4: MAPA DE PLANTÃO (REFORMULADO C/ BUSCA E CRACHÁ) ==================
 const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
     const [now, setNow] = useState(Date.now()); 
@@ -924,6 +445,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     useEffect(() => { const t = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(t); }, []);
 
     const dStr = getStrDt(new Date()); 
+    // Filtro Caça-Fantasmas aplicado:
     const escHjRaw = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
     
     const unids = cfg?.unidades||[]; const setoresSis = cfg?.setores||[]; const postosSis = cfg?.postos||[];
@@ -960,7 +482,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-md" style={{background:curr.Cor||'#0ea5e9'}}>{curr.Nome_Profissional[0]}</div>
                                 }
                                 <div className="truncate">
-                                    <div className={`text-[11px] font-black truncate text-slate-800 dark:text-white flex items-center ${isAus?'line-through text-red-500 dark:text-red-400':''}`}>
+                                    <div className={`text-[11px] font-black truncate text-slate-800 dark:text-white flex items-center gap-1 ${isAus?'line-through text-red-500 dark:text-red-400':''}`}>
                                         <span className="truncate">{curr.Nome_Profissional}</span>
                                         <BadgeConvenio codUnimed={pInfo.CodUnimed} configLogo={cfg?.logoConvenio} />
                                     </div>
@@ -968,7 +490,8 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                 </div>
                             </div>
                             
-                            {curr.Auxiliar && <p className="text-[8px] font-black text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded inline-block mb-1"><i className="ph-fill ph-user-plus"></i> Aux: {curr.Auxiliar}</p>}
+                            {curr.Auxiliar && <p className="text-[8px] font-black text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded inline-block mb-1"><i className="ph-fill ph-user-plus"></i> Auxiliar: {curr.Auxiliar}</p>}
+                            {curr.MedicoApoio && <p className="text-[8px] font-black text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded inline-block mb-1"><i className="ph-fill ph-stethoscope"></i> Apoio: {curr.MedicoApoio}</p>}
 
                             <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2 mt-1">
                                 <span className={`text-[8px] font-black px-2 py-1 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>{curr.Status === 'NO POSTO' ? 'ATIVO' : curr.Status}</span>
@@ -980,7 +503,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                                 <button onClick={(e)=>{e.stopPropagation(); setStatus(curr, 'LANCHE');}} title="Ir para o Lanche/Pausa" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 hover:text-orange-600 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button>
                                             )}
                                             {isAd && (
-                                                <button onClick={(e)=>{e.stopPropagation(); setEditData(curr);}} title="Ações Avançadas" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 hover:text-blue-600 transition text-slate-500"><i className="ph-fill ph-pencil-simple"></i></button>
+                                                <button onClick={(e)=>{e.stopPropagation(); setEditData({...curr});}} title="Ações Avançadas" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 hover:text-blue-600 transition text-slate-500"><i className="ph-fill ph-sliders"></i></button>
                                             )}
                                         </>
                                     ) : (
@@ -988,7 +511,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                             {(isAd || (isMe && isInt)) && (
                                                 <button onClick={(e)=>{e.stopPropagation(); setStatus(curr, 'NO POSTO');}} className="px-2 py-1 bg-slate-800 dark:bg-slate-700 text-white rounded text-[8px] font-black hover:bg-slate-600 transition"><i className="ph-bold ph-arrow-u-down-left"></i> VOLTAR</button>
                                             )}
-                                            {isAus && isAd && <button onClick={(e)=>{e.stopPropagation(); setEditData(curr);}} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black hover:bg-blue-600 transition ml-1"><i className="ph-bold ph-magic-wand"></i> OPÇÕES</button>}
+                                            {isAus && isAd && <button onClick={(e)=>{e.stopPropagation(); setEditData({...curr});}} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black hover:bg-blue-600 transition ml-1"><i className="ph-bold ph-sliders"></i> OPÇÕES</button>}
                                         </>
                                     )}
                                 </div>
@@ -1009,7 +532,7 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                                 }
                                 <div className="truncate max-w-[100px] flex items-center gap-1">
                                     <p className="text-[9px] font-black text-slate-800 dark:text-white truncate">{nxt.Nome_Profissional}</p>
-                                    {pInfoNxt.CodUnimed && <div className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></div>}
+                                    <BadgeConvenio codUnimed={pInfoNxt.CodUnimed} configLogo={cfg?.logoConvenio} />
                                 </div>
                             </div>
                         </div>
@@ -1118,131 +641,109 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     );
 };
 
-
-// ================== ABA 5: MATRIZ DE PLANTÃO (NOVA VISÃO AMPLA) ==================
-const MatrixBoardView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
+// ================== ABA 5: O VERDADEIRO GANTT (VISÃO AMPLA HORIZONTAL) ==================
+const GanttModernoView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
     const [viewMode, setViewMode] = useState('MENU');
     const [dataBase, setDataBase] = useState(new Date());
-    const [rangeDias, setRangeDias] = useState(1); // Pode ver 1, 3, 7, 15 dias
+    const [rangeDias, setRangeDias] = useState(1);
     const [editData, setEditData] = useState(null);
     const [agora, setAgora] = useState(new Date());
 
-    useEffect(() => {
-        const timer = setInterval(() => setAgora(new Date()), 60000); 
-        return () => clearInterval(timer);
-    }, []);
+    useEffect(() => { const timer = setInterval(() => setAgora(new Date()), 60000); return () => clearInterval(timer); }, []);
 
-    // Horários fixos da matriz: 06:00 até 23:00 (18 slots)
-    const H_INICIO = 6;
-    const H_FIM = 23;
-    const HORAS_REGUA = Array.from({length: (H_FIM - H_INICIO + 1)}, (_, i) => H_INICIO + i);
-    const PIXELS_POR_HORA = 60; // 1 hora = 60px de altura na tela
+    const H_INICIO = 6; const H_FIM = 23; const H_TOTAL = H_FIM - H_INICIO + 1;
+    const HORAS_REGUA = Array.from({length: H_TOTAL}, (_, i) => H_INICIO + i);
 
-    const gerarMatrizDias = () => {
-        const dias = [];
-        for(let i=0; i<rangeDias; i++) {
-            let d = new Date(dataBase);
-            d.setDate(d.getDate() + i);
-            dias.push(d);
-        }
-        return dias;
-    };
+    const diasRender = Array.from({length: rangeDias}, (_, i) => {
+        let d = new Date(dataBase); d.setDate(d.getDate() + i); return d;
+    });
 
-    const diasRender = gerarMatrizDias();
-
-    const TimeGrid = ({ dateObj }) => {
+    const GanttGrid = ({ dateObj }) => {
         const dStr = getStrDt(dateObj);
         const isToday = getStrDt(agora) === dStr;
-        
-        // Filtra escalas válidas daquele dia
         const escalasDia = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
-        
-        // Entidades (Colunas) variam conforme a visão
-        let colunas = [];
-        if (viewMode === 'Colaborador') {
-            colunas = ordenarPorNome(profs.filter(p => p.Tipo === 'Colaborador' && p.StatusGeral === 'Ativo'));
-        } else {
-            // Se for médico, as colunas são os postos de trabalho (salas) agrupados ou não
-            colunas = cfg?.postos || [];
-        }
 
-        const getBloqueios = (colID, isProf) => {
-            if (isProf) return escalasDia.filter(e => e.Nome_Profissional === colID);
-            return escalasDia.filter(e => e.Sala === colID);
-        };
-
-        let linhaAgora = null;
+        let positionNow = null;
         if (isToday) {
-            const hDecimal = agora.getHours() + (agora.getMinutes() / 60);
-            if (hDecimal >= H_INICIO && hDecimal <= H_FIM + 1) {
-                linhaAgora = (hDecimal - H_INICIO) * PIXELS_POR_HORA;
-            }
+            const hDec = agora.getHours() + (agora.getMinutes() / 60);
+            if (hDec >= H_INICIO && hDec <= H_FIM + 1) positionNow = ((hDec - H_INICIO) / H_TOTAL) * 100;
         }
 
-        // Se for médico, agrupa colunas por Unidade
+        // VISÃO MÉDICOS (Agrupado por Unidade)
         if (viewMode === 'Médico') {
-            const unidadesAtivas = Array.from(new Set(escalasDia.map(e=>e.Unidade))).filter(Boolean);
-            
-            if(unidadesAtivas.length === 0) return <div className="mb-8"><h3 className="text-lg font-black mb-3 text-primary">{dStr}</h3><p className="opacity-50 font-bold p-4 border border-dashed rounded-xl">Sem plantões médicos hoje.</p></div>
+            const escMedicos = escalasDia.filter(e => {
+                const pInfo = profs.find(p=>p.Nome === e.Nome_Profissional);
+                return (pInfo && pInfo.Tipo === 'Médico') || e.Cargo?.toLowerCase().includes('médico');
+            });
+            const unidadesAtivas = Array.from(new Set(escMedicos.map(e=>e.Unidade))).filter(Boolean).sort();
+
+            if(unidadesAtivas.length === 0) return <div className="mb-6"><h3 className="text-md font-black text-primary">{dStr}</h3><p className="opacity-50 text-xs">Sem médicos escalados.</p></div>
 
             return (
-                <div className="mb-10">
-                    <h3 className="text-lg font-black mb-3 text-primary flex items-center gap-2"><i className="ph-fill ph-calendar-blank"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'short', year: 'numeric'}).toUpperCase()}</h3>
-                    
+                <div className="mb-10 animate-fade-in">
+                    <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b pb-2"><i className="ph-fill ph-calendar-blank text-primary"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'}).toUpperCase()}</h3>
                     {unidadesAtivas.map(und => {
-                        // Só pega as salas desta unidade que tem alguem
-                        const escUnid = escalasDia.filter(e=>e.Unidade === und);
-                        const salasUsadasNestaUnidadeNesteDia = Array.from(new Set(escUnid.map(e=>e.Sala)));
+                        const escUnd = escMedicos.filter(e=>e.Unidade === und);
+                        const salasUsadas = Array.from(new Set(escUnd.map(e=>e.Sala))).sort();
                         
                         return (
-                            <div key={und} className="mb-6">
-                                <h4 className="text-sm font-black text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-widest pl-2 border-l-4 border-slate-300">{und}</h4>
-                                <div className="time-grid-container shadow-md">
-                                    <div className="matrix-time-col">
-                                        <div className="matrix-header-cell">H</div>
-                                        {HORAS_REGUA.map(h => <div key={h} className="matrix-time-cell">{String(h).padStart(2,'0')}:00</div>)}
-                                    </div>
-                                    {salasUsadasNestaUnidadeNesteDia.map(salaNome => {
-                                        const blocos = escUnid.filter(e=>e.Sala === salaNome);
-                                        return (
-                                            <div key={salaNome} className="matrix-data-col">
-                                                <div className="matrix-header-cell truncate" title={salaNome}>{salaNome}</div>
-                                                <div className="relative" style={{height: `${(H_FIM - H_INICIO + 1) * PIXELS_POR_HORA}px`}}>
-                                                    {linhaAgora !== null && <div className="matrix-now-line" style={{top: `${linhaAgora}px`}}></div>}
-                                                    {blocos.map((b, bIdx) => {
-                                                        const isFolga = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
-                                                        let top = 0; let height = PIXELS_POR_HORA;
-                                                        
-                                                        if (isFolga || b.Horario === 'A DEFINIR') { top = 4; height = 40; } 
-                                                        else {
-                                                            const vIn = parseHorario(b.Horario.split(' às ')[0]?.trim());
-                                                            let vOut = parseHorario(b.Horario.split(' às ')[1]?.trim());
-                                                            if(vIn !== null && vOut !== null) {
-                                                                if(vOut <= vIn) vOut += 24; 
-                                                                top = (vIn - H_INICIO) * PIXELS_POR_HORA;
-                                                                height = (vOut - vIn) * PIXELS_POR_HORA;
-                                                                if(top < 0) { height += top; top = 0; } 
-                                                            }
-                                                        }
-                                                        let bgColor = isFolga ? '#94a3b8' : getCorDaSala(b.Sala, cfg);
-                                                        const pInfo = profs.find(p => p.Nome === b.Nome_Profissional) || {};
-
-                                                        return (
-                                                            <div key={bIdx} onClick={()=> isAd && setEditData({...b})} className="matrix-block" style={{top:`${top}px`, height:`${height}px`, backgroundColor: bgColor}}>
-                                                                <span className="truncate w-full font-black text-[11px] flex items-center gap-1">
-                                                                    {b.Nome_Profissional} {pInfo.CodUnimed && <div className="w-1.5 h-1.5 bg-white rounded-full shrink-0 shadow"></div>}
-                                                                </span>
-                                                                {!isFolga && b.Horario !== 'A DEFINIR' && <span className="text-[9px] font-medium opacity-90">{b.Horario}</span>}
-                                                                {b.Auxiliar && <span className="text-[8px] bg-black/20 px-1 rounded mt-1 truncate w-max">Aux: {b.Auxiliar}</span>}
-                                                                {(isFolga || b.Horario==='A DEFINIR') && <span className="text-[9px] font-black text-red-100 mt-auto">{b.Status==='FOLGA'?'FOLGA':'A DEFINIR'}</span>}
-                                                            </div>
-                                                        )
-                                                    })}
-                                                </div>
+                            <div key={und} className="mb-8 clean-card overflow-x-auto">
+                                <div className="bg-slate-800 text-white p-2 text-xs font-black uppercase tracking-widest pl-4">{und}</div>
+                                <div className="matrix-container">
+                                    <div className="w-full min-w-[900px]">
+                                        <div className="gantt-header-row">
+                                            <div className="gantt-label font-black text-[10px] uppercase">Posto / Sala</div>
+                                            <div className="gantt-track flex relative">
+                                                {HORAS_REGUA.map((h, i) => <div key={i} className="absolute h-full border-l border-slate-200 dark:border-slate-700 text-[9px] font-black opacity-40 pl-1 pt-1" style={{left: `${(i/H_TOTAL)*100}%`}}>{String(h).padStart(2,'0')}h</div>)}
+                                                {positionNow !== null && <div className="gantt-now-line" style={{left: `${positionNow}%`}}></div>}
                                             </div>
-                                        )
-                                    })}
+                                        </div>
+                                        {salasUsadas.map(sala => {
+                                            const blocos = escUnd.filter(e=>e.Sala === sala);
+                                            const pCfg = cfg?.postos?.find(p=>p.nome === sala);
+                                            return (
+                                                <div key={sala} className="gantt-row-wrapper hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                                                    <div className="gantt-label">
+                                                        <span className="font-black text-xs truncate">{sala}</span>
+                                                        <span className="text-[9px] opacity-50 truncate">{pCfg?.setor || 'Geral'}</span>
+                                                    </div>
+                                                    <div className="gantt-track relative">
+                                                        {HORAS_REGUA.map((h, i) => <div key={i} className="absolute h-full border-l border-slate-200/50 dark:border-slate-800 z-0" style={{left: `${(i/H_TOTAL)*100}%`}}></div>)}
+                                                        {positionNow !== null && <div className="gantt-now-line opacity-30 z-10" style={{left: `${positionNow}%`}}></div>}
+                                                        
+                                                        {blocos.map((b, idx) => {
+                                                            const isFolga = b.Status === 'FOLGA';
+                                                            let left=0; let width=100;
+                                                            if(isFolga || b.Horario === 'A DEFINIR') { left=0; width=100; }
+                                                            else {
+                                                                const vIn = parseHorario(b.Horario.split(' às ')[0]); let vOut = parseHorario(b.Horario.split(' às ')[1]);
+                                                                if(vIn!==null && vOut!==null){
+                                                                    if(vOut<=vIn) vOut+=24;
+                                                                    left = ((vIn - H_INICIO)/H_TOTAL)*100; width = ((vOut - vIn)/H_TOTAL)*100;
+                                                                    if(left<0){width+=left; left=0;} if(left+width>100) width=100-left;
+                                                                }
+                                                            }
+                                                            const color = isFolga ? '#94a3b8' : getCorDaSala(b.Sala, cfg);
+                                                            const pInfo = profs.find(p=>p.Nome===b.Nome_Profissional)||{};
+                                                            return (
+                                                                <div key={idx} onClick={()=>isAd && setEditData(b)} className="gantt-block" style={{left:`${left}%`, width:`${width}%`, backgroundColor: color}}>
+                                                                    {pInfo.FotoURL && <img src={fmtImg(pInfo.FotoURL)} className="w-5 h-5 rounded-full object-cover border border-white/30 shrink-0"/>}
+                                                                    <div className="flex flex-col overflow-hidden w-full">
+                                                                        <span className="truncate font-black text-[11px] leading-tight">{b.Nome_Profissional}</span>
+                                                                        <div className="flex gap-2 opacity-80 text-[8px]">
+                                                                            <span>{isFolga?'FOLGA':b.Horario}</span>
+                                                                            {b.Auxiliar && <span className="bg-black/20 px-1 rounded truncate">Aux: {b.Auxiliar}</span>}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
                                 </div>
                             </div>
                         )
@@ -1251,123 +752,104 @@ const MatrixBoardView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             )
         }
 
-        // Visão Colaborador (Padrao)
+        // VISÃO COLABORADORES (Linhas são as Pessoas)
+        const escColab = escalasDia.filter(e => {
+            const pInfo = profs.find(p=>p.Nome === e.Nome_Profissional);
+            return pInfo ? pInfo.Tipo === 'Colaborador' : !e.Cargo?.toLowerCase().includes('médico');
+        });
+        const nomesColab = Array.from(new Set(escColab.map(e=>e.Nome_Profissional))).sort();
+
+        if(nomesColab.length === 0) return null;
+
         return (
-            <div className="mb-10">
-                <h3 className="text-lg font-black mb-3 text-primary flex items-center gap-2"><i className="ph-fill ph-calendar-blank"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'short', year: 'numeric'}).toUpperCase()}</h3>
-                
-                <div className="time-grid-container shadow-md">
-                    <div className="matrix-time-col">
-                        <div className="matrix-header-cell">H</div>
-                        {HORAS_REGUA.map(h => (
-                            <div key={h} className="matrix-time-cell">{String(h).padStart(2,'0')}:00</div>
-                        ))}
-                    </div>
-
-                    {colunas.map((col, idx) => {
-                        const blocos = getBloqueios(col.Nome, true);
-                        if(blocos.length === 0) return null; // Esconde colaborador que nao trabalha no dia
-                        
-                        return (
-                            <div key={idx} className="matrix-data-col">
-                                <div className="matrix-header-cell truncate" title={col.Nome}>
-                                    {col.Nome.split(' ')[0] + ' ' + (col.Nome.split(' ')[1]||'')}
-                                    <span className="block text-[8px] font-normal opacity-50 truncate">{col.Cargo}</span>
-                                </div>
-                                
-                                <div className="relative" style={{height: `${(H_FIM - H_INICIO + 1) * PIXELS_POR_HORA}px`}}>
-                                    {linhaAgora !== null && <div className="matrix-now-line" style={{top: `${linhaAgora}px`}}></div>}
-
-                                    {blocos.map((b, bIdx) => {
-                                        const isFolga = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
-                                        let top = 0; let height = PIXELS_POR_HORA; 
-                                        
-                                        if (isFolga || b.Horario === 'A DEFINIR') { top = 4; height = 40; } 
-                                        else {
-                                            const vIn = parseHorario(b.Horario.split(' às ')[0]?.trim());
-                                            let vOut = parseHorario(b.Horario.split(' às ')[1]?.trim());
-                                            if(vIn !== null && vOut !== null) {
-                                                if(vOut <= vIn) vOut += 24; 
-                                                top = (vIn - H_INICIO) * PIXELS_POR_HORA;
-                                                height = (vOut - vIn) * PIXELS_POR_HORA;
-                                                if(top < 0) { height += top; top = 0; } 
-                                            }
-                                        }
-
-                                        let bgColor = isFolga ? '#94a3b8' : getCorDaSala(b.Sala, cfg);
-
-                                        return (
-                                            <div key={bIdx} onClick={()=> isAd && setEditData({...b})} className="matrix-block" style={{top:`${top}px`, height:`${height}px`, backgroundColor: bgColor}}>
-                                                <span className="truncate w-full font-black text-[11px] leading-tight">{b.Sala}</span>
-                                                {b.MedicoApoio && <span className="text-[8px] bg-black/20 px-1 py-0.5 rounded mt-1 truncate">Apoio: {b.MedicoApoio}</span>}
-                                                {!isFolga && b.Horario !== 'A DEFINIR' && <span className="text-[9px] font-medium mt-auto opacity-90">{b.Horario}</span>}
-                                                {(isFolga || b.Horario==='A DEFINIR') && <span className="text-[9px] font-black text-red-100 mt-auto">{b.Status==='FOLGA'?'FOLGA':'A DEFINIR'}</span>}
-                                            </div>
-                                        )
-                                    })}
-                                </div>
+            <div className="mb-10 animate-fade-in">
+                <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b pb-2"><i className="ph-fill ph-calendar-blank text-primary"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'}).toUpperCase()}</h3>
+                <div className="clean-card overflow-x-auto matrix-container">
+                    <div className="w-full min-w-[1000px]">
+                        <div className="gantt-header-row">
+                            <div className="gantt-label font-black text-[10px] uppercase">Colaborador</div>
+                            <div className="gantt-track flex relative">
+                                {HORAS_REGUA.map((h, i) => <div key={i} className="absolute h-full border-l border-slate-200 dark:border-slate-700 text-[9px] font-black opacity-40 pl-1 pt-1" style={{left: `${(i/H_TOTAL)*100}%`}}>{String(h).padStart(2,'0')}h</div>)}
+                                {positionNow !== null && <div className="gantt-now-line" style={{left: `${positionNow}%`}}></div>}
                             </div>
-                        )
-                    })}
+                        </div>
+                        {nomesColab.map(nome => {
+                            const blocos = escColab.filter(e=>e.Nome_Profissional === nome);
+                            const pInfo = profs.find(p=>p.Nome === nome) || {};
+                            return (
+                                <div key={nome} className="gantt-row-wrapper hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                                    <div className="gantt-label flex flex-row items-center gap-2">
+                                        {pInfo.FotoURL ? <img src={fmtImg(pInfo.FotoURL)} className="w-8 h-8 rounded-full object-cover shrink-0"/> : <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-black shrink-0 text-xs">{nome[0]}</div>}
+                                        <div className="overflow-hidden">
+                                            <span className="font-black text-[11px] truncate block w-full leading-tight">{nome}</span>
+                                            <span className="text-[8px] opacity-50 truncate block w-full">{pInfo.Cargo||'Geral'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="gantt-track relative">
+                                        {HORAS_REGUA.map((h, i) => <div key={i} className="absolute h-full border-l border-slate-200/50 dark:border-slate-800 z-0" style={{left: `${(i/H_TOTAL)*100}%`}}></div>)}
+                                        {positionNow !== null && <div className="gantt-now-line opacity-30 z-10" style={{left: `${positionNow}%`}}></div>}
+                                        
+                                        {blocos.map((b, idx) => {
+                                            const isFolga = b.Status === 'FOLGA';
+                                            let left=0; let width=100;
+                                            if(isFolga || b.Horario === 'A DEFINIR') { left=0; width=100; }
+                                            else {
+                                                const vIn = parseHorario(b.Horario.split(' às ')[0]); let vOut = parseHorario(b.Horario.split(' às ')[1]);
+                                                if(vIn!==null && vOut!==null){
+                                                    if(vOut<=vIn) vOut+=24;
+                                                    left = ((vIn - H_INICIO)/H_TOTAL)*100; width = ((vOut - vIn)/H_TOTAL)*100;
+                                                    if(left<0){width+=left; left=0;} if(left+width>100) width=100-left;
+                                                }
+                                            }
+                                            const color = isFolga ? '#94a3b8' : getCorDaSala(b.Sala, cfg);
+                                            return (
+                                                <div key={idx} onClick={()=>isAd && setEditData(b)} className="gantt-block" style={{left:`${left}%`, width:`${width}%`, backgroundColor: color}}>
+                                                    <div className="flex flex-col overflow-hidden w-full justify-center">
+                                                        <span className="truncate font-black text-xs leading-tight">{isFolga?'FOLGA / AUSÊNCIA':b.Sala}</span>
+                                                        <div className="flex gap-2 opacity-80 text-[8px] mt-0.5">
+                                                            <span className="truncate uppercase">{b.Unidade || 'GERAL'}</span>
+                                                            {!isFolga && b.Horario !== 'A DEFINIR' && <span>• {b.Horario}</span>}
+                                                            {b.MedicoApoio && <span className="bg-black/20 px-1 rounded truncate">Apoio: {b.MedicoApoio}</span>}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
                 </div>
             </div>
         )
-    }
+    };
 
     return (
         <div className="animate-fade-in space-y-6 max-w-[1600px] mx-auto pb-10">
-            {viewMode === 'MENU' && (
-                <div>
-                    <h2 className="text-2xl font-black mb-6">Matriz de Plantão (Visão Ampla)</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-primary hover:shadow-lg transition-all">
-                            <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-table"></i></div>
-                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Matriz Colaboradores</h3>
-                            <p className="text-[10px] font-bold opacity-60 mt-2">Visão por Pessoa e Horários</p>
-                        </div>
-                        <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-red-500 hover:shadow-lg transition-all">
-                            <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-table"></i></div>
-                            <h3 className="font-black text-xl uppercase tracking-widest text-center">Matriz Médicos</h3>
-                            <p className="text-[10px] font-bold opacity-60 mt-2">Visão por Salas e Horários</p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {viewMode !== 'MENU' && (
-                <div className="animate-fade-in space-y-6">
+            {viewMode === 'MENU' ? (
+                <div><h2 className="text-2xl font-black mb-6">Visão Ampla de Tráfego</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center cursor-pointer hover:border-primary"><i className="ph-fill ph-chart-gantt text-4xl text-primary mb-2"></i><h3 className="font-black text-xl">Mapa da Equipe Base</h3><p className="text-xs font-bold opacity-60 mt-1">Timeline de Colaboradores</p></div>
+                    <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center cursor-pointer hover:border-red-500"><i className="ph-fill ph-chart-gantt text-4xl text-red-500 mb-2"></i><h3 className="font-black text-xl">Mapa de Consultórios</h3><p className="text-xs font-bold opacity-60 mt-1">Ocupação das Salas por Unidade</p></div>
+                </div></div>
+            ) : (
+                <div className="space-y-6">
                     <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
                         <div className="flex items-center gap-4">
-                            <button onClick={()=>setViewMode('MENU')} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button>
-                            <div>
-                                <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Matriz de Plantão</p>
-                                <h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Painel de Salas (Médicos)' : 'Painel de Equipe Base'}</h2>
-                            </div>
+                            <button onClick={()=>setViewMode('MENU')} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100"><i className="ph-bold ph-arrow-left"></i></button>
+                            <div><p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Painel de Controle</p><h2 className="text-2xl font-black">{viewMode === 'Médico' ? 'Ocupação de Salas' : 'Rota da Equipe'}</h2></div>
                         </div>
-                        
-                        <div className="flex flex-wrap items-center gap-4">
-                            <div className="flex items-center bg-white dark:bg-slate-800 p-1.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                                <button onClick={()=>setDataBase(new Date(dataBase.setDate(dataBase.getDate() - rangeDias)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded"><i className="ph-bold ph-caret-left"></i></button>
-                                <span className="font-black text-xs uppercase px-2 text-center min-w-[120px]">Início: {dataBase.toLocaleDateString('pt-BR')}</span>
-                                <button onClick={()=>setDataBase(new Date(dataBase.setDate(dataBase.getDate() + rangeDias)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded"><i className="ph-bold ph-caret-right"></i></button>
-                            </div>
-                            
-                            <select value={rangeDias} onChange={e=>setRangeDias(Number(e.target.value))} className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-white dark:bg-slate-800 font-bold text-sm shadow-sm cursor-pointer">
-                                <option value={1}>Exibir 1 Dia</option>
-                                <option value={3}>Exibir 3 Dias</option>
-                                <option value={7}>Exibir 7 Dias</option>
-                                <option value={15}>Exibir 15 Dias</option>
-                                <option value={30}>Exibir 30 Dias</option>
-                            </select>
+                        <div className="flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl shadow-sm border dark:border-slate-700">
+                            <button onClick={()=>setDataBase(new Date(dataBase.setDate(dataBase.getDate()-rangeDias)))} className="w-8 h-8 rounded hover:bg-slate-100 dark:hover:bg-slate-700"><i className="ph-bold ph-caret-left"></i></button>
+                            <span className="font-black text-xs uppercase px-2">Início: {dataBase.toLocaleDateString('pt-BR')}</span>
+                            <button onClick={()=>setDataBase(new Date(dataBase.setDate(dataBase.getDate()+rangeDias)))} className="w-8 h-8 rounded hover:bg-slate-100 dark:hover:bg-slate-700"><i className="ph-bold ph-caret-right"></i></button>
+                            <select value={rangeDias} onChange={e=>setRangeDias(Number(e.target.value))} className="ml-2 p-1.5 rounded bg-slate-100 dark:bg-slate-900 text-xs font-bold outline-none"><option value={1}>1 Dia</option><option value={3}>3 Dias</option><option value={7}>7 Dias</option><option value={15}>15 Dias</option><option value={30}>30 Dias</option></select>
                         </div>
                     </div>
-
-                    <div className="space-y-8">
-                        {diasRender.map((d, i) => <TimeGrid key={i} dateObj={d} />)}
-                    </div>
+                    <div className="space-y-8">{diasRender.map((d, i) => <GanttGrid key={i} dateObj={d} />)}</div>
                 </div>
             )}
-
             {editData && <SuperActionModal escala={editData} profs={profs} cfg={cfg} onClose={()=>setEditData(null)} onSave={onSave} onRefresh={onRefresh} isAd={isAd} />}
         </div>
     );
@@ -1390,35 +872,21 @@ const App = () => {
     useEffect(() => { 
         const un = auth.onAuthStateChanged(async usr => { 
             if(usr){ 
-                let role = 'Colaborador';
-                const eml = usr.email.toLowerCase();
+                let role = 'Colaborador'; const eml = usr.email.toLowerCase();
                 if (eml.includes('admin') || eml.includes('gestao') || eml.includes('diretor')) role = 'Admin';
                 else if (eml.includes('supervis')) role = 'Supervisor';
                 setU({email:usr.email, nome:usr.email.split('@')[0], nivel:role}); 
                 await f(); 
             } else setU(null); 
             setL(false); 
-        }); 
-        return ()=>un(); 
+        }); return ()=>un(); 
     }, []);
 
     if (l) return <div className="min-h-screen flex items-center justify-center"><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
-
-    if (!u) return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900"><div className="w-full max-w-md clean-card p-10"><div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6"><i className="ph-fill ph-hospital"></i></div><h1 className="text-3xl font-black text-center mb-8">Escalas SV</h1><form onSubmit={async e=>{e.preventDefault();setL(true);try{await auth.signInWithEmailAndPassword(e.target.e.value, e.target.p.value);}catch(err){alert('Acesso Negado');setL(false);}}} className="space-y-4"><input name="e" type="email" placeholder="E-mail" className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white outline-none bg-slate-50 dark:bg-slate-800" required /><input name="p" type="password" placeholder="Senha" className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white outline-none bg-slate-50 dark:bg-slate-800" required /><button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-xl shadow-lg hover:bg-blue-600 transition">Entrar no Sistema</button></form></div><button onClick={()=>setIsD(!isD)} className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow flex items-center justify-center text-slate-500"><i className={isD?"ph-fill ph-sun text-yellow-500":"ph-fill ph-moon"}></i></button></div>
-    );
+    if (!u) return ( <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900"><div className="w-full max-w-md clean-card p-10"><div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6"><i className="ph-fill ph-hospital"></i></div><h1 className="text-3xl font-black text-center mb-8">Escalas SV</h1><form onSubmit={async e=>{e.preventDefault();setL(true);try{await auth.signInWithEmailAndPassword(e.target.e.value, e.target.p.value);}catch(err){alert('Acesso Negado');setL(false);}}} className="space-y-4"><input name="e" type="email" placeholder="E-mail" className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white outline-none bg-slate-50 dark:bg-slate-800" required /><input name="p" type="password" placeholder="Senha" className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white outline-none bg-slate-50 dark:bg-slate-800" required /><button type="submit" className="w-full bg-primary text-white font-black py-4 rounded-xl shadow-lg hover:bg-blue-600 transition">Entrar no Sistema</button></form></div><button onClick={()=>setIsD(!isD)} className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow flex items-center justify-center text-slate-500"><i className={isD?"ph-fill ph-sun text-yellow-500":"ph-fill ph-moon"}></i></button></div> );
 
     const isAd = u.nivel === 'Admin' || u.nivel === 'Supervisor';
-    
-    // MENU ATUALIZADO COM A NOVA ABA
-    const menu = [ 
-        {id:'HOJE', i:'ph-kanban', n:'Plantão'}, 
-        {id:'DIARIO', i:'ph-users-three', n:'Trabalhando'}, 
-        {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas'}, 
-        {id:'MATRIZ', i:'ph-table', n:'Visão Ampla'}, 
-        {id:'EQUIPE', i:'ph-address-book', n:'Equipe', adminOnly:true}, 
-        {id:'CONFIG', i:'ph-gear', n:'Ajustes', adminOnly:true} 
-    ];
+    const menu = [ {id:'HOJE', i:'ph-kanban', n:'Plantão'}, {id:'DIARIO', i:'ph-users-three', n:'Trabalhando'}, {id:'GANTT', i:'ph-chart-gantt', n:'Visão Ampla'}, {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas'}, {id:'EQUIPE', i:'ph-address-book', n:'Equipe', adminOnly:true}, {id:'CONFIG', i:'ph-gear', n:'Ajustes', adminOnly:true} ];
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row pb-20 md:pb-0">
@@ -1428,14 +896,12 @@ const App = () => {
                 <div className="p-4 border-t border-slate-100 dark:border-slate-800"><button onClick={()=>auth.signOut()} className="text-red-500 font-bold flex items-center gap-2 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded w-full transition"><i className="ph-bold ph-sign-out text-lg"></i> Sair do App</button></div>
             </aside>
             <nav className="md:hidden fixed bottom-0 inset-x-0 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around p-2 pb-safe bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] overflow-x-auto hide-scroll">{menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[64px] transition ${t===m.id?'text-primary':'text-slate-400'}`}><i className={`ph-fill ${m.i} text-2xl`}></i><span className="text-[9px] font-black uppercase">{m.n}</span></button>)}</nav>
-            
             <main className="flex-1 transition-all p-4 md:p-8 w-full md:ml-64">
-                {(t==='HOJE'||t==='CALENDARIO'||t==='MATRIZ'||t==='DIARIO') && <div className="max-w-[1600px] mx-auto"><TopHeader user={u} isDark={isD} toggleDark={()=>setIsD(!isD)} /></div>}
-                
+                {(t==='HOJE'||t==='CALENDARIO'||t==='GANTT'||t==='DIARIO') && <div className="max-w-[1600px] mx-auto"><TopHeader user={u} isDark={isD} toggleDark={()=>setIsD(!isD)} /></div>}
                 {t==='HOJE' && <PainelHojeView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
                 {t==='DIARIO' && <TrabalhandoHojeView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
+                {t==='GANTT' && <GanttModernoView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
                 {t==='CALENDARIO' && <CalendarioView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
-                {t==='MATRIZ' && <MatrixBoardView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
                 {t==='EQUIPE' && isAd && <EquipeView data={dbD.PROFISSIONAIS} cfg={dbD.CONFIGURACOES || {}} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={f} />}
                 {t==='CONFIG' && isAd && <AjustesView cfg={dbD.CONFIGURACOES || {}} onSave={api.saveRecord} onRefresh={f} />}
             </main>
