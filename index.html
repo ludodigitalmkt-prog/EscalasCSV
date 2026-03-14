@@ -314,16 +314,53 @@ const isEscalaValida = (esc, postosCfg) => {
 };
 
 const getCorDaSala = (salaNome, cfg) => {
-  const p = (cfg?.postos || []).find(
+  const posto = (cfg?.postos || []).find(
     x => safeStr(x.nome).trim().toUpperCase() === safeStr(salaNome).trim().toUpperCase()
   );
-  if (!p) return '#94a3b8';
-  const s = (cfg?.setores || []).find(
-    x => safeStr(x.nome).trim().toUpperCase() === safeStr(p.setor).trim().toUpperCase()
-  );
-  return s?.cor || '#0ea5e9';
-};
 
+  if (!posto) return '#94a3b8';
+
+  // 1. prioridade: cor do posto
+  if (posto.cor) return posto.cor;
+
+  const setor = (cfg?.setores || []).find(
+    x => safeStr(x.nome).trim().toUpperCase() === safeStr(posto.setor).trim().toUpperCase()
+  );
+
+  // 2. prioridade: cor do setor
+  if (setor?.cor) return setor.cor;
+
+  const unidade = (cfg?.unidades || []).find(
+    x => safeStr(x.nome).trim().toUpperCase() === safeStr(setor?.unidade).trim().toUpperCase()
+  );
+
+  // 3. prioridade: cor da unidade
+  if (unidade?.cor) return unidade.cor;
+
+  return '#0ea5e9';
+};
+  const getGradientFromEscalas = (listaEscalas, cfg) => {
+
+  if (!listaEscalas || listaEscalas.length === 0) return '#0ea5e9';
+
+  const cores = listaEscalas
+    .map(e => getCorDaSala(e.Sala, cfg))
+    .filter(Boolean);
+
+  const unicas = [...new Set(cores)];
+
+  if (unicas.length === 1) return unicas[0];
+
+  const passo = 100 / unicas.length;
+
+  const stops = unicas.map((cor, i) => {
+    const ini = i * passo;
+    const fim = (i + 1) * passo;
+    return `${cor} ${ini}%, ${cor} ${fim}%`;
+  });
+
+  return `linear-gradient(135deg, ${stops.join(',')})`;
+};
 const safeGetHours = (hStr) => {
   if (!hStr || typeof hStr !== 'string' || hStr.toUpperCase().includes('DEFINIR')) return { in: null, out: null };
   let pts = hStr.toLowerCase().replace('as', 'às').split('às');
@@ -662,22 +699,44 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
     let n1 = v1.trim().toUpperCase();
     let n2 = v2.trim().toUpperCase();
     if (t === 'p' || t === 'h' || t === 'a') n1 = v1.trim();
-
     if (act === 'add') {
-      if (t === 'u') setU([...u, { nome:n1 }]);
-      if (t === 's') setS([...s, { nome:n1, unidade:n2, cor:v3 }]);
-      if (t === 'p') setP([...p, { nome:n1, setor:n2 }]);
-      if (t === 'h') setH([...h, n1]);
-      if (t === 'a') setA([...a, n1]);
-    } else {
-      if (t === 'u') { let arr = [...u]; arr[idx].nome = n1; setU(arr); }
-      if (t === 's') { let arr = [...s]; arr[idx].nome = n1; arr[idx].unidade = n2; arr[idx].cor = v3; setS(arr); }
-      if (t === 'p') { let arr = [...p]; arr[idx].nome = n1; arr[idx].setor = n2; setP(arr); }
-      if (t === 'h') { let arr = [...h]; arr[idx] = n1; setH(arr); }
-      if (t === 'a') { let arr = [...a]; arr[idx] = n1; setA(arr); }
-    }
-    setMod(null);
-  };
+  if (t === 'u') setU([...u, { nome:n1, cor:v3 }]);
+  if (t === 's') setS([...s, { nome:n1, unidade:n2, cor:v3 }]);
+  if (t === 'p') setP([...p, { nome:n1, setor:n2, cor:v3 }]);
+  if (t === 'h') setH([...h, n1]);
+  if (t === 'a') setA([...a, n1]);
+} else {
+  if (t === 'u') {
+    let arr = [...u];
+    arr[idx].nome = n1;
+    arr[idx].cor = v3;
+    setU(arr);
+  }
+  if (t === 's') {
+    let arr = [...s];
+    arr[idx].nome = n1;
+    arr[idx].unidade = n2;
+    arr[idx].cor = v3;
+    setS(arr);
+  }
+  if (t === 'p') {
+    let arr = [...p];
+    arr[idx].nome = n1;
+    arr[idx].setor = n2;
+    arr[idx].cor = v3;
+    setP(arr);
+  }
+  if (t === 'h') {
+    let arr = [...h];
+    arr[idx] = n1;
+    setH(arr);
+  }
+  if (t === 'a') {
+    let arr = [...a];
+    arr[idx] = n1;
+    setA(arr);
+  }
+}
 
   const del = (t, i) => {
     if (!confirm("Excluir item permanentemente?")) return;
@@ -1974,7 +2033,9 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                           }
                         }
 
-                        const bColor = isF ? '#94a3b8' : getCorDaSala(bloco.Sala, cfg);
+                        const bColor = isF 
+  ? '#94a3b8'
+  : getGradientFromEscalas(blocos, cfg);-
                         const exNome = viewMode === 'Médico' ? bloco.Nome_Profissional : bloco.Sala;
 
                         return (
