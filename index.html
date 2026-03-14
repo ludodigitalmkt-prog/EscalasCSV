@@ -2033,32 +2033,37 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                           }
                         }
 
-                        const bColor = isF 
+                        const bColor = isF
   ? '#94a3b8'
-  : getGradientFromEscalas(blocos, cfg);-
-                        const exNome = viewMode === 'Médico' ? bloco.Nome_Profissional : bloco.Sala;
+  : getGradientFromEscalas(blocos, cfg);
 
-                        return (
-                          <div key={bIdx} draggable={isAd} onDragStart={(e) => handleDragStart(e, bloco)} onClick={() => isAd && setEditData({ ...bloco })} className={`g-h-block ${hasConflict ? 'conflict' : ''}`} style={{ left:`${left}%`, width:`${width}%`, backgroundColor:bColor, top: condensed ? '4px' : '6px', bottom: condensed ? '4px' : '6px' }}>
-                            {hasConflict && <span className="absolute -top-1 -right-1 text-sm z-50 drop-shadow-md">⚠️</span>}
-                            <span className="font-black text-[10px] leading-tight truncate drop-shadow-sm">{isF ? bloco.Status : exNome}</span>
-                            {!condensed && !isF && bloco.Horario !== 'A DEFINIR' && (
-                              <span className="text-[8px] font-bold opacity-90 ml-2 drop-shadow-sm">
-                                <i className="ph-fill ph-clock"></i> {bloco.Horario}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      );
-    }
+const exNome = viewMode === 'Médico' ? bloco.Nome_Profissional : bloco.Sala;
+                    
+  <div
+    key={bIdx}
+    draggable={isAd}
+    onDragStart={(e) => handleDragStart(e, bloco)}
+    onClick={() => isAd && setEditData({ ...bloco })}
+    className={`g-h-block ${hasConflict ? 'conflict' : ''}`}
+    style={{
+      left: `${left}%`,
+      width: `${width}%`,
+      background: bColor,
+      top: condensed ? '4px' : '6px',
+      bottom: condensed ? '4px' : '6px'
+    }}
+  >
+    {hasConflict && <span className="absolute -top-1 -right-1 text-sm z-50 drop-shadow-md">⚠️</span>}
+    <span className="font-black text-[10px] leading-tight truncate drop-shadow-sm">
+      {isF ? bloco.Status : exNome}
+    </span>
+    {!condensed && !isF && bloco.Horario !== 'A DEFINIR' && (
+      <span className="text-[8px] font-bold opacity-90 ml-2 drop-shadow-sm">
+        <i className="ph-fill ph-clock"></i> {bloco.Horario}
+      </span>
+    )}
+  </div>
+);
 
     if (layout === 'VERTICAL') {
       return (
