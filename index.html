@@ -116,13 +116,53 @@ const api = {
   deleteRecord: async (c, id) => { try { await db.collection(c).doc(id).delete(); return true; } catch(e){ return false; } }
 };
 
-// ================== FUNÇÕES MATEMÁTICAS GLOBAIS BLINDADAS ==================
-const safeStr = (v) => v == null ? '' : String(v);
-const fmtImg = (u) => { let s = safeStr(u).trim(); if(!s) return ''; const m = s.match(/(?:file\/d\/|id=|v\/|u\/\d+\/p\/)([a-zA-Z0-9_-]{25,})/); return m ? `https://drive.google.com/uc?export=view&id=${m[1]}` : s; };
-const getStrDt = (d) => d ? String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear() : '';
-const ordenarPorNome = (lista) => [...lista].sort((a, b) => safeStr(a.Nome).localeCompare(safeStr(b.Nome)));
-const checkIsMe = (nome, email) => { if(!nome || !email) return false; const p = safeStr(email).toLowerCase().split('@')[0].split(/[.\-_]/); const n = safeStr(nome).toLowerCase(); return p.some(x => x.length > 2 && n.includes(x)); };
+// ================== FUNÇÕES MATEMÁTICAS DO GANTT E CORES ==================
+const safeGetHours = (hStr) => {
+  if (!hStr || typeof hStr !== 'string' || hStr.toUpperCase().includes('DEFINIR')) return { in: null, out: null };
+  let pts = hStr.toLowerCase().replace('as', 'às').split('às');
+  if (pts.length < 2) pts = hStr.split('-');
+  if (pts.length < 2) return { in: null, out: null };
+  
+  let hIn = parseInt(pts[0].trim().split(':')[0] || 0) + (parseInt(pts[0].trim().split(':')[1] || 0) / 60);
+  let hOut = parseInt(pts[1].trim().split(':')[0] || 0) + (parseInt(pts[1].trim().split(':')[1] || 0) / 60);
+  
+  if (isNaN(hIn) || isNaN(hOut)) return { in: null, out: null };
+  if (hOut <= hIn) hOut += 24; 
+  
+  return { in: hIn, out: hOut };
+};
 
+const parseHorarioParaGantt = (hStr, hInicio) => {
+  const t = safeGetHours(hStr);
+  if (t.in === null) return null;
+  let val = t.in;
+  if (val < hInicio) val += 24;
+  return val;
+};
+
+const checkConflito = (blocoA, blocoB) => {
+  if(blocoA.Status === 'FOLGA' || blocoB.Status === 'FOLGA') return false;
+  if(blocoA.Horario === 'A DEFINIR' || blocoB.Horario === 'A DEFINIR') return false;
+  const a = safeGetHours(blocoA.Horario);
+  const b = safeGetHours(blocoB.Horario);
+  if (a.in === null || b.in === null) return false;
+  return (a.in < b.out && a.out > b.in); 
+};
+
+// ESSA É A FUNÇÃO QUE CRIA O DEGRADÊ DE CORES NO CARD SE A PESSOA TROCA DE SETOR!
+const gerarGradienteDoDia = (blocosDoDia, cfg) => {
+  if(!blocosDoDia || blocosDoDia.length === 0) return 'transparent';
+  if(blocosDoDia.length === 1) return getCorDaSala(blocosDoDia[0].Sala, cfg);
+  
+  // Ordena pelo horário para o degradê fluir da esquerda pra direita
+  const blocosOrd = [...blocosDoDia].sort((a, b) => {
+    const vA = safeGetHours(a.Horario).in || 0;
+    const vB = safeGetHours(b.Horario).in || 0;
+    return vA - vB;
+  });
+  const cores = blocosOrd.map(b => getCorDaSala(b.Sala, cfg));
+  return `linear-gradient(to right, ${cores.join(', ')})`;
+};
 // Lógica de Aniversário
 const checkNiver = (niverStr) => {
   if (!niverStr) return { isHoje: false, isSemana: false };
@@ -1252,7 +1292,199 @@ const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     </div>
   );
 };
+// ================== ABA 4: MAPA DE PLANTÃO (RADAR/UNIDADES) ==================
+const PainelHojeView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
+  const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
+  const [now, setNow] = useState(Date.now()); 
+  const [actU, setActU] = useState(null);
+  const [buscaGlobal, setBuscaGlobal] = useState(''); 
+  const [infoProfModal, setInfoProfModal] = useState(null);
+  const [editData, setEditData] = useState(null);
 
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 10000); return () => clearInterval(t); }, []);
+
+  const dStr = getStrDt(new Date()); 
+  const escHjRaw = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
+  
+  const unids = cfg?.unidades||[]; const setoresSis = cfg?.setores||[]; const postosSis = cfg?.postos||[];
+  const setStatus = async (esc, st) => { await api.saveRecord('ESCALAS', {...esc, Status:st}); onRefresh(); };
+
+  const renderPosto = (sala, ocupantes) => {
+    ocupantes.sort((a,b)=> (a.Horario||'').localeCompare(b.Horario||''));
+    const hD = new Date(now).getHours() + (new Date(now).getMinutes() / 60);
+    let currArr = []; let nxtArr = [];
+
+    for(let o of ocupantes) {
+      const t = safeGetHours(o.Horario);
+      if(t.in === null) { currArr.push(o); continue; } 
+      if(hD >= t.in && hD <= t.out) { currArr.push(o); } 
+      else if (hD < t.in) { nxtArr.push(o); }
+    }
+
+    if(currArr.length === 0 && nxtArr.length === 0) return <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-6"><i className="ph-bold ph-ghost text-3xl mb-2 opacity-30"></i><span className="text-[9px] font-black uppercase">Turno Encerrado</span></div>;
+
+    return (
+      <div className="flex-1 p-2 flex flex-col gap-2">
+        {currArr.map((curr, idx) => {
+          const isInt = curr?.Status === 'LANCHE'; const isAus = curr?.Status === 'AUSENTE';
+          const isMe = checkIsMe(curr?.Nome_Profissional, user.email);
+          const pInfo = profs.find(p => p.Nome === curr.Nome_Profissional) || {Nome: curr.Nome_Profissional, Cargo: curr.Cargo, Cor: curr.Cor};
+          const niver = checkNiver(pInfo.DataNascimento);
+
+          return (
+            <div key={'c'+idx} onClick={() => setInfoProfModal(pInfo)} className={`p-2.5 rounded-xl relative border shadow-sm transition-colors cursor-pointer hover:shadow-md ${niver.isHoje?'border-pink-300 bg-pink-50 dark:bg-pink-900/10':isInt?'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800':isAus?'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-70':'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 hover:border-primary'}`}>
+              <div className="flex items-center gap-2 mb-2">
+                {pInfo.FotoURL ? <img src={fmtImg(pInfo.FotoURL)} className={`w-8 h-8 rounded-full object-cover shrink-0 ${niver.isHoje?'animate-bounce':''}`} /> : <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 ${niver.isHoje?'animate-bounce':''}`} style={{background:curr.Cor||'#0ea5e9'}}>{curr.Nome_Profissional[0]}</div>}
+                <div className="truncate">
+                  <div className={`text-[11px] font-black truncate text-slate-800 dark:text-white flex items-center gap-1 ${isAus?'line-through text-red-500 dark:text-red-400':''}`}>
+                    <span className="truncate">{curr.Nome_Profissional}</span>
+                    {niver.isHoje ? <span title="Aniversário Hoje">🎂</span> : (niver.isSemana && <span title="Aniversário esta semana">🎈</span>)}
+                    <BadgeConvenio cod={pInfo.CodUnimed} logo={cfg?.logoConvenio} />
+                  </div>
+                  <p className={`text-[8px] font-bold opacity-60 truncate mt-0.5 text-slate-600 dark:text-slate-300 ${curr.Horario==='A DEFINIR'?'text-red-500':''}`}>{curr.Cargo} • <i className="ph-fill ph-clock"></i> {curr.Horario}</p>
+                </div>
+              </div>
+              
+              {curr.Auxiliar && <p className="text-[8px] font-black text-purple-600 bg-purple-100 dark:bg-purple-900/30 px-1.5 py-0.5 rounded inline-block mb-1"><i className="ph-fill ph-user-plus"></i> Auxiliar: {curr.Auxiliar}</p>}
+              {curr.MedicoApoio && <p className="text-[8px] font-black text-indigo-600 bg-indigo-100 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded inline-block mb-1"><i className="ph-fill ph-stethoscope"></i> Apoio: {curr.MedicoApoio}</p>}
+
+              <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-700 pt-2 mt-1">
+                <span className={`text-[8px] font-black px-2 py-1 rounded ${isAus?'bg-red-100 text-red-600':isInt?'bg-orange-100 text-orange-600':'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>{curr.Status === 'NO POSTO' ? 'ATIVO' : curr.Status}</span>
+                <div className="flex gap-1">
+                  {(!isInt && !isAus) ? (
+                    <>
+                      {(isAd || isMe) && <button onClick={(e)=>{e.stopPropagation(); setStatus(curr, 'LANCHE');}} title="Ir para o Lanche/Pausa" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-orange-100 hover:text-orange-600 transition text-slate-500"><i className="ph-fill ph-coffee"></i></button>}
+                      {isAd && <button onClick={(e)=>{e.stopPropagation(); setEditData({...curr});}} title="Ações Avançadas" className="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded flex justify-center items-center hover:bg-blue-100 hover:text-blue-600 transition text-slate-500"><i className="ph-fill ph-sliders"></i></button>}
+                    </>
+                  ) : (
+                    <>
+                      {(isAd || (isMe && isInt)) && <button onClick={(e)=>{e.stopPropagation(); setStatus(curr, 'NO POSTO');}} className="px-2 py-1 bg-slate-800 dark:bg-slate-700 text-white rounded text-[8px] font-black hover:bg-slate-600 transition"><i className="ph-bold ph-arrow-u-down-left"></i> VOLTAR</button>}
+                      {isAus && isAd && <button onClick={(e)=>{e.stopPropagation(); setEditData({...curr});}} className="px-2 py-1 bg-primary text-white rounded text-[8px] font-black hover:bg-blue-600 transition ml-1"><i className="ph-bold ph-sliders"></i> OPÇÕES</button>}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {nxtArr.map((nxt, idx) => {
+          const pInfoNxt = profs.find(p => p.Nome === nxt.Nome_Profissional) || {Nome: nxt.Nome_Profissional, Cor: nxt.Cor};
+          const niverNxt = checkNiver(pInfoNxt.DataNascimento);
+          
+          return (
+            <div key={'n'+idx} onClick={() => setInfoProfModal(pInfoNxt)} className={`p-2 rounded-xl border border-slate-200 dark:border-slate-700 fade-next relative overflow-hidden cursor-pointer hover:border-primary transition ${niverNxt.isHoje ? 'border-pink-200 bg-pink-50/50' : ''}`}>
+              <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-1">Próximo: {nxt.Horario.split(' ')[0]}</p>
+              <div className="flex items-center gap-2 opacity-70">
+                {pInfoNxt.FotoURL ? <img src={fmtImg(pInfoNxt.FotoURL)} className="w-5 h-5 rounded-full object-cover shrink-0" /> : <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px]" style={{background:nxt.Cor||'#000'}}>{nxt.Nome_Profissional[0]}</div>}
+                <div className="truncate max-w-[100px] flex items-center gap-1">
+                  <p className="text-[9px] font-black text-slate-800 dark:text-white truncate">{nxt.Nome_Profissional}</p>
+                  {niverNxt.isHoje && <span>🎂</span>}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    );
+  };
+
+  if(buscaGlobal.trim() !== '') {
+    const termo = buscaGlobal.toLowerCase();
+    const escEnc = escHjRaw.filter(e => e.Status !== 'FOLGA' && safeStr(e.Nome_Profissional).toLowerCase().includes(termo));
+    const pRend = Array.from(new Set(escEnc.map(e => e.Sala)));
+
+    return (
+      <div className="animate-fade-in space-y-8 max-w-[1600px] mx-auto pb-10">
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <h2 className="text-2xl font-black flex items-center gap-2"><i className="ph-bold ph-radar text-primary"></i> Radar de Pessoas</h2>
+          <div className="relative w-full md:w-96">
+            <i className="ph-bold ph-magnifying-glass absolute left-4 top-4 text-slate-400"></i>
+            <input type="text" placeholder="Digite o nome..." value={buscaGlobal} onChange={e=>setBuscaGlobal(e.target.value)} className="w-full p-4 pl-12 rounded-2xl border-2 border-primary outline-none bg-white dark:bg-slate-900 font-bold shadow-lg" autoFocus/>
+            <button onClick={()=>setBuscaGlobal('')} className="absolute right-4 top-4 text-slate-400 hover:text-red-500"><i className="ph-bold ph-x"></i></button>
+          </div>
+        </div>
+
+        {pRend.length === 0 ? (
+          <div className="p-20 text-center opacity-50 border-2 border-dashed rounded-2xl dark:border-slate-700">
+            <i className="ph-bold ph-ghost text-6xl mb-4"></i><p className="font-bold text-lg">Nenhum plantão ativo hoje para "{buscaGlobal}"</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {pRend.map((nomeSala, i) => {
+              const ocup = escHjRaw.filter(e => e.Sala === nomeSala && e.Status !== 'FOLGA');
+              const postoInfo = postosSis.find(p => p.nome === nomeSala) || {setor: 'Geral'};
+              return (
+                <div key={i} className="clean-card flex flex-col p-1 min-h-[140px] border-t-4 border-t-primary shadow-md">
+                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-t-xl font-black text-[11px] uppercase tracking-widest text-center border-b border-blue-100 dark:border-blue-900/30 truncate px-2">
+                    {nomeSala} <span className="block text-[8px] opacity-50 font-normal">{postoInfo.setor}</span>
+                  </div>
+                  {renderPosto(nomeSala, ocup)}
+                </div>
+              )
+            })}
+          </div>
+        )}
+        {infoProfModal && <CrachaVirtual profInfo={infoProfModal} cfg={cfg} onClose={()=>setInfoProfModal(null)} />}
+        {editData && <SuperActionModal escala={editData} profs={profs} cfg={cfg} onClose={()=>setEditData(null)} onSave={onSave} onRefresh={onRefresh} isAd={isAd} />}
+      </div>
+    )
+  }
+
+  if(!actU) {
+    return (
+      <div className="animate-fade-in space-y-8 max-w-7xl mx-auto">
+        <div className="relative max-w-2xl mx-auto">
+          <i className="ph-bold ph-magnifying-glass absolute left-4 top-4 text-slate-400 text-xl"></i>
+          <input type="text" placeholder="Onde a pessoa está? Digite o nome aqui para usar o Radar..." value={buscaGlobal} onChange={e=>setBuscaGlobal(e.target.value)} className="w-full p-4 pl-12 rounded-2xl border border-slate-200 dark:border-slate-700 outline-none bg-white dark:bg-slate-800 font-bold shadow-sm focus:border-primary transition" />
+        </div>
+        <h2 className="text-2xl font-black mb-4 flex items-center gap-2"><i className="ph-fill ph-hospital text-primary"></i> Selecione a Unidade</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {unids.map((u,i) => (
+            <div key={i} onClick={()=>setActU(u.nome)} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer group hover:border-primary transition-all">
+              <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform"><i className="ph-fill ph-buildings"></i></div>
+              <h3 className="font-black text-xl uppercase tracking-widest">{u.nome}</h3>
+            </div>
+          ))}
+          {unids.length===0 && <div className="col-span-full p-10 text-center border-2 border-dashed rounded-2xl opacity-50 font-bold dark:border-slate-700">Vá em "Ajustes" e cadastre Prédios e Unidades.</div>}
+        </div>
+      </div>
+    );
+  }
+
+  const setD = setoresSis.filter(s => safeStr(s.unidade).trim().toUpperCase() === safeStr(actU).trim().toUpperCase()).map(s => s.nome);
+  
+  return (
+    <div className="animate-fade-in space-y-8 max-w-[1600px] mx-auto pb-10">
+      <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-4"><button onClick={()=>setActU(null)} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i className="ph-bold ph-arrow-left"></i></button><div><p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Unidade Ativa</p><h2 className="text-2xl font-black">{actU}</h2></div></div>
+      
+      {setD.map(st => {
+        const psts = postosSis.filter(p => safeStr(p.setor).trim().toUpperCase() === safeStr(st).trim().toUpperCase());
+        if(psts.length === 0) return null; 
+        
+        return (
+          <div key={st} className="space-y-4">
+            <h3 className="text-lg font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2"><i className="ph-fill ph-squares-four opacity-50"></i> {st}</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {psts.map((pst, i) => {
+                const ocup = escHjRaw.filter(e => e.Sala === pst.nome && e.Status !== 'FOLGA' && e.Status !== 'AUSENTE');
+                return (
+                  <div key={i} className={`clean-card flex flex-col p-1 min-h-[140px] border-t-4 ${ocup.length===0?'opacity-70 border-t-slate-300 dark:border-t-slate-600':'border-t-primary shadow-md'}`}>
+                    <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-t-xl font-black text-[11px] uppercase tracking-widest text-center border-b border-slate-100 dark:border-slate-700 truncate px-2">{pst.nome}</div>
+                    {ocup.length===0 ? <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-6"><i className="ph-bold ph-ghost text-3xl mb-2 opacity-30"></i><span className="text-[9px] font-black uppercase">Posto Livre</span></div> : renderPosto(pst.nome, ocup)}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
+      
+      {infoProfModal && <CrachaVirtual profInfo={infoProfModal} cfg={cfg} onClose={()=>setInfoProfModal(null)} />}
+      {editData && <SuperActionModal escala={editData} profs={profs} cfg={cfg} onClose={()=>setEditData(null)} onSave={onSave} onRefresh={onRefresh} isAd={isAd} />}
+    </div>
+  );
+};
 // ================== ABA 5: O GANTT DRAG & DROP COM DEGRADÊ ==================
 const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
