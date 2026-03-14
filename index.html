@@ -185,10 +185,57 @@ const isEscalaValida = (esc, postosCfg) => {
 // PEGAR COR DO SETOR
 const getCorDaSala = (salaNome, cfg) => {
   const p = (cfg?.postos || []).find(x => safeStr(x.nome).trim().toUpperCase() === safeStr(salaNome).trim().toUpperCase());
-  if(!p) return '#0ea5e9'; // Azul padrão se não achar
+  if(!p) return '#94a3b8'; 
   const s = (cfg?.setores || []).find(x => safeStr(x.nome).trim().toUpperCase() === safeStr(p.setor).trim().toUpperCase());
   return s?.cor || '#0ea5e9';
 };
+
+// ================== FUNÇÕES MATEMÁTICAS GLOBAIS BLINDADAS ==================
+const safeGetHours = (hStr) => {
+  if (!hStr || typeof hStr !== 'string' || hStr.toUpperCase().includes('DEFINIR')) return { in: null, out: null };
+  let pts = hStr.toLowerCase().replace('as', 'às').split('às');
+  if (pts.length < 2) pts = hStr.split('-');
+  if (pts.length < 2) return { in: null, out: null };
+  
+  let hIn = parseInt(pts[0].trim().split(':')[0] || 0) + (parseInt(pts[0].trim().split(':')[1] || 0) / 60);
+  let hOut = parseInt(pts[1].trim().split(':')[0] || 0) + (parseInt(pts[1].trim().split(':')[1] || 0) / 60);
+  
+  if (isNaN(hIn) || isNaN(hOut)) return { in: null, out: null };
+  if (hOut <= hIn) hOut += 24; 
+  return { in: hIn, out: hOut };
+};
+
+const parseHorario = (hStr) => safeGetHours(hStr).in;
+
+const parseHorarioParaGantt = (hStr, hInicio) => {
+  const t = safeGetHours(hStr);
+  if (t.in === null) return null;
+  let val = t.in;
+  if (val < hInicio) val += 24;
+  return val;
+};
+
+const checkConflito = (blocoA, blocoB) => {
+  if(blocoA.Status === 'FOLGA' || blocoB.Status === 'FOLGA') return false;
+  if(blocoA.Horario === 'A DEFINIR' || blocoB.Horario === 'A DEFINIR') return false;
+  const a = safeGetHours(blocoA.Horario);
+  const b = safeGetHours(blocoB.Horario);
+  if (a.in === null || b.in === null) return false;
+  return (a.in < b.out && a.out > b.in); 
+};
+
+const gerarGradienteDoDia = (blocosDoDia, cfg) => {
+  if(!blocosDoDia || blocosDoDia.length === 0) return 'transparent';
+  if(blocosDoDia.length === 1) return getCorDaSala(blocosDoDia[0].Sala, cfg);
+  const blocosOrd = [...blocosDoDia].sort((a, b) => {
+    const vA = safeGetHours(a.Horario).in || 0;
+    const vB = safeGetHours(b.Horario).in || 0;
+    return vA - vB;
+  });
+  const cores = blocosOrd.map(b => getCorDaSala(b.Sala, cfg));
+  return `linear-gradient(to right, ${cores.join(', ')})`;
+};
+// ============================================================================
 
 // GERAR DEGRADÊ BASEADO NOS SETORES DO DIA (NOVIDADE)
 const gerarGradienteDoDia = (blocosDoDia, cfg) => {
@@ -1822,66 +1869,339 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
 };
 
 // ================== ABA 7: MURAL FESTIVO (ANIVERSARIANTES) ==================
-const MuralAniversarioView = ({ profs, cfg }) => {
-  const [viewMode, setViewMode] = useState('HOJE');
-  const hj = new Date(); const hjM = hj.getMonth() + 1; const hjD = hj.getDate();
+// ================== ABA 5: GANTT TRIPLO DRAG & DROP COM DEGRADÊ ==================
+const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
+  const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
+  const [viewMode, setViewMode] = useState('MENU');
+  const [layout, setLayout] = useState('HORIZONTAL'); 
+  const [dataBase, setDataBase] = useState(new Date());
+  const [condensed, setCondensed] = useState(false);
+  const [rangeDias, setRangeDias] = useState(1); 
+  const [busca, setBusca] = useState('');
+  const [editData, setEditData] = useState(null);
+  const [agora, setAgora] = useState(new Date());
+  
+  const [dragItem, setDragItem] = useState(null);
+  const [dragOverEnt, setDragOverEnt] = useState(null);
 
-  const todosNiverMes = profs.filter(p => {
-    if(!p.DataNascimento) return false;
-    const pts = p.DataNascimento.split('/');
-    if(pts.length < 2) return false;
-    return parseInt(pts[1]) === hjM;
-  }).sort((a,b) => parseInt(a.DataNascimento.split('/')[0]) - parseInt(b.DataNascimento.split('/')[0]));
+  useEffect(() => { const timer = setInterval(() => setAgora(new Date()), 60000); return () => clearInterval(timer); }, []);
 
-  const niverHoje = todosNiverMes.filter(p => parseInt(p.DataNascimento.split('/')[0]) === hjD);
+  const dStr = getStrDt(dataBase);
+  const isToday = getStrDt(agora) === dStr;
+  const escDia = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
 
-  const renderCard = (p, isH) => (
-    <div key={p.ID} className={`card-niver p-6 rounded-2xl flex flex-col items-center text-center shadow-lg relative overflow-hidden ${isH?'scale-105 border-pink-400':'border-pink-200'}`}>
-      <div className="absolute top-0 right-0 p-4 opacity-20 text-6xl">🎈</div>
-      <div className="absolute bottom-0 left-0 p-4 opacity-20 text-6xl">🎉</div>
-      {p.FotoURL ? <img src={fmtImg(p.FotoURL)} className="w-24 h-24 rounded-full object-cover shadow-md border-4 border-white z-10" /> : <div className="w-24 h-24 rounded-full flex items-center justify-center text-4xl font-black text-white shadow-md border-4 border-white z-10" style={{backgroundColor:p.Cor||'#0ea5e9'}}>{p.Nome[0]}</div>}
-      <h3 className="font-black text-xl mt-4 z-10 text-slate-800 dark:text-white leading-tight">{p.Nome}</h3>
-      <p className="text-sm font-bold opacity-70 z-10 uppercase mt-1">{p.Cargo}</p>
-      <div className="mt-4 bg-pink-100 dark:bg-pink-900/30 px-4 py-2 rounded-full z-10 shadow-sm border border-pink-200 dark:border-pink-800">
-        <p className="font-black text-pink-600 dark:text-pink-400">🎂 Dia {p.DataNascimento.slice(0,5)}</p>
-      </div>
-    </div>
-  );
+  let entidades = [];
+  if (viewMode === 'Médico') {
+    const eMed = escDia.filter(e => { const p = profs.find(x=>x.Nome === e.Nome_Profissional); return (p && p.Tipo === 'Médico') || e.Cargo?.toLowerCase().includes('médico'); });
+    entidades = Array.from(new Set(eMed.map(e=>e.Sala))).sort();
+  } else if (viewMode === 'Colaborador') {
+    const eCol = escDia.filter(e => { const p = profs.find(x=>x.Nome === e.Nome_Profissional); return p ? p.Tipo === 'Colaborador' : !e.Cargo?.toLowerCase().includes('médico'); });
+    entidades = Array.from(new Set(eCol.map(e=>e.Nome_Profissional))).sort();
+  }
+  
+  const entExibidas = entidades.filter(ent => ent.toLowerCase().includes(busca.toLowerCase()));
 
-  return (
-    <div className="animate-fade-in space-y-6 max-w-6xl mx-auto pb-10">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl border dark:border-slate-700 shadow-sm">
-        <h2 className="text-2xl font-black flex items-center gap-2 text-pink-500"><i className="ph-fill ph-confetti"></i> Mural de Aniversários</h2>
-        <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
-          <button onClick={()=>setViewMode('HOJE')} className={`px-6 py-2 text-xs font-black uppercase rounded-lg transition ${viewMode==='HOJE'?'bg-white dark:bg-slate-700 shadow text-pink-500':'opacity-60'}`}>Hoje</button>
-          <button onClick={()=>setViewMode('MES')} className={`px-6 py-2 text-xs font-black uppercase rounded-lg transition ${viewMode==='MES'?'bg-white dark:bg-slate-700 shadow text-primary':'opacity-60'}`}>Mês Todo</button>
+  let minH = 7; let maxH = 19;
+  escDia.forEach(e => {
+    if(e.Status !== 'FOLGA' && e.Status !== 'AUSENTE' && e.Horario && !e.Horario.includes('DEFINIR')) {
+      const t = safeGetHours(e.Horario);
+      if(t.in !== null && t.in < minH) minH = Math.floor(t.in);
+      if(t.out !== null) { let o = t.out; if(o < t.in) o += 24; if(o > maxH) maxH = Math.ceil(o); }
+    }
+  });
+  if(minH >= maxH) { minH = 7; maxH = 19; } 
+
+  const HORAS_TOTAIS = maxH - minH;
+  const arrayHoras = []; for(let i = minH; i <= maxH; i += 0.5) arrayHoras.push(i);
+
+  let percAgora = null; let pxAgora = null;
+  if (isToday) {
+    const hDec = agora.getHours() + (agora.getMinutes() / 60);
+    if (hDec >= minH && hDec <= maxH) {
+       percAgora = ((hDec - minH) / HORAS_TOTAIS) * 100;
+       pxAgora = (hDec - minH) * 60;
+    }
+  }
+
+  const handleDragStart = (e, escalaItem) => { if(!isAd) return; setDragItem(escalaItem); };
+  const handleDragOver = (e, entName) => { e.preventDefault(); if(isAd && dragOverEnt !== entName) setDragOverEnt(entName); };
+  const handleDrop = async (e, destEnt) => {
+    e.preventDefault(); setDragOverEnt(null);
+    if (!isAd || !dragItem) return;
+    
+    let updatedEscala = { ...dragItem };
+    if (viewMode === 'Médico') {
+      if (updatedEscala.Sala === destEnt) return; 
+      updatedEscala.Sala = destEnt;
+      const pConfig = cfg?.postos?.find(p => p.nome === destEnt);
+      if(pConfig) { const sConfig = cfg?.setores?.find(s => s.nome === pConfig.setor); if(sConfig) updatedEscala.Unidade = sConfig.unidade; }
+    } else {
+      if (updatedEscala.Nome_Profissional === destEnt) return; 
+      updatedEscala.Nome_Profissional = destEnt;
+      const novoProf = profs.find(p => p.Nome === destEnt);
+      if(novoProf) { updatedEscala.Cargo = novoProf.Cargo; updatedEscala.Cor = novoProf.Cor; }
+    }
+    
+    await api.saveRecord('ESCALAS', updatedEscala);
+    onRefresh(); setDragItem(null);
+  };
+
+  const diasRender = Array.from({length: rangeDias}, (_, i) => { let d = new Date(dataBase); d.setDate(d.getDate() + i); return d; });
+
+  const RenderTimeline = ({ dateObj }) => {
+    const dS = getStrDt(dateObj);
+    if (entExibidas.length === 0) return null;
+
+    if (layout === 'HORIZONTAL') {
+      return (
+        <div className="mb-10 animate-fade-in">
+          <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-blank text-primary"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'}).toUpperCase()}</h3>
+          <div className="gantt-scroll-area shadow-lg">
+            <div className="min-w-[1000px]">
+              <div className="g-h-header">
+                <div className="g-h-label bg-slate-100 dark:bg-slate-800 font-black text-[10px] uppercase items-center !flex-row">{viewMode === 'Médico' ? 'Posto / Sala' : 'Colaborador'}</div>
+                <div className="g-h-track bg-slate-50 dark:bg-slate-900">
+                  {arrayHoras.map((h, i) => (
+                    <div key={i} className="g-grid-line">
+                      {Number.isInteger(h) && <span className="text-[9px] font-black text-slate-400 absolute top-1 left-1">{String(h%24).padStart(2,'0')}h</span>}
+                      <div className="g-grid-half"></div>
+                    </div>
+                  ))}
+                  {percAgora !== null && <div className="linha-agora-h" style={{left: `${percAgora}%`}}><div className="absolute top-0 -left-1 w-2.5 h-2.5 bg-red-500 rounded-full"></div></div>}
+                </div>
+              </div>
+
+              {entExibidas.map((ent, idx) => {
+                const blocos = viewMode === 'Médico' ? escDia.filter(e=>e.Sala === ent) : escDia.filter(e=>e.Nome_Profissional === ent);
+                const infoExtra = viewMode === 'Médico' ? cfg?.postos?.find(p=>p.nome === ent)?.setor : profs.find(p=>p.Nome === ent)?.Cargo;
+                const isDragOver = dragOverEnt === ent;
+                const gradientBg = gerarGradienteDoDia(blocos, cfg);
+                
+                return (
+                  <div key={idx} 
+                    onDragOver={(e) => handleDragOver(e, ent)} onDrop={(e) => handleDrop(e, ent)}
+                    className={`g-h-row transition duration-200 ${isDragOver ? 'drag-over' : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'}`}
+                    style={{minHeight: condensed ? '40px' : '64px'}}>
+                    
+                    <div className="g-h-label bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800" title={ent}>
+                      <span className="font-black text-[11px] truncate leading-tight w-full">{ent}</span>
+                      {!condensed && <span className="text-[8px] font-bold opacity-50 truncate mt-0.5 w-full uppercase">{infoExtra || 'Geral'}</span>}
+                      <div className="h-1.5 w-full rounded-full mt-1.5 opacity-80" style={{background: gradientBg}}></div>
+                    </div>
+                    
+                    <div className="g-h-track">
+                      {arrayHoras.map((h, i) => <div key={i} className="g-grid-line"><div className="g-grid-half"></div></div>)}
+                      {percAgora !== null && <div className="linha-agora-h opacity-30 z-10" style={{left: `${percAgora}%`}}></div>}
+                      
+                      {blocos.map((bloco, bIdx) => {
+                        const isF = bloco.Status === 'FOLGA' || bloco.Status === 'AUSENTE';
+                        let left = 0; let width = 100; let hasConflict = false;
+
+                        if (isF || bloco.Horario === 'A DEFINIR') { left = 1; width = 98; }
+                        else {
+                          const t = safeGetHours(bloco.Horario);
+                          if(t.in !== null && t.out !== null) {
+                            left = ((t.in - minH)/HORAS_TOTAIS)*100; width = ((t.out - t.in)/HORAS_TOTAIS)*100;
+                            if(left < 0) { width += left; left = 0; } if(left+width > 100) width = 100 - left;
+                            
+                            blocos.forEach((outro, oI) => {
+                              if(bIdx !== oI && !isF) hasConflict = checkConflito(bloco, outro);
+                            });
+                          }
+                        }
+                        
+                        const bColor = isF ? '#94a3b8' : getCorDaSala(bloco.Sala, cfg);
+                        const exNome = viewMode === 'Médico' ? bloco.Nome_Profissional : bloco.Sala;
+                        
+                        return (
+                          <div key={bIdx} draggable={isAd} onDragStart={(e) => handleDragStart(e, bloco)} onClick={()=>isAd && setEditData({...bloco})} 
+                            className={`g-h-block ${hasConflict ? 'conflict' : ''}`} 
+                            style={{left: `${left}%`, width: `${width}%`, backgroundColor: bColor, top: condensed ? '4px' : '8px', bottom: condensed ? '4px' : '8px'}}>
+                            {hasConflict && <span className="absolute -top-1 -right-1 text-sm z-50 drop-shadow-md">⚠️</span>}
+                            <div className="flex flex-col w-full h-full justify-center">
+                              <div className="flex items-center gap-1">
+                                <span className="font-black text-[10px] leading-none truncate text-white drop-shadow-sm">{isF ? bloco.Status : exNome}</span>
+                              </div>
+                              {!condensed && !isF && bloco.Horario !== 'A DEFINIR' && (
+                                <div className="mt-1 space-y-0.5">
+                                  <span className="block text-[8px] font-bold text-white/90 truncate drop-shadow-sm"><i className="ph-fill ph-clock"></i> {bloco.Horario}</span>
+                                  {bloco.MedicoApoio && <span className="block text-[7px] bg-black/20 text-white px-1 rounded truncate w-max">Para: {bloco.MedicoApoio}</span>}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    if (layout === 'VERTICAL') {
+      return (
+        <div className="mb-10 animate-fade-in">
+          <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-blank text-primary"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'}).toUpperCase()}</h3>
+          <div className="gantt-scroll-area flex shadow-lg">
+            <div className="m-v-timecol">
+              <div className="m-v-header bg-slate-100 dark:bg-slate-800" style={{zIndex: 50, left: 0}}>HORA</div>
+              {arrayHoras.map((h, i) => (
+                <div key={i} className="flex justify-center border-b border-slate-200 dark:border-slate-800/50 pt-1" style={{height: `${60/2}px`}}>
+                  {Number.isInteger(h) && <span className="text-[9px] font-bold text-slate-500">{String(h%24).padStart(2,'0')}h</span>}
+                </div>
+              ))}
+            </div>
+
+            {entExibidas.map((ent, idx) => {
+              const blocos = viewMode === 'Médico' ? escDia.filter(e=>e.Sala === ent) : escDia.filter(e=>e.Nome_Profissional === ent);
+              const infoEx = viewMode === 'Médico' ? cfg?.postos?.find(p=>p.nome === ent)?.setor : profs.find(p=>p.Nome === ent)?.Cargo;
+              const isOver = dragOverEnt === ent;
+
+              return (
+                <div key={idx} onDragOver={(e)=>{e.preventDefault(); setDragOverEnt(ent);}} onDrop={(e)=>handleDrop(e, ent)} className={`m-v-datacol transition ${isOver?'bg-blue-50/30 dark:bg-blue-900/20':''}`}>
+                  <div className="m-v-header bg-white dark:bg-slate-900" title={ent}>
+                    <span className="font-black text-[11px] truncate w-full text-center px-1">{viewMode==='Colaborador'?ent.split(' ')[0]+' '+(ent.split(' ')[1]||''):ent}</span>
+                    <span className="text-[8px] opacity-50 truncate w-full text-center mt-0.5">{infoEx||'Geral'}</span>
+                  </div>
+                  <div className="relative w-full" style={{height: `${HORAS_TOTAIS * 60}px`}}>
+                    {arrayHoras.map((h,i) => <div key={i} className="w-full border-b border-slate-100 dark:border-slate-800/30" style={{height:`${60/2}px`}}></div>)}
+                    {pxAgora !== null && <div className="linha-agora-v" style={{top: `${pxAgora}px`}}></div>}
+                    
+                    {blocos.map((bloco, bIdx) => {
+                      const isF = bloco.Status === 'FOLGA' || bloco.Status === 'AUSENTE';
+                      let top=0; let hght=60; let hasC=false;
+                      
+                      if(isF||bloco.Horario==='A DEFINIR'){top=4;hght=40;}else{
+                        const t = safeGetHours(bloco.Horario);
+                        if(t.in!==null&&t.out!==null){ 
+                          top=(t.in-minH)*60; hght=(t.out-t.in)*60; if(top<0){hght+=top;top=0;} 
+                          blocos.forEach((out,oI)=>{if(bIdx!==oI&&!isF) hasC = checkConflito(bloco, out); });
+                        }
+                      }
+                      const c = isF?'#94a3b8':getCorDaSala(bloco.Sala, cfg); const n = viewMode==='Médico'?bloco.Nome_Profissional:bloco.Sala;
+
+                      return (
+                        <div key={bIdx} draggable={isAd} onDragStart={(e)=>handleDragStart(e, bloco)} onClick={()=>isAd&&setEditData({...bloco})} 
+                          className={`m-v-block ${hasC?'conflict':''}`} style={{top:`${top}px`, height:`${hght-2}px`, backgroundColor:c}}>
+                          {hasC && <span className="absolute top-1 right-1 text-[10px] drop-shadow-md">⚠️</span>}
+                          <span className="font-black text-[10px] leading-tight drop-shadow-sm">{isF?bloco.Status:n}</span>
+                          {!isF&&bloco.Horario!=='A DEFINIR'&&<span className="text-[8px] font-bold opacity-90 drop-shadow-sm mt-1">{bloco.Horario}</span>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )
+    }
+
+    // 3. LAYOUT BLOCO (RESUMO DEGRADÊ)
+    return (
+      <div className="mb-10 animate-fade-in">
+        <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-blank text-primary"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'}).toUpperCase()}</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {entFiltradas.map((ent, idx) => {
+            const blocos = viewMode === 'Médico' ? escDia.filter(e=>e.Sala === ent) : escDia.filter(e=>e.Nome_Profissional === ent);
+            const infoEx = viewMode === 'Médico' ? cfg?.postos?.find(p=>p.nome === ent)?.setor : profs.find(p=>p.Nome === ent)?.Cargo;
+            const isOver = dragOverEnt === ent;
+            const cardGradient = gerarGradienteDoDia(blocos, cfg);
+
+            return (
+              <div key={idx} onDragOver={(e)=>{e.preventDefault(); setDragOverEnt(ent);}} onDrop={(e)=>{e.preventDefault(); handleDrop(ent);}} className={`clean-card p-3 flex flex-col shadow-sm transition overflow-hidden relative ${isOver?'scale-105 ring-4 ring-blue-400':''}`}>
+                <div className="absolute top-0 left-0 bottom-0 w-1.5" style={{background: cardGradient}}></div>
+                <div className="border-b dark:border-slate-700 pb-2 mb-2 text-center pl-2"><h4 className="font-black text-xs uppercase truncate">{ent}</h4><p className="text-[9px] opacity-60">{infoEx||'Geral'}</p></div>
+                <div className="space-y-2 pl-2">
+                  {blocos.map((b, bIdx) => {
+                    const isF = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
+                    const n = viewMode === 'Médico' ? b.Nome_Profissional : b.Sala;
+                    return (
+                      <div key={bIdx} draggable={isAd} onDragStart={(e)=>handleDragStart(e, b)} onClick={()=>isAd&&setEditData({...b})} className="p-2 rounded bg-slate-50 dark:bg-slate-800 text-left border dark:border-slate-700 cursor-grab hover:border-primary transition shadow-sm">
+                        <p className="font-black text-[10px] text-primary truncate leading-tight">{isF?b.Status:n}</p>
+                        <p className="text-[8px] font-bold opacity-60 mt-1"><i className="ph-fill ph-clock"></i> {b.Horario}</p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
-      <div className="mural-bg min-h-[60vh] rounded-3xl border-4 border-dashed border-pink-200 dark:border-slate-700 p-8 flex flex-col relative overflow-hidden">
-        {viewMode === 'HOJE' ? (
-          niverHoje.length > 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center space-y-8 relative z-10">
-              <h1 className="text-4xl md:text-6xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 drop-shadow-sm">Feliz Aniversário!</h1>
-              <div className="flex flex-wrap justify-center gap-8 mt-8">{niverHoje.map(p => renderCard(p, true))}</div>
+    );
+  };
+
+  return (
+    <div className="animate-fade-in space-y-6 max-w-[1600px] mx-auto pb-10">
+      {viewMode === 'MENU' ? (
+        <div>
+          <h2 className="text-2xl font-black mb-6">Visão Operacional de Tráfego</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:shadow-lg transition-all transform hover:-translate-y-1">
+              <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4"><i className="ph-fill ph-users-three"></i></div>
+              <h3 className="font-black text-xl uppercase tracking-widest text-center">Gantt por Pessoas</h3>
+              <p className="text-[10px] font-bold opacity-60 mt-2 uppercase tracking-widest">Colunas = Nomes</p>
             </div>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center opacity-40">
-              <i className="ph-fill ph-calendar-blank text-8xl mb-4"></i>
-              <h2 className="text-2xl font-black">Nenhum aniversariante hoje.</h2>
-              <p className="font-bold">Veja a aba "Mês Todo" para os próximos.</p>
+            <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer hover:border-red-500 hover:shadow-lg transition-all transform hover:-translate-y-1">
+              <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4"><i className="ph-fill ph-door"></i></div>
+              <h3 className="font-black text-xl uppercase tracking-widest text-center">Gantt por Salas</h3>
+              <p className="text-[10px] font-bold opacity-60 mt-2 uppercase tracking-widest">Colunas = Consultórios</p>
             </div>
-          )
-        ) : (
-          <div className="relative z-10">
-            <h2 className="text-3xl font-black text-center mb-8 text-primary">Aniversariantes do Mês ({hj.toLocaleString('pt-BR',{month:'long'})})</h2>
-            {todosNiverMes.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">{todosNiverMes.map(p => renderCard(p, false))}</div>
-            ) : (
-              <div className="text-center opacity-40 py-20"><i className="ph-fill ph-calendar-blank text-8xl mb-4"></i><h2 className="text-2xl font-black">Nenhum aniversário cadastrado este mês.</h2></div>
-            )}
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="animate-fade-in space-y-6">
+          <div className="clean-card p-4 flex flex-col lg:flex-row justify-between lg:items-center gap-4">
+            <div className="flex items-center gap-4">
+              <button onClick={()=>setViewMode('MENU')} className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-left"></i></button>
+              <div>
+                <p className="text-[10px] font-bold uppercase opacity-50 tracking-widest">Painel Avançado</p>
+                <h2 className="text-xl font-black text-primary">{viewMode === 'Médico' ? 'Ocupação de Salas' : 'Painel de Pessoas'}</h2>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <i className="ph-bold ph-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+                <input type="text" placeholder="Filtrar..." value={busca} onChange={e=>setBusca(e.target.value)} className="w-32 md:w-48 p-2 pl-9 rounded-xl border dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm outline-none focus:border-primary transition" />
+              </div>
+
+              <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shadow-sm border dark:border-slate-700">
+                <button onClick={()=>setLayout('HORIZONTAL')} className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition ${layout==='HORIZONTAL'?'bg-white dark:bg-slate-700 shadow text-primary':'opacity-60'}`}>Horiz</button>
+                <button onClick={()=>setLayout('VERTICAL')} className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition ${layout==='VERTICAL'?'bg-white dark:bg-slate-700 shadow text-primary':'opacity-60'}`}>Vert</button>
+                <button onClick={()=>setLayout('BLOCO')} className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition ${layout==='BLOCO'?'bg-white dark:bg-slate-700 shadow text-primary':'opacity-60'}`}>Blocos</button>
+              </div>
+
+              {layout === 'HORIZONTAL' && (
+                <button onClick={()=>setCondensed(!condensed)} className={`p-2.5 rounded-xl border transition flex items-center justify-center ${condensed ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50'}`} title="Modo Condensado">
+                  <i className={condensed ? "ph-bold ph-arrows-in-line-vertical" : "ph-bold ph-arrows-out-line-vertical"}></i>
+                </button>
+              )}
+
+              <div className="flex items-center bg-white dark:bg-slate-800 p-1.5 rounded-xl shadow-sm border dark:border-slate-700 ml-auto">
+                <button onClick={()=>setDataBase(new Date(dataBase.setDate(dataBase.getDate() - rangeDias)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition"><i className="ph-bold ph-caret-left"></i></button>
+                <span className="font-black text-[11px] uppercase px-3 text-center min-w-[120px] text-primary">{dataBase.toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit', month:'2-digit'})}</span>
+                <button onClick={()=>setDataBase(new Date(dataBase.setDate(dataBase.getDate() + rangeDias)))} className="w-8 h-8 flex justify-center items-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition"><i className="ph-bold ph-caret-right"></i></button>
+              </div>
+              
+              <select value={rangeDias} onChange={e=>setRangeDias(Number(e.target.value))} className="p-2.5 rounded-xl border dark:border-slate-700 outline-none bg-white dark:bg-slate-800 font-bold text-xs shadow-sm cursor-pointer">
+                <option value={1}>1 Dia</option><option value={3}>3 Dias</option><option value={7}>7 Dias</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            {diasRender.map((d, i) => <RenderTimeline key={i} dateObj={d} />)}
+          </div>
+        </div>
+      )}
+      {editData && <SuperActionModal escala={editData} profs={profs} cfg={cfg} onClose={()=>setEditData(null)} onSave={onSave} onRefresh={onRefresh} isAd={isAd} />}
     </div>
   );
 };
