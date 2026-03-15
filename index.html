@@ -1301,13 +1301,16 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
 
   useEffect(() => { const timer = setInterval(() => setAgora(new Date()), 60000); return () => clearInterval(timer); }, []);
 
+  const [rangeDias, setRangeDias] = useState(1); 
+  const [busca, setBusca] = useState('');
+  const [editData, setEditData] = useState(null);
   const [agora, setAgora] = useState(new Date());
   
   const [dragItem, setDragItem] = useState(null);
   const [dragOverRow, setDragOverRow] = useState(null);
-  // Adicione a linha abaixo aqui:
   const [dragOverEnt, setDragOverEnt] = useState(null);
 
+  useEffect(() => { const timer = setInterval(() => setAgora(new Date()), 60000); return () => clearInterval(timer); }, []);
   let entidades = [];
   if (viewMode === 'Médico') {
     const eMed = escDia.filter(e => { const p = profs.find(x=>x.Nome === e.Nome_Profissional); return (p && p.Tipo === 'Médico') || e.Cargo?.toLowerCase().includes('médico'); });
