@@ -1311,6 +1311,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const [dragOverEnt, setDragOverEnt] = useState(null);
 
   useEffect(() => { const timer = setInterval(() => setAgora(new Date()), 60000); return () => clearInterval(timer); }, []);
+  
   let entidades = [];
   if (viewMode === 'Médico') {
     const eMed = escDia.filter(e => { const p = profs.find(x=>x.Nome === e.Nome_Profissional); return (p && p.Tipo === 'Médico') || e.Cargo?.toLowerCase().includes('médico'); });
