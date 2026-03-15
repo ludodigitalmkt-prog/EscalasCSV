@@ -1301,9 +1301,12 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
 
   useEffect(() => { const timer = setInterval(() => setAgora(new Date()), 60000); return () => clearInterval(timer); }, []);
 
-  const dStr = getStrDt(dataBase);
-  const isToday = getStrDt(agora) === dStr;
-  const escDia = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
+  const [agora, setAgora] = useState(new Date());
+  
+  const [dragItem, setDragItem] = useState(null);
+  const [dragOverRow, setDragOverRow] = useState(null);
+  // Adicione a linha abaixo aqui:
+  const [dragOverEnt, setDragOverEnt] = useState(null);
 
   let entidades = [];
   if (viewMode === 'Médico') {
