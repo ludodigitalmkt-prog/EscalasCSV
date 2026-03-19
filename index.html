@@ -1551,10 +1551,14 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
               </div>
               
               <select value={rangeDias} onChange={e=>setRangeDias(Number(e.target.value))} className="p-2.5 rounded-xl border dark:border-slate-700 outline-none bg-white dark:bg-slate-800 font-bold text-xs shadow-sm cursor-pointer">
-                <option value={1}>Exibir 1 Dia</option><option value={3}>Exibir 3 Dias</option><option value={7}>Exibir 7 Dias</option>
-              </select>
-            </div>
-          </div>
+  <option value={1}>Exibir 1 Dia</option>
+  <option value={3}>Exibir 3 Dias</option>
+  <option value={7}>Exibir 7 Dias</option>
+  <option value={15}>Exibir 15 Dias</option>
+  <option value={30}>Exibir 30 Dias</option>
+  <option value={60}>Exibir 60 Dias</option>
+  <option value={90}>Exibir 90 Dias</option>
+</select>
 
           <div className="space-y-8">
             {diasRender.map((d, i) => <RenderTimeline key={i} dateObj={d} />)}
