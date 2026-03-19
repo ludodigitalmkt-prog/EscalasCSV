@@ -1289,7 +1289,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     let up = {...dragItem};
     let changed = false;
 
-    // Permite arrastar o card para outro DIA
+    // Permite arrastar para outro dia!
     if (up.Data !== dropDateStr) {
         up.Data = dropDateStr;
         changed = true;
@@ -1318,7 +1318,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const diasRender = Array.from({length: rangeDias}, (_, i) => { let d = new Date(dataBase); d.setDate(d.getDate() + i); return d; });
 
   const RenderTimeline = ({ dateObj }) => {
-    // AGORA A MÁGICA: Os filtros são feitos exclusivos para ESTE dia renderizado!
+    // FILTRO DINÂMICO PARA CADA DIA! (Isto traz seus dados de volta)
     const dStr = getStrDt(dateObj);
     const isToday = getStrDt(agora) === dStr;
     const escDia = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
@@ -1341,7 +1341,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
       </div>
     );
 
-    // TEMPO DINÂMICO EXCLUSIVO DESTE DIA
+    // TEMPO DINÂMICO DO DIA
     let minH = 7; let maxH = 19;
     escDia.forEach(e => {
       if(e.Status !== 'FOLGA' && e.Status !== 'AUSENTE' && e.Horario && !e.Horario.toUpperCase().includes('DEFINIR')) {
@@ -1384,7 +1384,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
               {entFiltradas.map((ent, idx) => {
                 const blocos = viewMode === 'Médico' ? escDia.filter(e=>e.Sala === ent) : escDia.filter(e=>e.Nome_Profissional === ent);
                 const infoEx = viewMode === 'Médico' ? cfg?.postos?.find(p=>p.nome === ent)?.setor : profs.find(p=>p.Nome === ent)?.Cargo;
-                const isOver = dragOverRow === `${dStr}-${ent}`; // Validação única por dia e nome!
+                const isOver = dragOverRow === `${dStr}-${ent}`; 
                 const gradBg = gerarGradienteDoDia(blocos, cfg);
 
                 return (
@@ -1546,7 +1546,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:shadow-lg transition-all transform hover:-translate-y-1">
               <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4"><i className="ph-fill ph-users"></i></div>
               <h3 className="font-black text-xl uppercase tracking-widest text-center">Gantt por Pessoas</h3>
-              <p className="text-[10px] font-bold opacity-60 mt-2 uppercase tracking-widest">Colunas = Nomes</p>
+              <p className="text-[10px] font-bold opacity-60 mt-2 uppercase tracking-widest">Colunas = Equipe Base</p>
             </div>
             <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer hover:border-red-500 hover:shadow-lg transition-all transform hover:-translate-y-1">
               <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4"><i className="ph-fill ph-door"></i></div>
@@ -1602,7 +1602,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             </div>
           </div>
           
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50 p-3 rounded-xl text-xs font-bold text-yellow-800 dark:text-yellow-400 flex items-center gap-2"><i className="ph-fill ph-info text-lg"></i> 💡 Dica: Arraste os blocos coloridos para trocar o horário de pessoa, de sala, e até de data!</div>
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50 p-3 rounded-xl text-xs font-bold text-yellow-800 dark:text-yellow-400 flex items-center gap-2"><i className="ph-fill ph-info text-lg"></i> 💡 Dica: Arraste os blocos coloridos para transferir plantões de pessoa, sala, ou dia!</div>
 
           <div className="space-y-8">
             {diasRender.map((d, i) => <RenderTimeline key={i} dateObj={d} />)}
