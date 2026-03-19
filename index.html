@@ -1279,72 +1279,95 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
 
   useEffect(() => { const timer = setInterval(() => setAgora(new Date()), 60000); return () => clearInterval(timer); }, []);
 
-  const dStr = getStrDt(dataBase);
-  const isToday = getStrDt(agora) === dStr;
-  const escDia = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
-
-  let entidades = [];
-  if (viewMode === 'Médico') {
-    const eMed = escDia.filter(e => { const p = profs.find(x=>x.Nome === e.Nome_Profissional); return (p && p.Tipo === 'Médico') || e.Cargo?.toLowerCase().includes('médico'); });
-    entidades = Array.from(new Set(eMed.map(e=>e.Sala))).sort();
-  } else {
-    const eCol = escDia.filter(e => { const p = profs.find(x=>x.Nome === e.Nome_Profissional); return p ? p.Tipo === 'Colaborador' : !e.Cargo?.toLowerCase().includes('médico'); });
-    entidades = Array.from(new Set(eCol.map(e=>e.Nome_Profissional))).sort();
-  }
+  const handleDragStart = (e, escalaItem) => { if(!isAd) return; setDragItem(escalaItem); };
+  const handleDragOver = (e, rowId) => { e.preventDefault(); if(isAd && dragOverRow !== rowId) setDragOverRow(rowId); };
   
-  const entFiltradas = entidades.filter(e => e.toLowerCase().includes(busca.toLowerCase()));
-
-  // TEMPO DINÂMICO DA GRADE
-  let minH = 7; let maxH = 19;
-  escDia.forEach(e => {
-    if(e.Status !== 'FOLGA' && e.Status !== 'AUSENTE' && e.Horario && !e.Horario.toUpperCase().includes('DEFINIR')) {
-      const t = safeGetHours(e.Horario);
-      if(t.in !== null && t.in < minH) minH = Math.floor(t.in);
-      if(t.out !== null && t.out > maxH) maxH = Math.ceil(t.out);
-    }
-  });
-  if(minH >= maxH) { minH = 7; maxH = 19; } 
-
-  const HORAS_TOTAIS = maxH - minH;
-  const arrayHoras = []; for(let i=minH; i<=maxH; i+=0.5) arrayHoras.push(i);
-
-  let percAgora = null; let pxAgora = null;
-  if(isToday) {
-    const hD = agora.getHours() + (agora.getMinutes()/60);
-    if(hD >= minH && hD <= maxH) { pxAgora = (hD - minH) * 60; percAgora = ((hD - minH) / HORAS_TOTAIS) * 100; }
-  }
-
-  const handleDrop = async (destNome) => {
-    if(!dragItem || !isAd || dragItem.Data !== dStr) return;
+  const handleDrop = async (e, destNome, dropDateStr) => {
+    e.preventDefault(); setDragOverRow(null);
+    if (!isAd || !dragItem) return;
+    
     let up = {...dragItem};
-    if(viewMode === 'Médico') {
-      if(up.Sala === destNome) return; 
-      up.Sala = destNome;
-      const pC = cfg?.postos?.find(p=>p.nome===destNome);
-      if(pC){ const sC=cfg?.setores?.find(s=>s.nome===pC.setor); if(sC) up.Unidade = sC.unidade; }
-    } else {
-      if(up.Nome_Profissional === destNome) return;
-      up.Nome_Profissional = destNome;
-      const pI = profs.find(p=>p.Nome===destNome);
-      if(pI){ up.Cargo=pI.Cargo; up.Cor=pI.Cor; }
+    let changed = false;
+
+    // Permite arrastar o card para outro DIA
+    if (up.Data !== dropDateStr) {
+        up.Data = dropDateStr;
+        changed = true;
     }
-    await api.saveRecord('ESCALAS', up);
-    onRefresh(); setDragItem(null); setDragOverRow(null);
+
+    if (viewMode === 'Médico') {
+      if (up.Sala !== destNome) {
+          up.Sala = destNome;
+          const pC = cfg?.postos?.find(p=>p.nome===destNome);
+          if(pC){ const sC=cfg?.setores?.find(s=>s.nome===pC.setor); if(sC) up.Unidade = sC.unidade; }
+          changed = true;
+      }
+    } else {
+      if(up.Nome_Profissional !== destNome) {
+          up.Nome_Profissional = destNome;
+          const pI = profs.find(p=>p.Nome===destNome);
+          if(pI){ up.Cargo=pI.Cargo; up.Cor=pI.Cor; }
+          changed = true;
+      }
+    }
+    
+    if(changed) { await api.saveRecord('ESCALAS', up); onRefresh(); }
+    setDragItem(null);
   };
 
   const diasRender = Array.from({length: rangeDias}, (_, i) => { let d = new Date(dataBase); d.setDate(d.getDate() + i); return d; });
 
   const RenderTimeline = ({ dateObj }) => {
-    const dS = getStrDt(dateObj);
-    if (entFiltradas.length === 0) return null;
+    // AGORA A MÁGICA: Os filtros são feitos exclusivos para ESTE dia renderizado!
+    const dStr = getStrDt(dateObj);
+    const isToday = getStrDt(agora) === dStr;
+    const escDia = escalas.filter(e => e.Data === dStr && isEscalaValida(e, cfg?.postos));
 
+    let entidades = [];
+    if (viewMode === 'Médico') {
+      const eMed = escDia.filter(e => { const p = profs.find(x=>x.Nome === e.Nome_Profissional); return (p && p.Tipo === 'Médico') || e.Cargo?.toLowerCase().includes('médico'); });
+      entidades = Array.from(new Set(eMed.map(e=>e.Sala))).sort();
+    } else {
+      const eCol = escDia.filter(e => { const p = profs.find(x=>x.Nome === e.Nome_Profissional); return p ? p.Tipo === 'Colaborador' : !e.Cargo?.toLowerCase().includes('médico'); });
+      entidades = Array.from(new Set(eCol.map(e=>e.Nome_Profissional))).sort();
+    }
+    
+    const entFiltradas = entidades.filter(e => e.toLowerCase().includes(busca.toLowerCase()));
+
+    if(entFiltradas.length === 0) return (
+      <div className="mb-6 animate-fade-in">
+        <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-blank text-primary"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'}).toUpperCase()}</h3>
+        <p className="opacity-50 text-sm font-bold p-6 border-2 border-dashed rounded-xl dark:border-slate-700 text-center bg-slate-50 dark:bg-slate-800/30">Nenhum plantão alocado para esta data.</p>
+      </div>
+    );
+
+    // TEMPO DINÂMICO EXCLUSIVO DESTE DIA
+    let minH = 7; let maxH = 19;
+    escDia.forEach(e => {
+      if(e.Status !== 'FOLGA' && e.Status !== 'AUSENTE' && e.Horario && !e.Horario.toUpperCase().includes('DEFINIR')) {
+        const t = safeGetHours(e.Horario);
+        if(t.in !== null && t.in < minH) minH = Math.floor(t.in);
+        if(t.out !== null && t.out > maxH) maxH = Math.ceil(t.out);
+      }
+    });
+    if(minH >= maxH) { minH = 7; maxH = 19; } 
+
+    const HORAS_TOTAIS = maxH - minH;
+    const arrayHoras = []; for(let i=minH; i<=maxH; i+=0.5) arrayHoras.push(i);
+
+    let percAgora = null; let pxAgora = null;
+    if(isToday) {
+      const hD = agora.getHours() + (agora.getMinutes()/60);
+      if(hD >= minH && hD <= maxH) { pxAgora = (hD - minH) * 60; percAgora = ((hD - minH) / HORAS_TOTAIS) * 100; }
+    }
+
+    // 1. LAYOUT HORIZONTAL 
     if (layout === 'HORIZONTAL') {
       return (
         <div className="mb-10 animate-fade-in">
           <h3 className="text-xl font-black mb-4 flex items-center gap-2 border-b dark:border-slate-700 pb-2"><i className="ph-fill ph-calendar-blank text-primary"></i> {dateObj.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long'}).toUpperCase()}</h3>
           <div className="gantt-scroll-area shadow-lg">
             <div className="min-w-[1000px]">
-              
               <div className="g-h-header">
                 <div className="g-h-label bg-slate-100 dark:bg-slate-800 font-black text-[10px] uppercase items-center text-center !flex-row">{viewMode === 'Médico' ? 'Posto / Sala' : 'Colaborador'}</div>
                 <div className="g-h-track bg-slate-50 dark:bg-slate-900">
@@ -1361,22 +1384,21 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
               {entFiltradas.map((ent, idx) => {
                 const blocos = viewMode === 'Médico' ? escDia.filter(e=>e.Sala === ent) : escDia.filter(e=>e.Nome_Profissional === ent);
                 const infoEx = viewMode === 'Médico' ? cfg?.postos?.find(p=>p.nome === ent)?.setor : profs.find(p=>p.Nome === ent)?.Cargo;
-                const isOver = dragOverRow === `${dStr}-${ent}`;
-                // Gerador de degradê dinâmico da linha
-                const gradientBg = gerarGradienteDoDia(blocos, cfg);
+                const isOver = dragOverRow === `${dStr}-${ent}`; // Validação única por dia e nome!
+                const gradBg = gerarGradienteDoDia(blocos, cfg);
 
                 return (
                   <div key={idx} 
-                    onDragOver={(e)=>{e.preventDefault(); setDragOverRow(`${dStr}-${ent}`);}} 
+                    onDragOver={(e) => handleDragOver(e, `${dStr}-${ent}`)} 
                     onDragLeave={()=>setDragOverRow(null)} 
-                    onDrop={(e)=>{e.preventDefault(); handleDrop(ent);}} 
+                    onDrop={(e) => handleDrop(e, ent, dStr)} 
                     className={`g-h-row transition duration-200 ${isOver?'drag-over':'hover:bg-slate-50 dark:hover:bg-slate-800/30'}`}
                     style={{minHeight: condensed ? '40px' : '64px'}}>
                     
                     <div className="g-h-label bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800" title={ent}>
                       <span className="font-black text-[11px] truncate leading-tight w-full">{ent}</span>
                       {!condensed && <span className="text-[8px] font-bold opacity-50 truncate mt-0.5 w-full uppercase">{infoEx||'Geral'}</span>}
-                      <div className="h-1 w-full rounded-full mt-1.5 opacity-80" style={{background: gradientBg}}></div>
+                      <div className="w-full h-1.5 rounded-full mt-1.5 opacity-80" style={{background: gradBg}}></div>
                     </div>
 
                     <div className="g-h-track">
@@ -1385,7 +1407,6 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                       
                       {blocos.map((b, bIdx) => {
                         const isF = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
-                        const isApoio = b.EmApoio || b.Status === 'APOIO';
                         let left=0; let width=100; let hasC=false;
                         
                         if(isF||b.Horario==='A DEFINIR'){left=1;width=98;}else{
@@ -1393,31 +1414,19 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                           if(t.in!==null&&t.out!==null){ 
                             left=((t.in-minH)/HORAS_TOTAIS)*100; width=((t.out-t.in)/HORAS_TOTAIS)*100; 
                             if(left<0){width+=left;left=0;} if(left+width>100)width=100-left; 
-                            
-                            blocos.forEach((out,oI)=>{if(bIdx!==oI&&!isF&&out.Horario!=='A DEFINIR'&&out.Status!=='FOLGA'){
-                              hasC = checkConflito(b, out);
-                            }});
+                            blocos.forEach((out,oI)=>{if(bIdx!==oI&&!isF) hasC = checkConflito(b, out);});
                           }
                         }
                         const c = isF?'#94a3b8':getCorDaSala(b.Sala, cfg); const n = viewMode==='Médico'?b.Nome_Profissional:b.Sala;
 
                         return (
-                          <div key={bIdx} draggable={isAd} onDragStart={()=>setDragItem(b)} onClick={()=>isAd&&setEditData({...b})} 
+                          <div key={bIdx} draggable={isAd} onDragStart={(e)=>handleDragStart(e, b)} onClick={()=>isAd&&setEditData({...b})} 
                             className={`g-h-block ${hasC?'conflict':''}`}
                             style={{left:`${left}%`, width:`${width}%`, backgroundColor:c, top: condensed ? '4px' : '8px', bottom: condensed ? '4px' : '8px'}}>
-                            {hasC && <span className="absolute -top-1 -right-1 text-[10px] z-50 drop-shadow-md">⚠️</span>}
+                            {hasC && <span className="absolute -top-1 -right-1 text-sm z-50 drop-shadow-md">⚠️</span>}
                             <div className="flex flex-col w-full h-full justify-center">
-                              <div className="flex items-center gap-1">
-                                <span className="font-black text-[10px] leading-none truncate text-white drop-shadow-sm">{isF?b.Status:n}</span>
-                                {isApoio && <span className="bg-yellow-400 text-yellow-900 text-[6px] font-black px-1 rounded uppercase tracking-widest">Apoio</span>}
-                              </div>
-                              {!condensed && !isF && b.Horario!=='A DEFINIR' && (
-                                <div className="mt-1 space-y-0.5">
-                                  <span className="block text-[8px] font-bold text-white/90 truncate drop-shadow-sm"><i className="ph-fill ph-clock"></i> {b.Horario}</span>
-                                  {b.MedicoApoio && <span className="block text-[7px] bg-black/20 text-white px-1 rounded truncate w-max">Para: {b.MedicoApoio}</span>}
-                                  {b.ObsDia && <span className="block text-[7px] italic opacity-80 text-white truncate w-max">{b.ObsDia}</span>}
-                                </div>
-                              )}
+                              <span className="font-black text-[10px] leading-tight truncate text-white drop-shadow-sm">{isF?b.Status:n}</span>
+                              {!condensed && !isF && b.Horario!=='A DEFINIR' && <span className="text-[8px] text-white/90 font-bold truncate drop-shadow-sm mt-0.5"><i className="ph-fill ph-clock"></i> {b.Horario}</span>}
                             </div>
                           </div>
                         )
@@ -1453,7 +1462,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
               const isOver = dragOverRow === `${dStr}-${ent}`;
 
               return (
-                <div key={idx} onDragOver={(e)=>{e.preventDefault(); setDragOverRow(`${dStr}-${ent}`);}} onDrop={(e)=>{e.preventDefault(); handleDrop(ent);}} className={`m-v-datacol transition ${isOver?'bg-blue-50/30 dark:bg-blue-900/20':''}`}>
+                <div key={idx} onDragOver={(e)=>{e.preventDefault(); setDragOverRow(`${dStr}-${ent}`);}} onDrop={(e)=>handleDrop(e, ent, dStr)} className={`m-v-datacol transition ${isOver?'bg-blue-50/30 dark:bg-blue-900/20':''}`}>
                   <div className="m-v-header bg-white dark:bg-slate-900" title={ent}>
                     <span className="font-black text-[11px] truncate w-full text-center px-1">{viewMode==='Colaborador'?ent.split(' ')[0]+' '+(ent.split(' ')[1]||''):ent}</span>
                     <span className="text-[8px] opacity-50 truncate w-full text-center mt-0.5">{infoEx||'Geral'}</span>
@@ -1476,7 +1485,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
                       const c = isF?'#94a3b8':getCorDaSala(b.Sala, cfg); const n = viewMode==='Médico'?b.Nome_Profissional:b.Sala;
 
                       return (
-                        <div key={bIdx} draggable={isAd} onDragStart={()=>setDragItem(b)} onClick={()=>isAd&&setEditData({...b})} 
+                        <div key={bIdx} draggable={isAd} onDragStart={(e)=>handleDragStart(e, b)} onClick={()=>isAd&&setEditData({...b})} 
                           className={`m-v-block ${hasC?'conflict':''}`} style={{top:`${top}px`, height:`${hght-2}px`, backgroundColor:c}}>
                           {hasC && <span className="absolute top-1 right-1 text-[10px] drop-shadow-md">⚠️</span>}
                           <span className="font-black text-[10px] leading-tight drop-shadow-sm">{isF?b.Status:n}</span>
@@ -1502,18 +1511,18 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             const blocos = viewMode === 'Médico' ? escDia.filter(e=>e.Sala === ent) : escDia.filter(e=>e.Nome_Profissional === ent);
             const infoEx = viewMode === 'Médico' ? cfg?.postos?.find(p=>p.nome === ent)?.setor : profs.find(p=>p.Nome === ent)?.Cargo;
             const isOver = dragOverRow === `${dStr}-${ent}`;
-            const cardGradient = gerarGradienteDoDia(blocos, cfg);
+            const cardGrad = gerarGradienteDoDia(blocos, cfg);
 
             return (
-              <div key={idx} onDragOver={(e)=>{e.preventDefault(); setDragOverRow(`${dStr}-${ent}`);}} onDrop={(e)=>{e.preventDefault(); handleDrop(ent);}} className={`clean-card p-3 flex flex-col shadow-sm transition overflow-hidden relative ${isOver?'scale-105 ring-4 ring-blue-400':''}`}>
-                <div className="absolute top-0 left-0 bottom-0 w-1.5" style={{background: cardGradient}}></div>
+              <div key={idx} onDragOver={(e)=>{e.preventDefault(); setDragOverRow(`${dStr}-${ent}`);}} onDrop={(e)=>handleDrop(e, ent, dStr)} className={`clean-card p-3 flex flex-col shadow-sm transition overflow-hidden relative ${isOver?'scale-105 ring-4 ring-blue-400':''}`}>
+                <div className="absolute top-0 left-0 bottom-0 w-1.5" style={{background: cardGrad}}></div>
                 <div className="border-b dark:border-slate-700 pb-2 mb-2 text-center pl-2"><h4 className="font-black text-xs uppercase truncate">{ent}</h4><p className="text-[9px] opacity-60">{infoEx||'Geral'}</p></div>
                 <div className="space-y-2 pl-2">
                   {blocos.map((b, bIdx) => {
                     const isF = b.Status === 'FOLGA' || b.Status === 'AUSENTE';
                     const n = viewMode === 'Médico' ? b.Nome_Profissional : b.Sala;
                     return (
-                      <div key={bIdx} draggable={isAd} onDragStart={()=>setDragItem(b)} onClick={()=>isAd&&setEditData({...b})} className="p-2 rounded bg-slate-50 dark:bg-slate-800 text-left border dark:border-slate-700 cursor-grab hover:border-primary transition shadow-sm">
+                      <div key={bIdx} draggable={isAd} onDragStart={(e)=>handleDragStart(e, b)} onClick={()=>isAd&&setEditData({...b})} className="p-2 rounded bg-slate-50 dark:bg-slate-800 text-left border dark:border-slate-700 cursor-grab hover:border-primary transition shadow-sm">
                         <p className="font-black text-[10px] text-primary truncate leading-tight">{isF?b.Status:n}</p>
                         <p className="text-[8px] font-bold opacity-60 mt-1"><i className="ph-fill ph-clock"></i> {b.Horario}</p>
                       </div>
@@ -1535,9 +1544,9 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
           <h2 className="text-2xl font-black mb-6">Visão Operacional de Tráfego</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:shadow-lg transition-all transform hover:-translate-y-1">
-              <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4"><i className="ph-fill ph-users-three"></i></div>
+              <div className="w-20 h-20 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full flex items-center justify-center text-4xl mb-4"><i className="ph-fill ph-users"></i></div>
               <h3 className="font-black text-xl uppercase tracking-widest text-center">Gantt por Pessoas</h3>
-              <p className="text-[10px] font-bold opacity-60 mt-2 uppercase tracking-widest">Colunas = Equipe Base</p>
+              <p className="text-[10px] font-bold opacity-60 mt-2 uppercase tracking-widest">Colunas = Nomes</p>
             </div>
             <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center justify-center cursor-pointer hover:border-red-500 hover:shadow-lg transition-all transform hover:-translate-y-1">
               <div className="w-20 h-20 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full flex items-center justify-center text-4xl mb-4"><i className="ph-fill ph-door"></i></div>
@@ -1592,8 +1601,8 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
               </select>
             </div>
           </div>
-
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50 p-3 rounded-xl text-xs font-bold text-yellow-800 dark:text-yellow-400 flex items-center gap-2"><i className="ph-fill ph-info text-lg"></i> 💡 Dica: Vá em "Ajustes &gt; Setores" para definir as cores das salas. Os blocos ganham as cores automaticamente! Arraste os blocos para transferir horários.</div>
+          
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50 p-3 rounded-xl text-xs font-bold text-yellow-800 dark:text-yellow-400 flex items-center gap-2"><i className="ph-fill ph-info text-lg"></i> 💡 Dica: Arraste os blocos coloridos para trocar o horário de pessoa, de sala, e até de data!</div>
 
           <div className="space-y-8">
             {diasRender.map((d, i) => <RenderTimeline key={i} dateObj={d} />)}
