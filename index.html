@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0ea5e9">
-<title>Escalas SV Inteligente</title>
+<title>Escalas SV 3.0</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
@@ -37,13 +37,14 @@
   
   .clean-card { background-color: #ffffff; border-radius: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.2s ease; }
   .dark .clean-card { background-color: #1e293b; border-color: #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); color: #f8fafc; }
+  .clean-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08); }
   
-  /* CSS DO GANTT HORIZONTAL E VERTICAL */
+  /* CSS DO GANTT BLINDADO E VERTICAL FINO */
   .gantt-scroll-area { max-height: 75vh; overflow-y: auto; overflow-x: auto; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; }
   .dark .gantt-scroll-area { background: #0f172a; border-color: #334155; }
   .g-h-row { display: flex; border-bottom: 1px solid #f1f5f9; min-height: 60px; position: relative; }
   .dark .g-h-row { border-color: #334155; }
-  .g-h-label { width: 180px; min-width: 180px; position: sticky; left: 0; background: #f8fafc; z-index: 20; border-right: 2px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; padding: 8px; }
+  .g-h-label { width: 180px; min-width: 180px; position: sticky; left: 0; background: #f8fafc; z-index: 20; border-right: 2px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; padding: 8px; cursor: pointer; }
   .dark .g-h-label { background: #1e293b; border-color: #334155; }
   .g-h-track { flex: 1; position: relative; min-width: 900px; display: flex; }
   .g-grid-line { flex: 1; border-right: 1px dashed rgba(0,0,0,0.05); height: 100%; position: relative; }
@@ -53,7 +54,7 @@
   .g-h-header { position: sticky; top: 0; z-index: 30; background: #fff; display: flex; border-bottom: 2px solid #e2e8f0; height: 40px; }
   .dark .g-h-header { background: #0f172a; border-color: #334155; }
   .g-h-block { position: absolute; top: 6px; bottom: 6px; border-radius: 6px; padding: 4px 8px; color: white; font-size: 10px; font-weight: 800; display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; transition: filter 0.2s; border: 1px solid rgba(255,255,255,0.2); z-index: 10; }
-  .g-h-block:hover { filter: brightness(1.1); z-index: 25; }
+  .g-h-block:hover { filter: brightness(1.1); box-shadow: 0 5px 10px rgba(0,0,0,0.2); z-index: 25; }
   .g-h-block.conflict { border: 2px solid #ef4444; animation: pulse 2s infinite; z-index: 28; }
   .linha-agora-h { position: absolute; top: 0; bottom: 0; width: 2px; background: #ef4444; z-index: 18; pointer-events: none; }
   
@@ -63,22 +64,28 @@
   .dark .m-v-datacol { border-color: #334155; }
   .m-v-header { height: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 30; background: #fff; }
   .dark .m-v-header { background: #0f172a; border-color: #334155; }
-  .m-v-block { position: absolute; left: 2px; right: 2px; border-radius: 4px; padding: 4px; color: white; display: flex; flex-direction: column; justify-content: flex-start; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; cursor: pointer; transition: filter 0.2s; }
+  .m-v-block { position: absolute; left: 2px; right: 2px; border-radius: 4px; padding: 4px; color: white; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; transition: filter 0.2s; z-index: 10; justify-content: flex-start; border: 1px solid rgba(255,255,255,0.2); line-height: 1.1; }
   .m-v-block:hover { filter: brightness(1.1); z-index: 25; }
   .m-v-block.conflict { border: 2px solid #ef4444; animation: pulse 2s infinite; z-index: 28; }
   .linha-agora-v { position: absolute; left: 0; right: 0; height: 2px; background: #ef4444; z-index: 18; pointer-events: none; }
+  
+  /* CHATBOT */
+  .chat-bubble { background: #0ea5e9; color: white; border-radius: 16px 16px 0 16px; padding: 10px 14px; font-size: 13px; max-width: 85%; margin-bottom: 8px; align-self: flex-end; }
+  .chat-bubble-bot { background: #f1f5f9; color: #1e293b; border-radius: 16px 16px 16px 0; padding: 10px 14px; font-size: 13px; max-width: 85%; margin-bottom: 8px; align-self: flex-start; border: 1px solid #e2e8f0; }
+  .dark .chat-bubble-bot { background: #1e293b; color: #f8fafc; border-color: #334155; }
   
   .mural-bg { background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
   .dark .mural-bg { background-image: radial-gradient(#334155 1px, transparent 1px); }
   @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
   .card-niver { animation: float 3s ease-in-out infinite; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border: 2px solid #fbcfe8; }
   .dark .card-niver { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-color: #be185d; }
-
-  /* Chatbot Styles */
-  .chat-bubble { background: #0ea5e9; color: white; border-radius: 16px 16px 0 16px; padding: 10px 14px; font-size: 13px; max-width: 85%; margin-bottom: 8px; align-self: flex-end; }
-  .chat-bubble-bot { background: #f1f5f9; color: #1e293b; border-radius: 16px 16px 16px 0; padding: 10px 14px; font-size: 13px; max-width: 85%; margin-bottom: 8px; align-self: flex-start; border: 1px solid #e2e8f0; }
-  .dark .chat-bubble-bot { background: #1e293b; color: #f8fafc; border-color: #334155; }
 </style>
+<script>
+  if (localStorage.getItem('escalas_versao') !== "63.0.0") { 
+    localStorage.clear(); sessionStorage.clear(); 
+    localStorage.setItem('escalas_versao', "63.0.0"); window.location.reload(); 
+  }
+</script>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300">
 <div id="root"></div>
@@ -104,7 +111,7 @@ const api = {
   deleteRecord: async (c, id) => { try { await db.collection(c).doc(id).delete(); return true; } catch(e){ return false; } }
 };
 
-// UTILIDADES
+// ================== FUNÇÕES MATEMÁTICAS GLOBAIS SEGURAS ==================
 const safeStr = (v) => v == null ? '' : String(v);
 const fmtImg = (u) => { let s = safeStr(u).trim(); if(!s) return ''; const m = s.match(/(?:file\/d\/|id=|v\/|u\/\d+\/p\/)([a-zA-Z0-9_-]{25,})/); return m ? `https://drive.google.com/uc?export=view&id=${m[1]}` : s; };
 const getStrDt = (d) => d ? String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear() : '';
@@ -157,14 +164,16 @@ const checkConflito = (blocoA, blocoB) => {
   return (a.in < b.out && a.out > b.in); 
 };
 
+// DEGRADÊ DINÂMICO
 const gerarGradienteDoDia = (blocosDoDia, cfg) => {
   if(!blocosDoDia || blocosDoDia.length === 0) return 'transparent';
   if(blocosDoDia.length === 1) return getCorDaSala(blocosDoDia[0].Sala, cfg);
   const blocosOrd = [...blocosDoDia].sort((a, b) => (safeGetHours(a.Horario).in || 0) - (safeGetHours(b.Horario).in || 0));
   const cores = blocosOrd.map(b => getCorDaSala(b.Sala, cfg));
-  return `linear-gradient(to right, ${cores.join(', ')})`;
+  return `linear-gradient(to bottom, ${cores.join(', ')})`;
 };
 
+// ================= COMPONENTES MENORES =================
 const BadgeConvenio = ({ cod, logo }) => {
   if(!cod) return null;
   if(logo) return <img src={fmtImg(logo)} className="h-4 w-auto inline-block ml-1 rounded-sm bg-white" title={`Unimed: ${cod}`} />;
@@ -200,14 +209,15 @@ const TopHeader = ({ user, isDark, toggleDark }) => {
 // ================= CHATBOT INTELIGENTE =================
 const ChatBot = ({ escalas, profs }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([{ text: 'Olá! Sou a Assistente Virtual. Qual o seu nome completo?', isBot: true }]);
+  const [messages, setMessages] = useState([{ text: 'Olá! Sou a Assistente Virtual. Digite o seu nome ou o nome do colaborador que deseja consultar:', isBot: true }]);
   const [input, setInput] = useState('');
-  const [step, setStep] = useState('NOME'); // NOME, OPCOES
+  const [step, setStep] = useState('BUSCA'); // BUSCA, ESCOLHER, OPCOES
   const [userProf, setUserProf] = useState(null);
+  const [opcoesBusca, setOpcoesBusca] = useState([]);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); };
-  useEffect(scrollToBottom, [messages, isOpen]);
+  useEffect(scrollToBottom, [messages, isOpen, step, opcoesBusca]);
 
   const addMsg = (text, isBot = false) => setMessages(prev => [...prev, { text, isBot }]);
 
@@ -218,18 +228,31 @@ const ChatBot = ({ escalas, profs }) => {
     addMsg(userText, false);
     setInput('');
 
-    if (step === 'NOME') {
-      const p = profs.find(x => safeStr(x.Nome).toLowerCase().includes(userText.toLowerCase()));
-      if (p) {
-        setUserProf(p);
-        setTimeout(() => {
-          addMsg(`Bem-vindo(a), ${p.Nome.split(' ')[0]}! O que você gostaria de consultar hoje?`, true);
-          setStep('OPCOES');
-        }, 500);
+    if (step === 'BUSCA') {
+      const matches = profs.filter(x => safeStr(x.Nome).toLowerCase().includes(userText.toLowerCase()));
+      
+      if (matches.length === 0) {
+        setTimeout(() => addMsg(`Não encontrei ninguém contendo "${userText}". Tente novamente.`, true), 500);
+      } else if (matches.length === 1) {
+        selecionarProfissional(matches[0]);
       } else {
-        setTimeout(() => addMsg(`Não encontrei ninguém com esse nome. Tente digitar o nome completo.`, true), 500);
+        setTimeout(() => {
+          addMsg(`Encontrei ${matches.length} pessoas com esse nome. Por favor, clique na pessoa correta abaixo:`, true);
+          setOpcoesBusca(matches);
+          setStep('ESCOLHER');
+        }, 500);
       }
     }
+  };
+
+  const selecionarProfissional = (p) => {
+    setUserProf(p);
+    setOpcoesBusca([]);
+    addMsg(`(Selecionou: ${p.Nome})`, false);
+    setTimeout(() => {
+      addMsg(`Perfeito, ${p.Nome.split(' ')[0]}! O que você gostaria de consultar hoje?`, true);
+      setStep('OPCOES');
+    }, 500);
   };
 
   const consultarEscala = (dias) => {
@@ -255,7 +278,7 @@ const ChatBot = ({ escalas, profs }) => {
       } else {
         let msg = `Aqui está sua escala:\n\n`;
         minhasEscalas.forEach(e => { msg += `📅 ${e.Data}\n📍 ${e.Sala}\n⏰ ${e.Horario}\n\n`; });
-        msg += `💡 Lembrete: A pontualidade é essencial para o fluxo da equipe. Em caso de atraso, avise sua supervisão!`;
+        msg += `💡 Lembrete de Gestão: A pontualidade é essencial para o fluxo da equipe. Deseja consultar mais alguma coisa?`;
         addMsg(msg, true);
       }
     }, 800);
@@ -280,21 +303,30 @@ const ChatBot = ({ escalas, profs }) => {
         {messages.map((m, i) => (
           <div key={i} className={m.isBot ? "chat-bubble-bot whitespace-pre-wrap" : "chat-bubble"}>{m.text}</div>
         ))}
+
+        {step === 'ESCOLHER' && opcoesBusca.length > 0 && (
+          <div className="flex flex-col gap-2 mt-2 px-1">
+            {opcoesBusca.map(p => (
+               <button key={p.ID} onClick={() => selecionarProfissional(p)} className="text-xs font-bold bg-white dark:bg-slate-800 border dark:border-slate-700 p-2.5 rounded-lg text-left text-primary shadow-sm hover:bg-blue-50 dark:hover:bg-slate-700 transition">👤 {p.Nome}</button>
+            ))}
+            <button onClick={()=>{setStep('BUSCA'); setOpcoesBusca([]);}} className="text-[10px] font-bold opacity-50 mt-1 text-center hover:underline">Cancelar Busca</button>
+          </div>
+        )}
         
         {step === 'OPCOES' && (
           <div className="flex flex-col gap-2 mt-2">
             <button onClick={()=>consultarEscala(1)} className="text-[11px] font-bold bg-white dark:bg-slate-800 border dark:border-slate-700 p-2 rounded-lg text-primary shadow-sm hover:bg-blue-50 transition">Ver Escala Hoje</button>
             <button onClick={()=>consultarEscala(7)} className="text-[11px] font-bold bg-white dark:bg-slate-800 border dark:border-slate-700 p-2 rounded-lg text-primary shadow-sm hover:bg-blue-50 transition">Ver Escala da Semana</button>
             <button onClick={()=>consultarEscala(30)} className="text-[11px] font-bold bg-white dark:bg-slate-800 border dark:border-slate-700 p-2 rounded-lg text-primary shadow-sm hover:bg-blue-50 transition">Ver Escala do Mês</button>
-            <button onClick={()=>{setStep('NOME'); setMessages([{text:'Certo! Digite o nome de outro colaborador para buscar.', isBot:true}])}} className="text-[10px] font-bold opacity-50 mt-2 hover:underline">Trocar de Usuário</button>
+            <button onClick={()=>{setStep('BUSCA'); setMessages([{text:'Certo! Digite o nome de outro colaborador para buscar.', isBot:true}])}} className="text-[10px] font-bold opacity-50 mt-2 hover:underline text-center">Pesquisar outra pessoa</button>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {step === 'NOME' && (
+      {step === 'BUSCA' && (
         <form onSubmit={handleSend} className="p-3 border-t dark:border-slate-700 flex gap-2 bg-white dark:bg-slate-900">
-          <input type="text" value={input} onChange={e=>setInput(e.target.value)} placeholder="Digite seu nome..." className="flex-1 p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-sm outline-none dark:border-slate-700 font-bold" autoFocus/>
+          <input type="text" value={input} onChange={e=>setInput(e.target.value)} placeholder="Digite parte do nome..." className="flex-1 p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-sm outline-none dark:border-slate-700 font-bold" autoFocus/>
           <button type="submit" className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-blue-600 transition"><i className="ph-bold ph-paper-plane-right"></i></button>
         </form>
       )}
@@ -302,7 +334,7 @@ const ChatBot = ({ escalas, profs }) => {
   );
 };
 
-// ================= SUPER MODAL COM AVISOS =================
+// ================== SUPER MODAL (GERENCIAR ESCALA) ==================
 const SuperActionModal = ({ escala, profs, cfg, escalas, onClose, onSave, onRefresh, isAd }) => {
   const [fd, setFd] = useState({...escala});
   const isMedico = fd.Cargo?.toLowerCase().includes('médico') || profs.find(p=>p.Nome===fd.Nome_Profissional)?.Tipo === 'Médico';
@@ -310,16 +342,15 @@ const SuperActionModal = ({ escala, profs, cfg, escalas, onClose, onSave, onRefr
   const colabsL = profsOrdenados.filter(p => p.Tipo === 'Colaborador' && p.StatusGeral === 'Ativo');
   const medsA = profsOrdenados.filter(p => p.Tipo === 'Médico' && p.StatusGeral === 'Ativo');
 
-  // Inteligência: Checagem de Capacidade
+  // INTELIGÊNCIA: Verifica capacidade
   const checkCapacidade = () => {
     if(!fd.Sala || fd.Sala === 'FOLGA' || fd.Sala === 'A DEFINIR' || fd.Status === 'AUSENTE' || fd.Status === 'FOLGA') return null;
     const posto = cfg?.postos?.find(p => p.nome === fd.Sala);
-    const capMax = posto?.capacidade ? parseInt(posto.capacidade) : 1; // Default 1
+    const capMax = posto?.capacidade ? parseInt(posto.capacidade) : 1; 
     
-    // Filtra escalas no mesmo dia e mesma sala, garantindo que não seja a PRÓPRIA escala sendo editada
-    const ocupantes = escalas.filter(e => e.Data === fd.Data && e.Sala === fd.Sala && e.ID !== fd.ID && e.Status !== 'FOLGA' && e.Status !== 'AUSENTE');
+    // Todas as escalas da sala neste dia (excluindo a propria q estou editando)
+    const ocupantes = (escalas||[]).filter(e => e.Data === fd.Data && e.Sala === fd.Sala && e.ID !== fd.ID && e.Status !== 'FOLGA' && e.Status !== 'AUSENTE');
     
-    // Verifica sobreposição real de horário
     let conflitos = 0;
     const myT = safeGetHours(fd.Horario);
     
@@ -327,11 +358,11 @@ const SuperActionModal = ({ escala, profs, cfg, escalas, onClose, onSave, onRefr
       const oT = safeGetHours(o.Horario);
       if(myT.in !== null && oT.in !== null) {
         if (myT.in < oT.out && myT.out > oT.in) conflitos++;
-      } else { conflitos++; } // A DEFINIR entra no conflito geral
+      } else { conflitos++; } 
     });
 
     if (conflitos >= capMax) {
-      return { alert: `⚠️ Limite excedido! O posto [${fd.Sala}] comporta ${capMax} pessoa(s), mas já tem ${conflitos} alocada(s) neste horário.`, block: capMax === 1 };
+      return { alert: `⚠️ Atenção: O posto [${fd.Sala}] suporta ${capMax} pessoa(s). Já existem ${conflitos} alocadas neste horário.`, block: capMax === 1 };
     }
     return null;
   };
@@ -345,10 +376,10 @@ const SuperActionModal = ({ escala, profs, cfg, escalas, onClose, onSave, onRefr
       return;
     }
     if (warn && warn.block) {
-      if(!confirm(`${warn.alert}\n\nDeseja forçar o salvamento mesmo assim?`)) return;
+      if(!confirm(`${warn.alert}\n\nDeseja salvar mesmo assim?`)) return;
     }
     const pInfo = profs.find(p => p.Nome === fd.Nome_Profissional);
-    if(pInfo) { fd.Cargo = pInfo.Cargo; }
+    if(pInfo) { fd.Cor = pInfo.Cor; fd.Cargo = pInfo.Cargo; }
     await onSave('ESCALAS', fd); onRefresh(); onClose();
   };
 
@@ -371,10 +402,10 @@ const SuperActionModal = ({ escala, profs, cfg, escalas, onClose, onSave, onRefr
           
           {isAd && (
             <div>
-              <label className="text-[10px] font-black uppercase opacity-60 text-blue-600 dark:text-blue-400">Profissional</label>
+              <label className="text-[10px] font-black uppercase opacity-60 text-blue-600 dark:text-blue-400">Transferir / Substituir Profissional</label>
               <select value={fd.Nome_Profissional} onChange={e=>setFd({...fd, Nome_Profissional: e.target.value})} className="w-full p-3 border rounded-xl bg-blue-50 dark:bg-slate-900 text-blue-700 dark:text-blue-400 font-bold dark:border-slate-700 outline-none mt-1">
                 <option value={fd.Nome_Profissional}>Manter: {fd.Nome_Profissional}</option>
-                <option value="VAZIO">🗑️ DEIXAR VAZIO (Excluir)</option>
+                <option value="VAZIO">🗑️ DEIXAR POSTO VAZIO (Excluir)</option>
                 <option disabled>──────────</option>
                 {profsOrdenados.filter(p => p.Nome !== fd.Nome_Profissional).map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
               </select>
@@ -382,6 +413,14 @@ const SuperActionModal = ({ escala, profs, cfg, escalas, onClose, onSave, onRefr
           )}
 
           <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <label className="text-[10px] font-black uppercase opacity-60">Unidade de Atendimento</label>
+              <select value={fd.Unidade||''} onChange={e=>setFd({...fd, Unidade:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1">
+                <option value="">Selecione a Unidade...</option>
+                {(cfg?.unidades||[]).map((u,i) => <option key={i} value={u.nome}>{u.nome}</option>)}
+              </select>
+            </div>
+            
             <div className="col-span-2">
               <label className="text-[10px] font-black uppercase opacity-60">Sala / Setor / Posto</label>
               <select value={fd.Sala} onChange={e=>setFd({...fd, Sala:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 font-bold outline-none mt-1">
@@ -405,16 +444,96 @@ const SuperActionModal = ({ escala, profs, cfg, escalas, onClose, onSave, onRefr
             </div>
           </div>
 
+          {isMedico ? (
+            <div className="bg-purple-50 dark:bg-purple-900/10 p-3 rounded-xl border border-purple-200 dark:border-purple-900/30">
+              <label className="text-[10px] font-black text-purple-600 dark:text-purple-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-user-plus"></i> Auxiliar de Sala (Staff)</label>
+              <select value={fd.Auxiliar||''} onChange={e=>setFd({...fd, Auxiliar:e.target.value})} className="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-700 text-sm font-bold outline-none">
+                <option value="">Sem auxiliar</option>
+                {colabsL.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+              </select>
+            </div>
+          ) : (
+            <div className="bg-indigo-50 dark:bg-indigo-900/10 p-3 rounded-xl border border-indigo-200 dark:border-indigo-900/30">
+              <label className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 flex items-center gap-1 mb-1"><i className="ph-fill ph-stethoscope"></i> Prestando Apoio a Médico</label>
+              <select value={fd.MedicoApoio||''} onChange={e=>setFd({...fd, MedicoApoio:e.target.value})} className="w-full p-2 border rounded dark:bg-slate-800 dark:border-slate-700 text-sm font-bold outline-none">
+                <option value="">Atendimento Geral</option>
+                {medsA.map(p => <option key={p.ID} value={p.Nome}>{p.Nome}</option>)}
+              </select>
+            </div>
+          )}
+
           <div>
-            <label className="text-[10px] font-black uppercase opacity-60">Anotações do Dia</label>
-            <input type="text" value={fd.ObsDia||''} onChange={e=>setFd({...fd, ObsDia:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 outline-none mt-1" placeholder="Ex: Cobrindo folga..."/>
+            <label className="text-[10px] font-black uppercase opacity-60">Anotações / Obs do Dia</label>
+            <input type="text" value={fd.ObsDia||''} onChange={e=>setFd({...fd, ObsDia:e.target.value})} className="w-full p-3 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 outline-none mt-1" placeholder="Ex: Atestado, trocar de sala as 14h..."/>
           </div>
           
           <div className="flex justify-end gap-2 pt-4 border-t dark:border-slate-700">
             <button type="button" onClick={onClose} className="px-4 py-3 font-bold opacity-60 hover:opacity-100 transition">Cancelar</button>
-            <button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black shadow-lg hover:bg-blue-600 transition">Salvar Escala</button>
+            <button type="submit" className="bg-primary text-white px-8 py-3 rounded-xl font-black shadow-lg hover:bg-blue-600 transition">Salvar Modificações</button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+};
+
+// ================== CRACHÁ VIRTUAL ==================
+const CrachaVirtual = ({ profInfo, cfg, onClose }) => {
+  const niver = checkNiver(profInfo.DataNascimento);
+  return (
+    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 animate-fade-in" onClick={onClose}>
+      <div className="clean-card w-full max-w-sm p-0 overflow-hidden shadow-2xl relative" onClick={e=>e.stopPropagation()}>
+        <div className={`h-24 relative ${niver.isHoje ? 'bg-gradient-to-r from-pink-500 to-rose-400' : 'bg-gradient-to-r from-primary to-blue-400'}`}>
+          <button onClick={onClose} className="absolute top-4 right-4 text-white hover:scale-110 transition"><i className="ph-bold ph-x text-xl"></i></button>
+        </div>
+        <div className="px-6 pb-6 pt-0 relative flex flex-col items-center text-center">
+          <div className={`w-24 h-24 rounded-full border-4 shadow-lg -mt-12 bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden mb-3 relative ${niver.isHoje ? 'border-pink-200' : 'border-white dark:border-slate-800'}`} style={{backgroundColor:profInfo.FotoURL?'':(profInfo.Cor||'#0ea5e9')}}>
+            {profInfo.FotoURL ? <img src={fmtImg(profInfo.FotoURL)} className="w-full h-full object-cover" /> : <span className="text-4xl font-black text-white">{profInfo.Nome?.[0]}</span>}
+          </div>
+          {niver.isHoje && <div className="absolute -mt-14 ml-20 text-3xl animate-bounce">🎂</div>}
+          <h3 className="text-xl font-black leading-tight flex items-center justify-center gap-1">
+            {profInfo.Nome} <BadgeConvenio cod={profInfo.CodUnimed} logo={cfg?.logoConvenio} />
+          </h3>
+          <p className="text-xs font-bold text-primary uppercase mt-1">{profInfo.Cargo}</p>
+
+          <div className="w-full mt-6 space-y-2 text-left">
+            {(niver.isHoje || niver.isSemana) && (
+              <div className="bg-pink-50 dark:bg-pink-900/20 p-3 rounded-xl border border-pink-200 text-center animate-pulse-slow">
+                <p className="text-pink-600 dark:text-pink-400 font-black text-sm">{niver.isHoje ? '🎉 É ANIVERSÁRIO HOJE! 🎉' : `🎈 Aniversário dia ${niver.strData}`}</p>
+              </div>
+            )}
+            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700 flex items-center gap-3">
+              <i className="ph-fill ph-map-pin text-slate-400 text-xl"></i>
+              <div>
+                <p className="text-[9px] font-bold opacity-50 uppercase tracking-widest">Lotação Base</p>
+                <p className="text-xs font-black">{profInfo.UnidadeBase||'Geral'} • {profInfo.Setor||'-'}</p>
+              </div>
+            </div>
+            {(profInfo.CRM || profInfo.CodUnimed) && (
+              <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700 flex gap-4">
+                {profInfo.CRM && <div className="flex-1"><p className="text-[9px] font-bold opacity-50 uppercase tracking-widest">CRM</p><p className="text-xs font-black">{profInfo.CRM}</p></div>}
+                {profInfo.CodUnimed && <div className="flex-1"><p className="text-[9px] font-bold opacity-50 uppercase tracking-widest">Unimed</p><p className="text-xs font-black">{profInfo.CodUnimed}</p></div>}
+              </div>
+            )}
+            {profInfo.TipoContrato && (
+              <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700">
+                <p className="text-[9px] font-bold opacity-50 uppercase tracking-widest">Vínculo</p>
+                <p className="text-xs font-black">{profInfo.TipoContrato}</p>
+              </div>
+            )}
+            {profInfo.ObservacoesGerais && (
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-xl border border-yellow-100 dark:border-yellow-900/30">
+                <p className="text-[9px] font-bold text-yellow-600 uppercase tracking-widest"><i className="ph-fill ph-info"></i> Obs da Gestão</p>
+                <p className="text-xs text-yellow-800 dark:text-yellow-400 mt-1">{profInfo.ObservacoesGerais}</p>
+              </div>
+            )}
+            {profInfo.Habilidades && profInfo.Habilidades.length > 0 && (
+              <div className="pt-2 border-t dark:border-slate-700 flex flex-wrap gap-1 mt-2">
+                {profInfo.Habilidades.map((h, i) => <span key={i} className="bg-slate-100 dark:bg-slate-800 border dark:border-slate-700 text-[9px] font-bold px-2 py-0.5 rounded">{h}</span>)}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -435,7 +554,7 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
   const salvar = async () => { 
     setL(true); 
     await onSave('CONFIGURACOES',{ID:'parametros',unidades:u,setores:s,postos:p,habilidades:h,ausencias:a,logoConvenio:logoConv}); 
-    onRefresh(); setL(false); alert("Salvo com sucesso!"); 
+    onRefresh(); setL(false); alert("Salvo com sucesso no Banco de Dados!"); 
   };
 
   const confirmMod = (e) => { 
@@ -477,6 +596,7 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
               {item.cor && <div className="w-3 h-3 rounded-full shadow-sm shrink-0" style={{background:item.cor}}></div>}
               <div className="truncate">
                 <p className="font-bold truncate">{item.nome||item}</p>
+                {item.unidade && <p className="text-[8px] opacity-60 truncate">Em: {item.unidade}</p>}
                 {item.setor && <p className="text-[8px] opacity-60 truncate">Setor: {item.setor} | Cap: {item.capacidade||1}</p>}
               </div>
             </div>
@@ -496,11 +616,16 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
         <h2 className="text-2xl font-black">Ajustes & Configurações</h2>
         <button onClick={salvar} disabled={loading} className="bg-primary text-white px-6 py-2 rounded-xl font-bold shadow hover:bg-blue-600 transition">Salvar Servidor</button>
       </div>
+      <div className="clean-card p-4 flex flex-col md:flex-row justify-between md:items-center bg-blue-50/50 dark:bg-slate-800/50 gap-4">
+        <div><h4 className="font-bold text-sm">Logo Convênio (Ex: UNIMED)</h4><p className="text-[10px] opacity-60">Cole a URL pública da imagem</p></div>
+        <input type="text" value={logoConv} onChange={e=>setLogoConv(e.target.value)} placeholder="Link Drive / Imgur" className="p-3 border rounded-xl dark:border-slate-700 dark:bg-slate-900 w-full md:w-96 text-sm outline-none" />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Lst title="1. Unidades/Prédios" arr={u} tipo="u"/>
         <Lst title="2. Setores (Cores da Matriz)" arr={s} tipo="s"/>
-        <Lst title="3. Salas/Postos de Trabalho" arr={p} tipo="p"/>
+        <Lst title="3. Salas/Postos" arr={p} tipo="p"/>
         <Lst title="Afastamentos e Licenças" arr={a} tipo="a"/>
+        <Lst title="Competências" arr={h} tipo="h"/>
       </div>
       {mod && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 animate-fade-in" onClick={()=>setMod(null)}>
@@ -547,6 +672,139 @@ const AjustesView = ({ cfg, onSave, onRefresh }) => {
   );
 };
 
+// ================== ABA 2: EQUIPE ==================
+const EquipeView = ({ data, cfg, onSave, onDelete, onRefresh }) => {
+  const [viewMode, setViewMode] = useState('MENU'); 
+  const [modal, setModal] = useState(false); const [fd, setFd] = useState({}); const [busca, setBusca] = useState('');
+  
+  const openModal = (i=null) => { 
+    setFd(i ? {...i} : { 
+      Nome:'', Cargo:'', Tipo: viewMode !== 'MENU' ? viewMode : 'Colaborador', UnidadeBase:'', Setor:'', 
+      Habilidades:[], Cor:'#0ea5e9', CRM:'', CodUnimed:'', URA:'', CBO:'', OutroDoc:'', Segmento:'', DataNascimento:'',
+      isGestor: false, StatusGeral:'Ativo', TipoContrato:'', ObservacoesGerais:'' 
+    }); 
+    setModal(true); 
+  };
+  const toggleHab = (hab) => { let arr = fd.Habilidades||[]; setFd({...fd, Habilidades: arr.includes(hab)?arr.filter(x=>x!==hab):[...arr, hab]}); };
+  const save = async (e) => { e.preventDefault(); await onSave('PROFISSIONAIS', fd); setModal(false); onRefresh(); };
+  
+  const filtrados = ordenarPorNome(data).filter(p => viewMode === 'MENU' ? true : p.Tipo === viewMode).filter(p => safeStr(p.Nome).toLowerCase().includes(busca.toLowerCase()));
+
+  return (
+    <div className="animate-fade-in space-y-6 max-w-7xl mx-auto pb-10">
+      {viewMode === 'MENU' ? (
+        <div>
+          <h2 className="text-2xl font-black mb-6">Gestão de Equipe</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div onClick={()=>setViewMode('Colaborador')} className="clean-card p-10 flex flex-col items-center cursor-pointer hover:border-primary hover:shadow-lg transition">
+              <i className="ph-fill ph-users-three text-5xl mb-4 text-blue-500"></i><h3 className="font-black text-xl uppercase">Colaboradores</h3><p className="text-xs font-bold opacity-60">Equipe Base, Recepção</p>
+            </div>
+            <div onClick={()=>setViewMode('Médico')} className="clean-card p-10 flex flex-col items-center cursor-pointer hover:border-red-500 hover:shadow-lg transition">
+              <i className="ph-fill ph-stethoscope text-5xl mb-4 text-red-500"></i><h3 className="font-black text-xl uppercase">Corpo Clínico</h3><p className="text-xs font-bold opacity-60">Médicos e Especialistas</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <div className="flex flex-col md:flex-row justify-between mb-6 border-b dark:border-slate-700 pb-4 gap-4">
+            <div className="flex items-center gap-4">
+              <button onClick={()=>{setViewMode('MENU'); setBusca('');}} className="w-10 h-10 clean-card flex items-center justify-center hover:bg-slate-100 transition"><i className="ph-bold ph-caret-left"></i></button>
+              <div><p className="text-[10px] font-bold uppercase opacity-50">Pasta Ativa</p><h2 className="text-2xl font-black">{viewMode}s</h2></div>
+            </div>
+            <div className="flex gap-2 w-full md:w-auto">
+              <input type="text" placeholder="Buscar por nome..." value={busca} onChange={e=>setBusca(e.target.value)} className="p-3 border rounded-xl flex-1 md:w-64 dark:border-slate-700 dark:bg-slate-900 font-bold outline-none"/>
+              <button onClick={()=>openModal()} className="bg-primary text-white px-6 rounded-xl font-bold shadow hover:bg-blue-600 transition">Novo</button>
+            </div>
+          </div>
+
+          {filtrados.length === 0 ? (
+            <div className="p-10 text-center border-2 border-dashed rounded-xl opacity-50 font-bold dark:border-slate-700">Nenhum profissional encontrado.</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filtrados.map((p, i) => {
+                const niver = checkNiver(p.DataNascimento);
+                return (
+                  <div key={i} onClick={()=>openModal(p)} className="clean-card p-5 flex flex-col items-center text-center cursor-pointer relative border-t-4 border-primary hover:shadow-md transition">
+                    {p.StatusGeral !== 'Ativo' && <span className="absolute top-2 left-2 bg-red-100 text-red-600 text-[8px] font-black px-2 py-0.5 rounded shadow-sm">{p.StatusGeral}</span>}
+                    
+                    {p.FotoURL ? (
+                      <img src={fmtImg(p.FotoURL)} className="w-14 h-14 rounded-full object-cover mb-2 shadow" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full text-white flex items-center justify-center font-black mb-2 text-xl shadow" style={{background:p.Cor||'#0ea5e9'}}>{p.Nome[0]}</div>
+                    )}
+                    
+                    <h3 className="font-black text-sm w-full truncate flex justify-center items-center gap-1">
+                      {p.Nome} <BadgeConvenio cod={p.CodUnimed} logo={cfg?.logoConvenio}/>
+                    </h3>
+                    
+                    <p className="text-[9px] opacity-60 uppercase font-bold mt-0.5">{p.Tipo==='Médico' ? `CRM: ${p.CRM||'N/A'}` : p.Cargo}</p>
+                    <p className="text-[8px] font-black bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded mt-1 truncate max-w-full">{p.UnidadeBase||'S/ Unid'} • {p.Setor||'S/ Setor'}</p>
+                    
+                    {(niver.isHoje || niver.isSemana) && <p className="text-[9px] font-black text-pink-600 bg-pink-100 dark:bg-pink-900/30 px-2 py-0.5 rounded mt-1.5 shadow-sm">🎂 Niver {niver.strData}</p>}
+
+                    {p.isGestor && <span className="mt-2 text-[8px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Gestor / Supervisor</span>}
+                    
+                    <button onClick={(e)=>{e.stopPropagation(); if(confirm('Tem certeza que deseja excluir permanentemente?')) { onDelete('PROFISSIONAIS', p.ID); onRefresh(); }}} className="absolute top-2 right-2 text-red-500 bg-red-50 dark:bg-red-900/20 p-1.5 rounded hover:bg-red-100 transition"><i className="ph-fill ph-trash"></i></button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 animate-fade-in" onClick={()=>setModal(false)}>
+          <div className="clean-card w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6" onClick={e=>e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4 border-b dark:border-slate-700 pb-2"><h3 className="text-xl font-black">Ficha Cadastral</h3><button onClick={()=>setModal(false)}><i className="ph-bold ph-x text-xl"></i></button></div>
+            <form onSubmit={save} className="space-y-4 text-sm">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 flex flex-wrap gap-4 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border dark:border-slate-700">
+                  <label className="font-bold cursor-pointer"><input type="radio" checked={fd.Tipo==='Colaborador'} onChange={()=>setFd({...fd, Tipo:'Colaborador'})} className="mr-1"/> Colaborador</label>
+                  <label className="font-bold text-blue-600 cursor-pointer"><input type="radio" checked={fd.Tipo==='Médico'} onChange={()=>setFd({...fd, Tipo:'Médico'})} className="mr-1"/> Médico</label>
+                  <label className="md:ml-auto font-bold cursor-pointer"><input type="checkbox" checked={fd.isGestor||false} onChange={e=>setFd({...fd, isGestor:e.target.checked})} className="mr-1"/> É Gestor/Líder?</label>
+                </div>
+                
+                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Nome Completo</label><input type="text" value={fd.Nome} onChange={e=>setFd({...fd, Nome:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required/></div>
+                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Data Nascimento (DD/MM/AAAA)</label><input type="text" value={fd.DataNascimento||''} onChange={e=>setFd({...fd, DataNascimento:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 outline-none" placeholder="Ex: 15/03/1990"/></div>
+                <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Foto URL (Drive/Imgur)</label><input type="text" value={fd.FotoURL||''} onChange={e=>setFd({...fd, FotoURL:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 outline-none" placeholder="Link público"/></div>
+                
+                <div><label className="text-[10px] font-black uppercase opacity-60">Unidade Base</label><select value={fd.UnidadeBase||''} onChange={e=>setFd({...fd, UnidadeBase:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 font-bold outline-none"><option value="">Selecione...</option>{(cfg?.unidades||[]).map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
+                <div><label className="text-[10px] font-black uppercase opacity-60">Setor Base</label><select value={fd.Setor||''} onChange={e=>setFd({...fd, Setor:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 font-bold outline-none"><option value="">Selecione...</option>{(cfg?.setores||[]).map((x,i)=><option key={i} value={x.nome}>{x.nome}</option>)}</select></div>
+                
+                {fd.Tipo==='Médico' ? (
+                  <div className="col-span-2 grid grid-cols-2 md:grid-cols-3 gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border dark:border-slate-700 mt-2">
+                    <div><label className="text-[9px] font-black uppercase opacity-60">CRM</label><input type="text" value={fd.CRM||''} onChange={e=>setFd({...fd, CRM:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required/></div>
+                    <div><label className="text-[9px] font-black uppercase opacity-60">Cód Unimed</label><input type="text" value={fd.CodUnimed||''} onChange={e=>setFd({...fd, CodUnimed:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 font-bold outline-none"/></div>
+                    <div><label className="text-[9px] font-black uppercase opacity-60">Especialidade</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd, Cargo:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required/></div>
+                    <div><label className="text-[9px] font-black uppercase opacity-60">URA</label><input type="text" value={fd.URA||''} onChange={e=>setFd({...fd, URA:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 outline-none"/></div>
+                    <div><label className="text-[9px] font-black uppercase opacity-60">CBO</label><input type="text" value={fd.CBO||''} onChange={e=>setFd({...fd, CBO:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 outline-none"/></div>
+                    <div><label className="text-[9px] font-black uppercase opacity-60">Outro Doc</label><input type="text" value={fd.OutroDoc||''} onChange={e=>setFd({...fd, OutroDoc:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 outline-none"/></div>
+                    <div className="col-span-2 md:col-span-3"><label className="text-[9px] font-black uppercase opacity-60">Observação Clínica</label><textarea value={fd.Segmento||''} onChange={e=>setFd({...fd, Segmento:e.target.value})} className="w-full p-2 border rounded dark:border-slate-700 dark:bg-slate-900 outline-none" rows="2"></textarea></div>
+                  </div>
+                ) : (
+                  <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Cargo</label><input type="text" value={fd.Cargo||''} onChange={e=>setFd({...fd, Cargo:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 font-bold outline-none" required/></div>
+                )}
+                
+                <div className="col-span-2 md:col-span-1"><label className="text-[10px] font-black uppercase opacity-60">Tipo Contrato (PJ, CLT...)</label><input type="text" value={fd.TipoContrato||''} onChange={e=>setFd({...fd, TipoContrato:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 outline-none"/></div>
+                <div><label className="text-[10px] font-black uppercase opacity-60">Status Geral</label><select value={fd.StatusGeral||'Ativo'} onChange={e=>setFd({...fd, StatusGeral:e.target.value})} className="w-full p-2 border rounded-lg font-bold text-red-500 dark:border-slate-700 dark:bg-slate-900 outline-none"><option value="Ativo" className="text-green-500">🟢 ATIVO</option>{(cfg?.ausencias||[]).map((x,i)=><option key={i} value={x}>🔴 {x}</option>)}</select></div>
+                
+                <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60">Observações Gerais</label><textarea value={fd.ObservacoesGerais||''} onChange={e=>setFd({...fd, ObservacoesGerais:e.target.value})} className="w-full p-2 border rounded-lg dark:border-slate-700 dark:bg-slate-900 outline-none" placeholder="Anotações para a gestão..." rows="2"></textarea></div>
+                
+                <div className="col-span-2"><label className="text-[10px] font-black uppercase opacity-60 mb-1 block">Competências</label><div className="flex flex-wrap gap-1">{(cfg?.habilidades||[]).map((x,i)=><button type="button" key={i} onClick={()=>toggleHab(x)} className={`px-3 py-1.5 text-[10px] font-bold rounded-lg border transition ${fd.Habilidades?.includes(x)?'bg-primary text-white border-primary shadow':'bg-slate-50 dark:bg-slate-800 dark:border-slate-700'}`}>{x}</button>)}</div></div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4 border-t dark:border-slate-700 mt-4">
+                <button type="button" onClick={()=>setModal(false)} className="px-4 py-2 opacity-60 font-bold">Cancelar</button>
+                <button type="submit" className="bg-primary text-white px-6 py-2 rounded-xl font-bold shadow hover:bg-blue-600 transition">Salvar Ficha</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ================== ABA 3: CALENDÁRIO / CRIAR ESCALAS ==================
 const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
@@ -555,6 +813,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const [tipoLancamento, setTipoLancamento] = useState('PLANTAO'); 
   const [motivoAus, setMotivoAus] = useState('Folga');
   const [selProf, setSelProf] = useState(''); 
+  const [selUnd, setSelUnd] = useState(''); 
   const [selSala, setSelSala] = useState('');
   const [hIn, setHIn] = useState(''); 
   const [hOut, setHOut] = useState(''); 
@@ -579,7 +838,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     let overloads = [];
     
     dates.forEach(d => {
-      const alreadyIn = escalas.filter(e => e.Data === d && e.Sala === selSala && e.Status !== 'FOLGA');
+      const alreadyIn = (escalas||[]).filter(e => e.Data === d && e.Sala === selSala && e.Status !== 'FOLGA' && e.Status !== 'AUSENTE');
       if(alreadyIn.length >= max) overloads.push({date: d, p: alreadyIn.map(a=>a.Nome_Profissional).join(', ')});
     });
 
@@ -601,7 +860,7 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
     }
     
     for(let d of dates) { 
-      await onSave('ESCALAS', { Data: d, Sala: s, Nome_Profissional: prof.Nome, Cargo: prof.Cargo, Horario: h, Status: st, ObsDia: o }); 
+      await onSave('ESCALAS', { Data: d, Sala: s, Unidade: selUnd, Nome_Profissional: prof.Nome, Cargo: prof.Cargo, Horario: h, Status: st, ObsDia: o }); 
     }
     alert("Escalas geradas com sucesso!"); setDates([]); setMode('TIMELINE'); onRefresh();
   };
@@ -652,6 +911,10 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
             
             {tipoLancamento === 'PLANTAO' ? (
               <div className="space-y-4 animate-fade-in">
+                <select value={selUnd} onChange={e=>setSelUnd(e.target.value)} className="w-full p-3 border rounded-xl dark:border-slate-700 dark:bg-slate-900 outline-none">
+                  <option value="">Unidade (A DEFINIR DEPOIS)...</option>
+                  {(cfg?.unidades||[]).map((x,i) => <option key={i} value={x.nome}>{x.nome}</option>)}
+                </select>
                 <select value={selSala} onChange={e=>setSelSala(e.target.value)} className="w-full p-3 border rounded-xl dark:border-slate-700 dark:bg-slate-900 outline-none font-bold">
                   <option value="">2. Sala/Posto (A DEFINIR DEPOIS)...</option>
                   {(cfg?.postos||[]).map((x,i) => <option key={i} value={x.nome||x}>{x.nome||x} (Capacidade: {x.capacidade||1})</option>)}
@@ -710,8 +973,121 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
         </div>
       ) : (
         <div className="space-y-6 animate-fade-in">
-           {/* Igual a antes, mas omiti para poupar caracteres da tela de perfil individual, mantida inalterada da original */}
-           <div className="p-10 text-center border-2 border-dashed rounded-xl opacity-50 font-bold">Use o Assistente Multi-Datas ou Busque um nome.</div>
+          <div className="clean-card p-5 flex flex-col lg:flex-row justify-between gap-4 items-center relative">
+            <div className="flex items-center gap-4">
+              <button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()-1, 1)); setDiaAtivo(null);}} className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-left"></i></button>
+              <h2 className="text-lg font-black uppercase tracking-widest w-40 text-center">{mesAtual.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</h2>
+              <button onClick={()=>{setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 1)); setDiaAtivo(null);}} className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-200 transition"><i className="ph-bold ph-caret-right"></i></button>
+            </div>
+            <div className="relative w-full lg:w-96">
+              <i className="ph-bold ph-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
+              <input type="text" placeholder="Buscar profissional (Radar)..." value={buscaNome} onChange={e=>{setBuscaNome(e.target.value); setShowAuto(true); setCalProf(''); setDiaAtivo(null);}} onFocus={()=>setShowAuto(true)} className="w-full p-3 pl-10 rounded-xl border dark:border-slate-700 font-bold dark:bg-slate-900 outline-none shadow-sm focus:border-primary transition" />
+              
+              {showAuto && buscaNome && (
+                <div className="absolute top-full mt-2 w-full bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-2xl rounded-xl z-50 max-h-64 overflow-y-auto overflow-x-hidden">
+                  {pOrd.filter(p => safeStr(p.Nome).toLowerCase().includes(buscaNome.toLowerCase())).map(p => (
+                    <div key={p.ID} onClick={()=>{setBuscaNome(p.Nome); setCalProf(p.Nome); setShowAuto(false);}} className="p-3 border-b dark:border-slate-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-slate-700 transition flex items-center gap-3">
+                      {p.FotoURL ? <img src={fmtImg(p.FotoURL)} className="w-8 h-8 rounded-full object-cover"/> : <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black" style={{backgroundColor:p.Cor||'#0ea5e9'}}>{p.Nome[0]}</div>}
+                      <div>
+                        <p className="font-bold text-sm">{p.Nome}</p>
+                        <p className="text-[10px] opacity-60 uppercase">{p.Cargo}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {!calProf ? (
+            <div className="p-16 text-center opacity-50 font-bold border-dashed border-2 rounded-2xl dark:border-slate-700">
+              <i className="ph-fill ph-calendar-plus text-6xl mb-4 text-slate-300 dark:text-slate-600"></i>
+              <p className="text-lg">Selecione um profissional no radar acima para carregar a agenda.</p>
+            </div>
+          ) : (
+            <div className="space-y-6 animate-fade-in">
+              {pSel && (
+                <div className="clean-card p-6 flex items-center gap-6 bg-gradient-to-r from-blue-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-primary shadow-sm">
+                  {pSel.FotoURL ? (
+                    <img src={fmtImg(pSel.FotoURL)} className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover shadow-lg border-4 border-white dark:border-slate-700 shrink-0"/>
+                  ) : (
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-primary text-white flex items-center justify-center text-4xl font-black shadow-lg border-4 border-white dark:border-slate-700 shrink-0" style={{backgroundColor:pSel.Cor||'#0ea5e9'}}>
+                      {pSel.Nome[0]}
+                    </div>
+                  )}
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2 leading-tight">
+                      {pSel.Nome} <BadgeConvenio cod={pSel.CodUnimed} logo={cfg?.logoConvenio}/>
+                    </h2>
+                    <p className="text-sm font-bold text-primary uppercase mt-1">{pSel.Cargo}</p>
+                    <p className="text-[10px] font-black opacity-50 mt-1 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded inline-block"><i className="ph-fill ph-map-pin"></i> Lotação Base: {pSel.UnidadeBase||'Geral'} • {pSel.Setor||'-'}</p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="clean-card p-6 lg:col-span-2">
+                  <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[10px] font-black opacity-50 uppercase">
+                    <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                  </div>
+                  <div className="grid grid-cols-7 gap-2">
+                    {bGrid(mesAtual).v.map((_, i) => <div key={'v'+i}></div>)}
+                    {bGrid(mesAtual).d.map((d, i) => {
+                      const isValid = escalas.some(e => e.Nome_Profissional === calProf && e.Data === d.s && isEscalaValida(e, cfg?.postos));
+                      const isTj = d.s === getStrDt(new Date());
+                      const isS = diaAtivo === d.s;
+                      
+                      return (
+                        <div key={i} onClick={()=> isValid && setDiaAtivo(d.s)} className={`relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${isValid?'cursor-pointer hover:border-primary shadow-sm':''} ${isS?'ring-2 ring-primary bg-blue-50 dark:bg-slate-800':isTj?'bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600':'bg-transparent dark:border-slate-800'}`}>
+                          <span className={`text-sm font-bold ${isValid?'text-slate-800 dark:text-white':'text-slate-400 dark:text-slate-600'}`}>{d.d.getDate()}</span>
+                          {isValid && <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full shadow" style={{backgroundColor:pSel?.Cor||'#0ea5e9'}}></span>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+                
+                <div className="clean-card p-6 bg-slate-50 dark:bg-slate-800/50">
+                  {diaAtivo ? (
+                    <div className="animate-fade-in">
+                      <h3 className="font-black text-lg text-primary border-b dark:border-slate-700 pb-2 mb-4 flex items-center gap-2"><i className="ph-fill ph-calendar-check"></i> {diaAtivo}</h3>
+                      <div className="space-y-4">
+                        {escalas.filter(e => e.Nome_Profissional === calProf && e.Data === diaAtivo && isEscalaValida(e, cfg?.postos)).map((esc, j) => {
+                          const iF = esc.Status === 'FOLGA'; const iA = esc.Status === 'AUSENTE';
+                          return (
+                            <div key={j} className={`p-4 rounded-xl shadow-sm border relative overflow-hidden transition-all hover:shadow-md ${iF?'bg-slate-100 dark:bg-slate-800 opacity-80 dark:border-slate-700':iA?'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30':'bg-white dark:bg-slate-900 dark:border-slate-700'}`}>
+                              <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{backgroundColor: iF?'#94a3b8':iA?'#ef4444':getCorDaSala(esc.Sala, cfg)}}></div>
+                              
+                              {(!iF && !iA && esc.Unidade) && <p className="text-[9px] font-black uppercase tracking-widest opacity-50 pl-1 mb-0.5">{esc.Unidade}</p>}
+                              <h4 className={`font-black text-base pl-1 leading-tight ${iF||iA?'text-slate-600 dark:text-slate-400':''}`}>{esc.Sala} {esc.EmApoio?'(Apoio)':''}</h4>
+                              
+                              {(!iF && !iA) && <p className={`text-sm font-bold mt-1 pl-1 ${esc.Horario==='A DEFINIR'?'text-red-500':'opacity-80'}`}><i className="ph-fill ph-clock"></i> {esc.Horario}</p>}
+                              {esc.Auxiliar && <p className="text-[9px] font-black text-purple-600 bg-purple-50 dark:bg-purple-900/30 px-2 py-0.5 rounded inline-block mt-1.5 ml-1"><i className="ph-fill ph-user-plus"></i> Auxiliar: {esc.Auxiliar}</p>}
+                              {esc.MedicoApoio && <p className="text-[9px] font-black text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded inline-block mt-1.5 ml-1"><i className="ph-fill ph-stethoscope"></i> Apoio a: {esc.MedicoApoio}</p>}
+                              
+                              {esc.ObsDia && <p className={`text-[10px] mt-3 p-2 rounded ml-1 font-bold flex items-center gap-1 ${iF||iA?'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300':'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-500'}`}><i className="ph-bold ph-info text-sm"></i> {esc.ObsDia}</p>}
+                              
+                              {isAd && (
+                                <div className="absolute top-2 right-2 flex gap-2">
+                                  <button onClick={() => setEditData({...esc})} className="text-yellow-500 hover:scale-110 transition bg-yellow-50 dark:bg-slate-800 p-1.5 rounded"><i className="ph-fill ph-pencil-simple"></i></button>
+                                  <button onClick={async()=>{if(confirm('Excluir turno permanentemente?')){await api.deleteRecord('ESCALAS', esc.ID); onRefresh(); setDiaAtivo(null)}}} className="text-red-500 hover:scale-110 transition bg-red-50 dark:bg-slate-800 p-1.5 rounded"><i className="ph-fill ph-trash"></i></button>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center opacity-30 min-h-[200px]">
+                      <i className="ph-fill ph-cursor-click text-5xl mb-2"></i>
+                      <p className="text-xs font-black uppercase tracking-widest">Selecione uma Data</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
       {editData && <SuperActionModal escala={editData} profs={profs} cfg={cfg} escalas={escalas} onClose={()=>setEditData(null)} onSave={onSave} onRefresh={onRefresh} isAd={isAd} />}
@@ -719,11 +1095,11 @@ const CalendarioView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   );
 };
 
-// ================== ABA 5: O GANTT DINÂMICO (SEM DRAG & DROP, MAIS FINO) ==================
+// ================== ABA 5: O GANTT DINÂMICO (SEM DRAG & DROP, FINO) ==================
 const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const isAd = user.nivel === 'Admin' || user.nivel === 'Supervisor';
   const [viewMode, setViewMode] = useState('MENU');
-  const [layout, setLayout] = useState('VERTICAL'); // Forçando vertical como padrão bacana
+  const [layout, setLayout] = useState('VERTICAL'); 
   const [dataBase, setDataBase] = useState(new Date());
   const [rangeDias, setRangeDias] = useState(1); 
   const [busca, setBusca] = useState('');
@@ -747,7 +1123,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   
   const entFiltradas = entidades.filter(e => e.toLowerCase().includes(busca.toLowerCase()));
 
-  // TEMPO DINÂMICO DA GRADE (Agora mais compacto visualmente)
+  // TEMPO DINÂMICO DA GRADE
   let minH = 7; let maxH = 19;
   escDia.forEach(e => {
     if(e.Status !== 'FOLGA' && e.Status !== 'AUSENTE' && e.Horario && !e.Horario.toUpperCase().includes('DEFINIR')) {
@@ -762,7 +1138,7 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   const arrayHoras = []; for(let i=minH; i<=maxH; i+=0.5) arrayHoras.push(i);
 
   // REDUÇÃO DA ALTURA DAS LINHAS NO VERTICAL (Estilo Excel)
-  const PX_HORA = 34; // Antes era 60
+  const PX_HORA = 34;
 
   let pxAgora = null;
   if(isToday) {
@@ -878,7 +1254,6 @@ const VisaoAmplaView = ({ profs, escalas, cfg, user, onSave, onRefresh }) => {
   );
 };
 
-
 // ================== APP ROOT E ROTEAMENTO ==================
 const App = () => {
   const [u, setU] = useState(null); const [l, setL] = useState(true); const [t, setT] = useState('HOJE');
@@ -932,6 +1307,8 @@ const App = () => {
     {id:'DIARIO', i:'ph-users-three', n:'Lista Dia'}, 
     {id:'MATRIZ', i:'ph-chart-gantt', n:'Visão Ampla'}, 
     {id:'CALENDARIO', i:'ph-calendar-plus', n:'Escalas'}, 
+    {id:'EQUIPE', i:'ph-address-book', n:'Equipe', adminOnly:true}, 
+    {id:'MURAL', i:'ph-confetti', n:'Festivo'},
     {id:'CONFIG', i:'ph-gear', n:'Ajustes', adminOnly:true} 
   ];
 
@@ -940,24 +1317,27 @@ const App = () => {
       <aside className="hidden md:flex flex-col h-screen fixed z-30 w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3"><div className="w-10 h-10 bg-primary text-white rounded-lg flex justify-center items-center"><i className="ph-fill ph-heartbeat text-xl"></i></div><div><h2 className="font-black text-lg">Escalas SV</h2><p className="text-[9px] uppercase opacity-50 font-bold tracking-widest">Inteligente</p></div></div>
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto hide-scroll">
-          {menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition ${t===m.id?'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400':'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><i className={`ph-fill ${m.i} text-xl`}></i> {m.n}</button>)}
+          {menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition ${t===m.id?(m.id==='MURAL'?'bg-pink-50 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400':'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'):'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><i className={`ph-fill ${m.i} text-xl`}></i> {m.n}</button>)}
         </nav>
         <div className="p-4 border-t border-slate-100 dark:border-slate-800"><button onClick={()=>auth.signOut()} className="text-red-500 font-bold flex items-center gap-2 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded w-full transition"><i className="ph-bold ph-sign-out text-lg"></i> Sair do App</button></div>
       </aside>
       
       <nav className="md:hidden fixed bottom-0 inset-x-0 border-t border-slate-200 dark:border-slate-800 z-50 flex justify-around p-2 pb-safe bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] overflow-x-auto hide-scroll">
-        {menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[64px] transition ${t===m.id?'text-primary':'text-slate-400'}`}><i className={`ph-fill ${m.i} text-2xl`}></i><span className="text-[9px] font-black uppercase">{m.n}</span></button>)}
+        {menu.filter(m=>!m.adminOnly||isAd).map(m=><button key={m.id} onClick={()=>setT(m.id)} className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[64px] transition ${t===m.id?(m.id==='MURAL'?'text-pink-500':'text-primary'):'text-slate-400'}`}><i className={`ph-fill ${m.i} text-2xl`}></i><span className="text-[9px] font-black uppercase">{m.n}</span></button>)}
       </nav>
       
       <main className="flex-1 transition-all p-4 md:p-8 w-full md:ml-64 overflow-x-hidden">
         <TopHeader user={u} isDark={isD} toggleDark={()=>setIsD(!isD)} />
         
+        {t==='HOJE' && <PainelHojeView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
+        {t==='DIARIO' && <TrabalhandoHojeView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
         {t==='MATRIZ' && <VisaoAmplaView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
         {t==='CALENDARIO' && <CalendarioView profs={dbD.PROFISSIONAIS} escalas={dbD.ESCALAS} cfg={dbD.CONFIGURACOES || {}} user={u} onSave={api.saveRecord} onRefresh={f} />}
+        {t==='EQUIPE' && isAd && <EquipeView data={dbD.PROFISSIONAIS} cfg={dbD.CONFIGURACOES || {}} onSave={api.saveRecord} onDelete={api.deleteRecord} onRefresh={f} />}
         {t==='CONFIG' && isAd && <AjustesView cfg={dbD.CONFIGURACOES || {}} onSave={api.saveRecord} onRefresh={f} />}
+        {t==='MURAL' && <MuralAniversarioView profs={dbD.PROFISSIONAIS} cfg={dbD.CONFIGURACOES || {}} />}
       </main>
 
-      {/* O CHATBOT FICA AQUI, ACESSÍVEL DE QUALQUER TELA */}
       <ChatBot escalas={dbD.ESCALAS} profs={dbD.PROFISSIONAIS} />
     </div>
   );
